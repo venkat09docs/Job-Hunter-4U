@@ -187,183 +187,178 @@ You can click on any of the starter questions below or ask me anything about int
   };
 
   return (
-    <ResizableLayout>
-      <div className="flex flex-col h-full bg-gradient-to-br from-background via-background to-primary/5">
-        <div className="flex-shrink-0 border-b bg-card/50 backdrop-blur-sm">
-          <div className="flex items-center justify-between p-4">
-            <div className="flex-1">
-              <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Crack Interview
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                AI-powered interview preparation and practice
-              </p>
-            </div>
-            <Button
-              onClick={startOver}
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2 hover:bg-destructive hover:text-destructive-foreground"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Start Over
-            </Button>
-          </div>
+    <div className="flex flex-col h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      {/* Simple Header */}
+      <div className="flex-shrink-0 border-b bg-card/50 backdrop-blur-sm p-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            Crack Interview
+          </h1>
+          <Button
+            onClick={startOver}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2 hover:bg-destructive hover:text-destructive-foreground"
+          >
+            <RotateCcw className="h-4 w-4" />
+            Start Over
+          </Button>
         </div>
+      </div>
 
-        <div className="flex-1 flex flex-col overflow-hidden p-3">
-          <Card className="flex-1 flex flex-col overflow-hidden border-0 shadow-xl bg-card/50 backdrop-blur-sm">
-            <CardHeader className="flex-shrink-0 pb-3">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <MessageSquare className="h-4 w-4 text-primary" />
-                Interview Coach Chat
-              </CardTitle>
-            </CardHeader>
-            
-            <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
-              <ScrollArea ref={scrollAreaRef} className="flex-1 px-4">
-                <div className="space-y-4 pb-4">
-                  {messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex gap-3 ${
-                        message.type === 'user' ? 'flex-row-reverse' : 'flex-row'
-                      }`}
-                    >
-                      <Avatar className={`w-8 h-8 flex-shrink-0 ${message.type === 'user' ? 'bg-primary' : 'bg-transparent'}`}>
-                        {message.type === 'user' ? (
-                          profile?.profile_image_url ? (
-                            <AvatarImage src={profile.profile_image_url} alt="User" />
-                          ) : (
-                            <AvatarFallback className="bg-primary text-white text-xs">
-                              <User className="h-4 w-4" />
-                            </AvatarFallback>
-                          )
+      {/* Chat Area - Full Height */}
+      <div className="flex-1 flex flex-col overflow-hidden p-3">
+        <Card className="flex-1 flex flex-col overflow-hidden border-0 shadow-xl bg-card/50 backdrop-blur-sm">
+          <CardHeader className="flex-shrink-0 pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <MessageSquare className="h-4 w-4 text-primary" />
+              Interview Coach Chat
+            </CardTitle>
+          </CardHeader>
+          
+          <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
+            <ScrollArea ref={scrollAreaRef} className="flex-1 px-4">
+              <div className="space-y-4 pb-4">
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex gap-3 ${
+                      message.type === 'user' ? 'flex-row-reverse' : 'flex-row'
+                    }`}
+                  >
+                    <Avatar className={`w-8 h-8 flex-shrink-0 ${message.type === 'user' ? 'bg-primary' : 'bg-transparent'}`}>
+                      {message.type === 'user' ? (
+                        profile?.profile_image_url ? (
+                          <AvatarImage src={profile.profile_image_url} alt="User" />
                         ) : (
-                          <AvatarImage 
-                            src="/lovable-uploads/2bae437e-b17b-431f-a403-e8a375913444.png" 
-                            alt="AI Career Level Up Coach"
-                            className="object-contain"
-                          />
-                        )}
-                      </Avatar>
-                      
-                      <div className={`flex flex-col max-w-[85%] ${message.type === 'user' ? 'items-end' : 'items-start'}`}>
-                        <div
-                          className={`rounded-2xl px-4 py-3 ${
-                            message.type === 'user'
-                              ? 'bg-primary text-primary-foreground'
-                              : 'bg-muted border'
-                          }`}
-                        >
-                          <p className="text-base leading-relaxed whitespace-pre-wrap">{message.content}</p>
-                        </div>
-                        <span className="text-xs text-muted-foreground mt-1">
-                          {formatTime(message.timestamp)}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {isLoading && (
-                    <div className="flex gap-3">
-                      <Avatar className="w-8 h-8 bg-transparent">
+                          <AvatarFallback className="bg-primary text-white text-xs">
+                            <User className="h-4 w-4" />
+                          </AvatarFallback>
+                        )
+                      ) : (
                         <AvatarImage 
                           src="/lovable-uploads/2bae437e-b17b-431f-a403-e8a375913444.png" 
                           alt="AI Career Level Up Coach"
                           className="object-contain"
                         />
-                      </Avatar>
-                      <div className="flex items-center gap-2 bg-muted border rounded-2xl px-4 py-3">
-                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                        <span className="text-base text-muted-foreground">AI is thinking...</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-
-              <div className="flex-shrink-0 border-t bg-background/50">
-                {/* Collapsible Starter Questions */}
-                {showStarterQuestions && (
-                  <div className="p-4 border-b bg-muted/30">
-                    <div className="flex flex-wrap gap-2">
-                      {starterQuestions.slice(0, 5).map((question, index) => (
-                        <Button
-                          key={index}
-                          onClick={() => handleQuestionClick(question)}
-                          variant="outline"
-                          size="sm"
-                          className="text-xs h-8 px-3 hover:bg-primary hover:text-primary-foreground transition-colors"
-                          disabled={isLoading || isRecording || isProcessing}
-                        >
-                          {question.length > 30 ? `${question.substring(0, 30)}...` : question}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Toggle Button for Starter Questions */}
-                {!showStarterQuestions && (
-                  <div className="p-2 border-b bg-muted/20">
-                    <Button
-                      onClick={() => setShowStarterQuestions(true)}
-                      variant="ghost"
-                      size="sm"
-                      className="w-full text-xs text-muted-foreground hover:text-foreground"
-                    >
-                      Show starter questions
-                    </Button>
-                  </div>
-                )}
-                
-                {/* Input Area */}
-                <div className="p-4">
-                  <div className="flex gap-2">
-                    <Input
-                      value={inputMessage}
-                      onChange={(e) => setInputMessage(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="Ask me anything about interview preparation..."
-                      className="flex-1 border-primary/20 focus:border-primary/40 text-base min-h-[44px]"
-                      disabled={isLoading || isRecording || isProcessing}
-                    />
-                    <Button
-                      onClick={handleVoiceToggle}
-                      disabled={isLoading || isProcessing}
-                      variant={isRecording ? "destructive" : "outline"}
-                      className={`min-h-[44px] min-w-[44px] ${isRecording ? 'animate-pulse' : ''}`}
-                    >
-                      {isProcessing ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : isRecording ? (
-                        <MicOff className="h-4 w-4" />
-                      ) : (
-                        <Mic className="h-4 w-4" />
                       )}
-                    </Button>
-                    <Button 
-                      onClick={sendMessage} 
-                      disabled={!inputMessage.trim() || isLoading || isRecording || isProcessing}
-                      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 min-h-[44px] min-w-[44px]"
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  {(isRecording || isProcessing) && (
-                    <div className="mt-2 text-sm text-muted-foreground text-center">
-                      {isRecording && "🎤 Recording... Click stop when finished"}
-                      {isProcessing && "🤖 Converting speech to text..."}
+                    </Avatar>
+                    
+                    <div className={`flex flex-col max-w-[85%] ${message.type === 'user' ? 'items-end' : 'items-start'}`}>
+                      <div
+                        className={`rounded-2xl px-4 py-3 ${
+                          message.type === 'user'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted border'
+                        }`}
+                      >
+                        <p className="text-base leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                      </div>
+                      <span className="text-xs text-muted-foreground mt-1">
+                        {formatTime(message.timestamp)}
+                      </span>
                     </div>
-                  )}
-                </div>
+                  </div>
+                ))}
+                
+                {isLoading && (
+                  <div className="flex gap-3">
+                    <Avatar className="w-8 h-8 bg-transparent">
+                      <AvatarImage 
+                        src="/lovable-uploads/2bae437e-b17b-431f-a403-e8a375913444.png" 
+                        alt="AI Career Level Up Coach"
+                        className="object-contain"
+                      />
+                    </Avatar>
+                    <div className="flex items-center gap-2 bg-muted border rounded-2xl px-4 py-3">
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      <span className="text-base text-muted-foreground">AI is thinking...</span>
+                    </div>
+                  </div>
+                )}
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </ScrollArea>
+
+            <div className="flex-shrink-0 border-t bg-background/50">
+              {/* Collapsible Starter Questions */}
+              {showStarterQuestions && (
+                <div className="p-4 border-b bg-muted/30">
+                  <div className="flex flex-wrap gap-2">
+                    {starterQuestions.slice(0, 5).map((question, index) => (
+                      <Button
+                        key={index}
+                        onClick={() => handleQuestionClick(question)}
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-8 px-3 hover:bg-primary hover:text-primary-foreground transition-colors"
+                        disabled={isLoading || isRecording || isProcessing}
+                      >
+                        {question.length > 30 ? `${question.substring(0, 30)}...` : question}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Toggle Button for Starter Questions */}
+              {!showStarterQuestions && (
+                <div className="p-2 border-b bg-muted/20">
+                  <Button
+                    onClick={() => setShowStarterQuestions(true)}
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    Show starter questions
+                  </Button>
+                </div>
+              )}
+                
+              {/* Input Area */}
+              <div className="p-4">
+                <div className="flex gap-2">
+                  <Input
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Ask me anything about interview preparation..."
+                    className="flex-1 border-primary/20 focus:border-primary/40 text-base min-h-[44px]"
+                    disabled={isLoading || isRecording || isProcessing}
+                  />
+                  <Button
+                    onClick={handleVoiceToggle}
+                    disabled={isLoading || isProcessing}
+                    variant={isRecording ? "destructive" : "outline"}
+                    className={`min-h-[44px] min-w-[44px] ${isRecording ? 'animate-pulse' : ''}`}
+                  >
+                    {isProcessing ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : isRecording ? (
+                      <MicOff className="h-4 w-4" />
+                    ) : (
+                      <Mic className="h-4 w-4" />
+                    )}
+                  </Button>
+                  <Button 
+                    onClick={sendMessage} 
+                    disabled={!inputMessage.trim() || isLoading || isRecording || isProcessing}
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 min-h-[44px] min-w-[44px]"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+                {(isRecording || isProcessing) && (
+                  <div className="mt-2 text-sm text-muted-foreground text-center">
+                    {isRecording && "🎤 Recording... Click stop when finished"}
+                    {isProcessing && "🤖 Converting speech to text..."}
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-    </ResizableLayout>
+    </div>
   );
 };
 
