@@ -3054,105 +3054,24 @@ ${resumeData.personalDetails.fullName}`;
                                 {/* Experience Notes - Show for experience section */}
                                 {activeSuggestionSection === 'experience' && (
                                   <div className="space-y-4">
-                                    {/* Achievements Notes */}
-                                    <div>
-                                      <h4 className="font-medium mb-3 flex items-center gap-2">
-                                        <StickyNote className="h-4 w-4" />
-                                        Your Achievements Notes
-                                      </h4>
-                                      <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
-                                        {getAchievementsNotes().length > 0 ? (
-                                          getAchievementsNotes().map((note, index) => (
-                                            <div key={index} className="p-3 bg-muted/50 rounded-lg border relative group">
-                                              <div className="flex justify-between items-start mb-1">
-                                                <h5 className="font-medium text-sm pr-8">{note.title}</h5>
-                                                <button
-                                                  onClick={() => copyToClipboard(note.content)}
-                                                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
-                                                  title="Copy content"
-                                                >
-                                                  <Copy className="h-3 w-3" />
-                                                </button>
-                                              </div>
-                                              <p className="text-xs text-muted-foreground mb-2">
-                                                {new Date(note.createdAt).toLocaleDateString()}
-                                              </p>
-                                              <div className="text-sm text-foreground/80 max-h-32 overflow-y-auto">
-                                                <p className="whitespace-pre-wrap break-words">
-                                                  {note.content}
-                                                </p>
-                                              </div>
-                                            </div>
-                                          ))
-                                         ) : (
-                                           <div className="text-sm text-muted-foreground space-y-3">
-                                             <p>
-                                               No notes found in "2. Resume Builder - Achievements" tool. 
-                                               Create notes there to see them here.
-                                             </p>
-                                             <Button 
-                                               variant="outline" 
-                                               size="sm" 
-                                               className="gap-2"
-                                                onClick={() => window.open('/dashboard/digital-career-hub?toolId=55b57cf9-4781-4b80-8e40-eb154420ce49', '_blank')}
-                                             >
-                                               <ExternalLink className="h-3 w-3" />
-                                               Go to Achievements Tool
-                                             </Button>
-                                           </div>
-                                         )}
-                                      </div>
-                                    </div>
+                                     {/* Achievements Notes removed as per user request */}
 
-                                    {/* Capstone Project Notes */}
-                                    <div>
-                                      <h4 className="font-medium mb-3 flex items-center gap-2">
-                                        <StickyNote className="h-4 w-4" />
-                                        Your Capstone Project Ideas
-                                      </h4>
-                                      <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
-                                        {getCapstoneNotes().length > 0 ? (
-                                          getCapstoneNotes().map((note, index) => (
-                                            <div key={index} className="p-3 bg-muted/50 rounded-lg border relative group">
-                                              <div className="flex justify-between items-start mb-1">
-                                                <h5 className="font-medium text-sm pr-8">{note.title}</h5>
-                                                <button
-                                                  onClick={() => copyToClipboard(note.content)}
-                                                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
-                                                  title="Copy content"
-                                                >
-                                                  <Copy className="h-3 w-3" />
-                                                </button>
-                                              </div>
-                                              <p className="text-xs text-muted-foreground mb-2">
-                                                {new Date(note.createdAt).toLocaleDateString()}
-                                              </p>
-                                              <div className="text-sm text-foreground/80 max-h-32 overflow-y-auto">
-                                                <p className="whitespace-pre-wrap break-words">
-                                                  {note.content}
-                                                </p>
-                                              </div>
-                                            </div>
-                                          ))
-                                         ) : (
-                                           <div className="text-sm text-muted-foreground space-y-3">
-                                             <p>
-                                               No notes found in "4. Generate Capstone Project Ideas" tool. 
-                                               Create notes there to see them here.
-                                             </p>
-                                             <Button 
-                                               variant="outline" 
-                                               size="sm" 
-                                               className="gap-2"
-                                               onClick={() => window.open('/dashboard/digital-career-hub?toolId=c0df061d-c6de-400f-a33e-2ea98f425d75', '_blank')}
-                                             >
-                                               <ExternalLink className="h-3 w-3" />
-                                               Go to Capstone Ideas Tool
-                                             </Button>
-                                           </div>
-                                         )}
-                                      </div>
-                                    </div>
+                                     {/* Capstone Project Ideas */}
+                                     <div>
+                                       <h4 className="font-medium mb-3 flex items-center gap-2">
+                                         <StickyNote className="h-4 w-4" />
+                                         About your capstone project ideas
+                                       </h4>
+                                       <Button 
+                                         variant="outline" 
+                                         size="sm" 
+                                         className="gap-2"
+                                         onClick={() => window.open('/dashboard/digital-career-hub?toolId=c0df061d-c6de-400f-a33e-2ea98f425d75', '_blank')}
+                                       >
+                                         <ExternalLink className="h-3 w-3" />
+                                         Get Capstone Project Ideas
+                                       </Button>
+                                     </div>
                                   </div>
                                 )}
 
