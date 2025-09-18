@@ -243,7 +243,14 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
   };
 
   useEffect(() => {
-    console.log('🚀 CourseContentDialog opened:', { open, courseId, canManageContent, userRole });
+    console.log('🚀 CourseContentDialog opened:', { 
+      open, 
+      courseId, 
+      canManageContent, 
+      userRole, 
+      isAdmin,
+      roleCheck: { isAdmin, userRole }
+    });
     if (open && courseId && canManageContent) {
       console.log('📂 Loading form state and sections...');
       loadFormState();
@@ -766,24 +773,34 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                     
                     <div>
                       <Label htmlFor="chapter-type">Content Type</Label>
-                      <Select value={chapterType} onValueChange={(value: 'video' | 'article' | 'document' | 'checklist') => {
-                        console.log('🎯 Content type selected:', value);
-                        setChapterType(value);
-                        // Save immediately on change
-                        setTimeout(() => saveFormState(), 100);
-                      }}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="article">📝 Article</SelectItem>
-                          {isAdmin && <SelectItem value="checklist">✅ Checklist</SelectItem>}
-                          {isAdmin && <SelectItem value="video">🎥 Video</SelectItem>}
-                        </SelectContent>
-                      </Select>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        User role: {userRole} | Available options: Article{isAdmin && ', Checklist, Video'}
-                      </p>
+                       <Select value={chapterType} onValueChange={(value: 'video' | 'article' | 'document' | 'checklist') => {
+                         console.log('🎯 Content type selected:', value);
+                         console.log('🔍 Current dropdown state:', { 
+                           isAdmin, 
+                           userRole, 
+                           canShowChecklist: isAdmin,
+                           canShowVideo: isAdmin 
+                         });
+                         setChapterType(value);
+                         // Save immediately on change
+                         setTimeout(() => saveFormState(), 100);
+                       }}>
+                         <SelectTrigger>
+                           <SelectValue />
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="article">📝 Article</SelectItem>
+                           {isAdmin && (
+                             <>
+                                <SelectItem value="checklist">✅ Checklist</SelectItem>
+                                <SelectItem value="video">🎥 Video</SelectItem>
+                              </>
+                            )}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Debug: isAdmin={String(isAdmin)}, userRole={userRole} | Available options: Article{isAdmin && ', Checklist, Video'}
+                        </p>
                     </div>
                   </div>
 
