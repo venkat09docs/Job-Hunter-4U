@@ -5077,6 +5077,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_checklist_progress: {
+        Row: {
+          chapter_id: string
+          checklist_item_id: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          is_completed: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chapter_id: string
+          checklist_item_id: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chapter_id?: string
+          checklist_item_id?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_inputs: {
         Row: {
           created_at: string | null
@@ -5661,6 +5694,14 @@ export type Database = {
           institute_name: string
         }[]
       }
+      get_user_checklist_progress: {
+        Args: { chapter_id_param: string; user_id_param?: string }
+        Returns: {
+          checklist_item_id: string
+          completed_at: string
+          is_completed: boolean
+        }[]
+      }
       get_user_payment_summary: {
         Args: { target_user_id?: string }
         Returns: {
@@ -5826,6 +5867,15 @@ export type Database = {
           user_id: string
         }
         Returns: string
+      }
+      update_checklist_item_progress: {
+        Args: {
+          chapter_id_param: string
+          checklist_item_id_param: string
+          is_completed_param: boolean
+          user_id_param?: string
+        }
+        Returns: undefined
       }
       update_leaderboard_for_attempt: {
         Args: { attempt_id_param: string }
