@@ -7,9 +7,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Plus, Trash2, Save, Edit3, Eye } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Save, Edit3, Eye, Upload, X, Image } from 'lucide-react';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import type { Assignment, Question as DBQuestion, CreateQuestionData } from '@/types/clp';
 
 interface LocalQuestion {
@@ -21,6 +22,7 @@ interface LocalQuestion {
   expected_answer?: string;
   instructions?: string;
   marks: number;
+  attachments?: string[];
 }
 
 const ManageQuestions: React.FC = () => {
@@ -43,6 +45,7 @@ const ManageQuestions: React.FC = () => {
   const [questions, setQuestions] = useState<LocalQuestion[]>([]);
   const [editingQuestion, setEditingQuestion] = useState<LocalQuestion | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState<LocalQuestion>({
     kind: 'mcq',
     prompt: '',
@@ -50,7 +53,8 @@ const ManageQuestions: React.FC = () => {
     correct_answers: [],
     expected_answer: '',
     instructions: '',
-    marks: 1
+    marks: 1,
+    attachments: []
   });
 
   useEffect(() => {
@@ -88,6 +92,7 @@ const ManageQuestions: React.FC = () => {
           expected_answer: (q.metadata as any)?.expected_answer || '',
           instructions: (q.metadata as any)?.instructions || '',
           marks: Number(q.marks) || 1,
+          attachments: (q.metadata as any)?.attachments || [],
         }));
         setQuestions(formattedQuestions);
       }
@@ -109,7 +114,8 @@ const ManageQuestions: React.FC = () => {
       correct_answers: [],
       expected_answer: '',
       instructions: '',
-      marks: 1
+      marks: 1,
+      attachments: []
     });
     setEditingQuestion(null);
     setShowAddForm(false);
@@ -136,7 +142,8 @@ const ManageQuestions: React.FC = () => {
         order_index: questions.length,
         metadata: {
           expected_answer: formData.expected_answer,
-          instructions: formData.instructions
+          instructions: formData.instructions,
+          attachments: formData.attachments
         }
       };
 
@@ -230,6 +237,92 @@ const ManageQuestions: React.FC = () => {
   const removeOption = (index: number) => {
     const newOptions = formData.options.filter((_, i) => i !== index);
     setFormData({ ...formData, options: newOptions });
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    const uploadedUrls: string[] = [];
+
+    try {
+      for (const file of Array.from(files)) {
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          toast({
+            title: 'Error',
+            description: 'Please upload only image files.',
+            variant: 'destructive'
+          });
+          continue;
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          toast({
+            title: 'Error',
+            description: `File ${file.name} is too large. Maximum size is 5MB.`,
+            variant: 'destructive'
+          });
+          continue;
+        }
+
+        // Generate unique filename
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${assignmentId}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+
+        // Upload to Supabase Storage
+        const { error: uploadError } = await supabase.storage
+          .from('question-attachments')
+          .upload(fileName, file);
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          toast({
+            title: 'Error',
+            description: `Failed to upload ${file.name}`,
+            variant: 'destructive'
+          });
+          continue;
+        }
+
+        // Get public URL
+        const { data } = supabase.storage
+          .from('question-attachments')
+          .getPublicUrl(fileName);
+
+        if (data?.publicUrl) {
+          uploadedUrls.push(data.publicUrl);
+        }
+      }
+
+      // Update form data with new attachments
+      setFormData({
+        ...formData,
+        attachments: [...(formData.attachments || []), ...uploadedUrls]
+      });
+
+      toast({
+        title: 'Success',
+        description: `Uploaded ${uploadedUrls.length} image(s) successfully`
+      });
+
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to upload images',
+        variant: 'destructive'
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    const newAttachments = formData.attachments?.filter((_, i) => i !== index) || [];
+    setFormData({ ...formData, attachments: newAttachments });
   };
 
   if (loading || !assignment) {
@@ -395,6 +488,23 @@ const ManageQuestions: React.FC = () => {
                         Instructions: {question.instructions}
                       </p>
                     )}
+                    
+                    {question.attachments && question.attachments.length > 0 && (
+                      <div className="mt-2">
+                        <p className="text-sm font-medium mb-2">Attachments:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {question.attachments.map((attachment, imgIndex) => (
+                            <div key={imgIndex} className="relative">
+                              <img
+                                src={attachment}
+                                alt={`Attachment ${imgIndex + 1}`}
+                                className="w-16 h-16 object-cover rounded border"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </Card>
               ))
@@ -532,6 +642,67 @@ const ManageQuestions: React.FC = () => {
                       rows={2}
                     />
                   </div>
+
+                  {/* Image Upload for Task/Project Questions */}
+                  {formData.kind === 'task' && (
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Task Images/References</label>
+                      <div className="space-y-4">
+                        {/* Upload Area */}
+                        <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-muted-foreground/50 transition-colors">
+                          <input
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                            id="task-image-upload"
+                            disabled={uploading}
+                          />
+                          <label
+                            htmlFor="task-image-upload"
+                            className="cursor-pointer flex flex-col items-center space-y-2"
+                          >
+                            <Upload className="w-8 h-8 text-muted-foreground" />
+                            <div>
+                              <p className="text-sm font-medium">
+                                {uploading ? 'Uploading...' : 'Click to upload images'}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                JPG, PNG, GIF up to 5MB each
+                              </p>
+                            </div>
+                          </label>
+                        </div>
+                        
+                        {/* Uploaded Images Preview */}
+                        {formData.attachments && formData.attachments.length > 0 && (
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium">Uploaded Images:</p>
+                            <div className="grid grid-cols-2 gap-4">
+                              {formData.attachments.map((attachment, index) => (
+                                <div key={index} className="relative">
+                                  <img
+                                    src={attachment}
+                                    alt={`Task reference ${index + 1}`}
+                                    className="w-full h-32 object-cover rounded border"
+                                  />
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => removeAttachment(index)}
+                                    className="absolute top-2 right-2 h-6 w-6 p-0"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Marks */}
                   <div>

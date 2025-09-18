@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Upload, File, X } from 'lucide-react';
+import { Upload, File, X, Download, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Question, Answer } from '@/types/clp';
 
@@ -287,8 +287,57 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   };
 
   const renderTaskQuestion = () => {
+    // Get task attachments from question metadata
+    const taskAttachments = (question.metadata as any)?.attachments || [];
+
     return (
       <div className="space-y-6">
+        {/* Task Reference Images */}
+        {taskAttachments.length > 0 && (
+          <div>
+            <Label className="text-sm font-medium mb-2 block">
+              Task Reference Images
+            </Label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {taskAttachments.map((attachment: string, index: number) => (
+                <div key={index} className="relative group">
+                  <img
+                    src={attachment}
+                    alt={`Task reference ${index + 1}`}
+                    className="w-full h-32 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => window.open(attachment, '_blank')}
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 rounded transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => window.open(attachment, '_blank')}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => {
+                          const link = document.createElement('a');
+                          link.href = attachment;
+                          link.download = `task-reference-${index + 1}.jpg`;
+                          link.click();
+                        }}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Download className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Text Response */}
         <div>
           <Label className="text-sm font-medium mb-2 block">
@@ -312,7 +361,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         {/* File Upload */}
         <div>
           <Label className="text-sm font-medium mb-2 block">
-            Attachments
+            Your Attachments
           </Label>
           
           {!readonly && (
