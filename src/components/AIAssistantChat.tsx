@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -22,6 +23,7 @@ const AIAssistantChat = () => {
   const { user } = useAuth();
   const { profile, hasActiveSubscription, getRemainingDays, refreshProfile, incrementAnalytics } = useProfile();
   const { toast } = useToast();
+  const location = useLocation();
   
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -29,6 +31,9 @@ const AIAssistantChat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  // Hide AI assistant on course content view pages
+  const shouldHideAssistant = location.pathname.startsWith('/course/');
 
   const hasValidSubscription = hasActiveSubscription();
 
@@ -181,6 +186,11 @@ const AIAssistantChat = () => {
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
+
+  // Don't render AI assistant on course content view pages
+  if (shouldHideAssistant) {
+    return null;
+  }
 
   if (!isOpen) {
     return (
