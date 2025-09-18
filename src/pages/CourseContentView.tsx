@@ -492,45 +492,29 @@ const CourseContentView: React.FC = () => {
 
     useEffect(() => {
       const loadChecklistProgress = async () => {
-        console.log('Loading checklist progress for:', chapterId, 'with items:', checklistItems);
-        
         if (!checklistItems || checklistItems.length === 0) {
-          console.log('No checklist items found, setting loading to false');
           setLoading(false);
           return;
         }
 
-        console.log('Creating checklist items directly (bypassing database for now)');
-        
-        // Create checklist items directly without database call for now
-        const directChecklist = checklistItems.map((item, index) => ({
+        // Create checklist items from the actual database data
+        const dynamicChecklist = checklistItems.map((item, index) => ({
           id: `item_${index}`,
           text: item,
           completed: false
         }));
         
-        console.log('Direct checklist created:', directChecklist);
-        setChecklistWithProgress(directChecklist);
+        setChecklistWithProgress(dynamicChecklist);
         setLoading(false);
-        
-        // TODO: Re-enable database integration later
+
+        // TODO: Later we can re-enable database progress tracking
         // try {
-        //   setLoading(true);
-        //   let progress = [];
-        //   try {
-        //     progress = await getChecklistProgress(chapterId);
-        //     console.log('Progress data received:', progress);
-        //   } catch (progressError) {
-        //     console.error('Error getting progress, using empty array:', progressError);
-        //     progress = [];
-        //   }
-        //   
+        //   const progress = await getChecklistProgress(chapterId);
         //   const mergedChecklist = mergeChecklistWithProgress(checklistItems, progress);
         //   setChecklistWithProgress(mergedChecklist);
         // } catch (error) {
-        //   console.error('Error in loadChecklistProgress:', error);
-        // } finally {
-        //   setLoading(false);
+        //   console.error('Error loading progress:', error);
+        //   setChecklistWithProgress(dynamicChecklist);
         // }
       };
 
