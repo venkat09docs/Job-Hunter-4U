@@ -77,22 +77,6 @@ const CourseCard: React.FC<{
             </p>
           </div>
           
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
-                <span>8 hours</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Users className="h-4 w-4" />
-                <span>124</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-1">
-              <Star className="h-4 w-4 fill-amber text-amber" />
-              <span className="text-sm font-medium">4.8</span>
-            </div>
-          </div>
           
           <div className="flex items-start justify-between pt-2 gap-3">
             <div className="flex flex-wrap gap-2 flex-1">
