@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { MessageSquare, Send, Bot, User, Loader2, Sparkles, Mic, MicOff } from "lucide-react";
+import { MessageSquare, Send, Bot, User, Loader2, Mic, MicOff, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ResizableLayout } from "@/components/ResizableLayout";
@@ -133,6 +133,18 @@ const CrackInterview = () => {
     }
   };
 
+  const startOver = () => {
+    setMessages([
+      {
+        id: '1',
+        type: 'assistant',
+        content: 'Hello! I\'m your AI Interview Coach. I\'m here to help you prepare for interviews, practice common questions, and build confidence. What type of interview are you preparing for?',
+        timestamp: new Date()
+      }
+    ]);
+    setInputMessage('');
+  };
+
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', { 
       hour: '2-digit', 
@@ -144,29 +156,38 @@ const CrackInterview = () => {
     <ResizableLayout>
       <div className="flex flex-col h-full bg-gradient-to-br from-background via-background to-primary/5">
         <div className="flex-shrink-0 border-b bg-card/50 backdrop-blur-sm">
-          <div className="flex items-center gap-4 p-6">
+          <div className="flex items-center justify-between p-4">
             <div className="flex-1">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                 Crack Interview
               </h1>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 AI-powered interview preparation and practice
               </p>
             </div>
+            <Button
+              onClick={startOver}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2 hover:bg-destructive hover:text-destructive-foreground"
+            >
+              <RotateCcw className="h-4 w-4" />
+              Start Over
+            </Button>
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col overflow-hidden p-6">
+        <div className="flex-1 flex flex-col overflow-hidden p-3">
           <Card className="flex-1 flex flex-col overflow-hidden border-0 shadow-xl bg-card/50 backdrop-blur-sm">
-            <CardHeader className="flex-shrink-0 pb-4">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <MessageSquare className="h-5 w-5 text-primary" />
+            <CardHeader className="flex-shrink-0 pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <MessageSquare className="h-4 w-4 text-primary" />
                 Interview Coach Chat
               </CardTitle>
             </CardHeader>
             
             <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
-              <ScrollArea ref={scrollAreaRef} className="flex-1 px-6">
+              <ScrollArea ref={scrollAreaRef} className="flex-1 px-4">
                 <div className="space-y-4 pb-4">
                   {messages.map((message) => (
                     <div
@@ -175,21 +196,21 @@ const CrackInterview = () => {
                         message.type === 'user' ? 'flex-row-reverse' : 'flex-row'
                       }`}
                     >
-                      <Avatar className={`w-8 h-8 ${message.type === 'user' ? 'bg-primary' : 'bg-gradient-to-r from-purple-500 to-pink-500'}`}>
+                      <Avatar className={`w-8 h-8 flex-shrink-0 ${message.type === 'user' ? 'bg-primary' : 'bg-gradient-to-r from-purple-500 to-pink-500'}`}>
                         <AvatarFallback className="text-white text-xs">
                           {message.type === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
                         </AvatarFallback>
                       </Avatar>
                       
-                      <div className={`flex flex-col max-w-[70%] ${message.type === 'user' ? 'items-end' : 'items-start'}`}>
+                      <div className={`flex flex-col max-w-[85%] ${message.type === 'user' ? 'items-end' : 'items-start'}`}>
                         <div
-                          className={`rounded-2xl px-4 py-2 ${
+                          className={`rounded-2xl px-4 py-3 ${
                             message.type === 'user'
                               ? 'bg-primary text-primary-foreground'
                               : 'bg-muted border'
                           }`}
                         >
-                          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                          <p className="text-base leading-relaxed whitespace-pre-wrap">{message.content}</p>
                         </div>
                         <span className="text-xs text-muted-foreground mt-1">
                           {formatTime(message.timestamp)}
@@ -205,30 +226,30 @@ const CrackInterview = () => {
                           <Bot className="h-4 w-4" />
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex items-center gap-2 bg-muted border rounded-2xl px-4 py-2">
+                      <div className="flex items-center gap-2 bg-muted border rounded-2xl px-4 py-3">
                         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">AI is thinking...</span>
+                        <span className="text-base text-muted-foreground">AI is thinking...</span>
                       </div>
                     </div>
                   )}
                 </div>
               </ScrollArea>
 
-              <div className="flex-shrink-0 p-6 border-t bg-background/50">
+              <div className="flex-shrink-0 p-4 border-t bg-background/50">
                 <div className="flex gap-2">
                   <Input
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Ask me anything about interview preparation..."
-                    className="flex-1 border-primary/20 focus:border-primary/40"
+                    className="flex-1 border-primary/20 focus:border-primary/40 text-base min-h-[44px]"
                     disabled={isLoading || isRecording || isProcessing}
                   />
                   <Button
                     onClick={handleVoiceToggle}
                     disabled={isLoading || isProcessing}
                     variant={isRecording ? "destructive" : "outline"}
-                    className={`${isRecording ? 'animate-pulse' : ''}`}
+                    className={`min-h-[44px] min-w-[44px] ${isRecording ? 'animate-pulse' : ''}`}
                   >
                     {isProcessing ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -241,7 +262,7 @@ const CrackInterview = () => {
                   <Button 
                     onClick={sendMessage} 
                     disabled={!inputMessage.trim() || isLoading || isRecording || isProcessing}
-                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 min-h-[44px] min-w-[44px]"
                   >
                     <Send className="h-4 w-4" />
                   </Button>
