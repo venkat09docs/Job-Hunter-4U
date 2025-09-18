@@ -5,7 +5,16 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { MessageSquare, Send, Bot, User, Loader2, Mic, MicOff, RotateCcw } from "lucide-react";
+import { 
+  MessageSquare, 
+  Send, 
+  Bot, 
+  User, 
+  Loader2, 
+  Mic, 
+  MicOff, 
+  RotateCcw 
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ResizableLayout } from "@/components/ResizableLayout";
