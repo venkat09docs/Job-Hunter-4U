@@ -57,8 +57,8 @@ import PricingDialog from "./PricingDialog";
 
 const getMainItems = (isAdmin: boolean, isInstituteAdmin: boolean, isRecruiter: boolean) => [
   { title: "Dashboard", url: "/dashboard", icon: Home, featureKey: null },
-  { title: "Profile Level Up", url: "/dashboard/level-up", icon: Trophy, featureKey: null },
   { title: "Skill Level Up", url: "/dashboard/skill-level", icon: Award, featureKey: null },
+  { title: "Profile Level Up", url: "/dashboard/level-up", icon: Trophy, featureKey: null },
   { title: "Crack Interview", url: "/dashboard/crack-interview", icon: MessageSquare, featureKey: null },
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap, featureKey: "digital-career-hub" },
   { title: "Resource Library", url: "/dashboard/library", icon: Archive, featureKey: "page_resources_library" },
@@ -515,8 +515,8 @@ export function AppSidebar() {
                 </h3>
               )}
               <div className="space-y-1">
-                {/* First show items up to Profile Level Up */}
-                {getMainItems(isAdmin, isInstituteAdmin, isRecruiter).slice(0, 3).map((item) => {
+                {/* First 4 items: Dashboard, Skill Level Up, Profile Level Up, Crack Interview */}
+                {getMainItems(isAdmin, isInstituteAdmin, isRecruiter).slice(0, 4).map((item) => {
                   const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
                   // Don't pass isPremium for Skill Level Up since it has custom subscription handling
                   const shouldPassPremium = item.title !== "Skill Level Up" ? isPremium : false;
@@ -570,7 +570,7 @@ export function AppSidebar() {
                 </div>
 
                 {/* Remaining main menu items */}
-                {getMainItems(isAdmin, isInstituteAdmin, isRecruiter).slice(3).map((item) => {
+                {getMainItems(isAdmin, isInstituteAdmin, isRecruiter).slice(4).map((item) => {
                   const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
                   // Don't pass isPremium for Skill Level Up since it has custom subscription handling
                   const shouldPassPremium = item.title !== "Skill Level Up" ? isPremium : false;
