@@ -5885,7 +5885,7 @@ export type Database = {
           chapter_id_param: string
           checklist_item_id_param: string
           is_completed_param: boolean
-          user_id_param?: string
+          user_id_param: string
         }
         Returns: undefined
       }
