@@ -179,10 +179,18 @@ const CourseContentManagement = () => {
 
       if (chapterType === 'video') {
         chapterData.video_url = chapterVideoUrl;
+        chapterData.content_data = {};
       } else if (chapterType === 'article') {
         chapterData.article_content = chapterArticleContent;
+        chapterData.content_data = {};
       } else if (chapterType === 'checklist') {
+        if (checklistItems.length === 0) {
+          toast.error('Please add at least one checklist item');
+          return;
+        }
         chapterData.content_data = { checklist_items: checklistItems };
+      } else {
+        chapterData.content_data = {};
       }
 
       const { data, error } = await supabase
@@ -299,10 +307,18 @@ const CourseContentManagement = () => {
 
       if (chapterType === 'video') {
         chapterData.video_url = chapterVideoUrl;
+        chapterData.content_data = {};
       } else if (chapterType === 'article') {
         chapterData.article_content = chapterArticleContent;
+        chapterData.content_data = {};
       } else if (chapterType === 'checklist') {
+        if (checklistItems.length === 0) {
+          toast.error('Please add at least one checklist item');
+          return;
+        }
         chapterData.content_data = { checklist_items: checklistItems };
+      } else {
+        chapterData.content_data = {};
       }
 
       const { error } = await supabase
