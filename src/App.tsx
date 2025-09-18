@@ -83,8 +83,7 @@ import AttemptAssignment from "./pages/career-level/AttemptAssignment";
 import AttemptResults from "./pages/career-level/AttemptResults";
 import CourseContentView from "./pages/CourseContentView";
 import CourseContentManagement from "./pages/CourseContentManagement";
-
-
+import CrackInterview from "./pages/CrackInterview";
 
 import NotificationPreferences from "./pages/NotificationPreferences";
 import AllNotifications from "./pages/AllNotifications";
@@ -521,6 +520,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <ProgressLevelUp />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/crack-interview" 
+            element={
+              <ProtectedRoute>
+                <CrackInterview />
               </ProtectedRoute>
             } 
           />
