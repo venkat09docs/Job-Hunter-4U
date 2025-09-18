@@ -2744,7 +2744,7 @@ ${resumeData.personalDetails.fullName}`;
                     </Button>
                     
                     {generatedResumeText && (
-                      <div className="mt-6 space-y-3">
+                      <div className="mt-6 w-full space-y-3">
                         <div className="flex items-center justify-between">
                           <Label className="text-lg font-semibold">Generated Resume:</Label>
                           <Button
@@ -2757,11 +2757,11 @@ ${resumeData.personalDetails.fullName}`;
                             Copy
                           </Button>
                         </div>
-                        <div className="border rounded-lg bg-white shadow-sm">
+                        <div className="w-full border rounded-lg bg-white shadow-sm">
                           <Textarea
                             value={generatedResumeText}
                             readOnly
-                            className="min-h-[500px] max-h-[600px] p-6 text-sm leading-relaxed resize-none border-0 focus:ring-0 focus:border-0 whitespace-pre-wrap"
+                            className="w-full min-h-[350px] max-h-[400px] p-6 text-sm leading-relaxed resize-none border-0 focus:ring-0 focus:border-0 whitespace-pre-wrap overflow-y-auto"
                             placeholder="Your generated resume will appear here..."
                             style={{
                               fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
