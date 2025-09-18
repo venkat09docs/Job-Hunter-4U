@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   MessageSquare, 
   Send, 
@@ -29,16 +30,35 @@ interface ChatMessage {
 
 const CrackInterview = () => {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const { toast } = useToast();
   
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: '1',
-      type: 'assistant',
-      content: 'Hello! I\'m your AI Interview Coach. I\'m here to help you prepare for interviews, practice common questions, and build confidence. What type of interview are you preparing for?',
-      timestamp: new Date()
-    }
-  ]);
+  // Conversation starter questions for interview practice
+  const starterQuestions = [
+    "Tell me about yourself and your background",
+    "Why are you interested in this role?",
+    "What are your greatest strengths?", 
+    "Describe a challenging project you worked on",
+    "Where do you see yourself in 5 years?",
+    "Why should we hire you?",
+    "What's your biggest weakness?",
+    "Tell me about a time you overcame a difficult situation"
+  ];
+
+  const getInitialMessage = () => ({
+    id: '1',
+    type: 'assistant' as const,
+    content: `Hello! I'm your AI Interview Coach. I'm here to help you prepare for interviews, practice common questions, and build confidence. 
+    
+Here are some popular interview questions you can practice:
+
+${starterQuestions.map((q, index) => `${index + 1}. ${q}`).join('\n')}
+
+What type of interview are you preparing for, or would you like to practice with any of these questions?`,
+    timestamp: new Date()
+  });
+
+  const [messages, setMessages] = useState<ChatMessage[]>([getInitialMessage()]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -143,14 +163,7 @@ const CrackInterview = () => {
   };
 
   const startOver = () => {
-    setMessages([
-      {
-        id: '1',
-        type: 'assistant',
-        content: 'Hello! I\'m your AI Interview Coach. I\'m here to help you prepare for interviews, practice common questions, and build confidence. What type of interview are you preparing for?',
-        timestamp: new Date()
-      }
-    ]);
+    setMessages([getInitialMessage()]);
     setInputMessage('');
   };
 
@@ -205,10 +218,22 @@ const CrackInterview = () => {
                         message.type === 'user' ? 'flex-row-reverse' : 'flex-row'
                       }`}
                     >
-                      <Avatar className={`w-8 h-8 flex-shrink-0 ${message.type === 'user' ? 'bg-primary' : 'bg-gradient-to-r from-purple-500 to-pink-500'}`}>
-                        <AvatarFallback className="text-white text-xs">
-                          {message.type === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
-                        </AvatarFallback>
+                      <Avatar className={`w-8 h-8 flex-shrink-0 ${message.type === 'user' ? 'bg-primary' : 'bg-transparent'}`}>
+                        {message.type === 'user' ? (
+                          profile?.profile_image_url ? (
+                            <AvatarImage src={profile.profile_image_url} alt="User" />
+                          ) : (
+                            <AvatarFallback className="bg-primary text-white text-xs">
+                              <User className="h-4 w-4" />
+                            </AvatarFallback>
+                          )
+                        ) : (
+                          <AvatarImage 
+                            src="/lovable-uploads/2bae437e-b17b-431f-a403-e8a375913444.png" 
+                            alt="AI Career Level Up Coach"
+                            className="object-contain"
+                          />
+                        )}
                       </Avatar>
                       
                       <div className={`flex flex-col max-w-[85%] ${message.type === 'user' ? 'items-end' : 'items-start'}`}>
@@ -230,10 +255,12 @@ const CrackInterview = () => {
                   
                   {isLoading && (
                     <div className="flex gap-3">
-                      <Avatar className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500">
-                        <AvatarFallback className="text-white">
-                          <Bot className="h-4 w-4" />
-                        </AvatarFallback>
+                      <Avatar className="w-8 h-8 bg-transparent">
+                        <AvatarImage 
+                          src="/lovable-uploads/2bae437e-b17b-431f-a403-e8a375913444.png" 
+                          alt="AI Career Level Up Coach"
+                          className="object-contain"
+                        />
                       </Avatar>
                       <div className="flex items-center gap-2 bg-muted border rounded-2xl px-4 py-3">
                         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />

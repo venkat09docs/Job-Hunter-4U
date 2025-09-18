@@ -25,6 +25,14 @@ const AIAssistantChat = () => {
   const { toast } = useToast();
   const location = useLocation();
   
+  // Hide AI Assistant Chat on specific pages
+  const hideOnRoutes = ['/dashboard/crack-interview'];
+  const shouldHide = hideOnRoutes.some(route => location.pathname === route);
+  
+  if (shouldHide) {
+    return null;
+  }
+  
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState("");
