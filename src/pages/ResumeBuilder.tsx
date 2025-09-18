@@ -26,6 +26,7 @@ import { GenerateResumeSummaryDialog } from '@/components/GenerateResumeSummaryD
 import { GenerateKeySkillsDialog } from '@/components/GenerateKeySkillsDialog';
 import { GenerateAchievementsDialog } from '@/components/GenerateAchievementsDialog';
 import { WriteEffectiveResumeDialog } from '@/components/WriteEffectiveResumeDialog';
+import { ResumePrerequisiteDialog } from '@/components/ResumePrerequisiteDialog';
 
 interface Experience {
   company: string;
@@ -82,6 +83,7 @@ const ResumeBuilder = () => {
   const [currentExperienceIndex, setCurrentExperienceIndex] = useState<number>(0);
   const [showWriteEffectiveResumeDialog, setShowWriteEffectiveResumeDialog] = useState(false);
   const [generatedResumeText, setGeneratedResumeText] = useState("");
+  const [showPrerequisiteDialog, setShowPrerequisiteDialog] = useState(false);
   
   // Job Application Tracker notes
   const JOB_TRACKER_TOOL_ID = '343aeaa1-fe2d-40fb-b660-a2064774bee3';
@@ -344,6 +346,30 @@ const ResumeBuilder = () => {
       awards: prev.awards.map((award, i) => i === index ? value : award)
     }));
   }, []);
+
+  // Helper functions to check completion status
+  const hasCompletedKeySkills = useCallback(() => {
+    return resumeData.skills.some(skill => skill.trim() !== '');
+  }, [resumeData.skills]);
+
+  const hasCompletedExperience = useCallback(() => {
+    return resumeData.experience.some(exp => 
+      exp.company.trim() !== '' && 
+      exp.role.trim() !== '' && 
+      exp.duration.trim() !== ''
+    );
+  }, [resumeData.experience]);
+
+  const handleGenerateResumeSummaryClick = useCallback(() => {
+    const hasSkills = hasCompletedKeySkills();
+    const hasExperience = hasCompletedExperience();
+    
+    if (hasSkills && hasExperience) {
+      setShowResumeSummaryDialog(true);
+    } else {
+      setShowPrerequisiteDialog(true);
+    }
+  }, [hasCompletedKeySkills, hasCompletedExperience]);
 
 
   const generateCoverLetter = async () => {
@@ -2877,16 +2903,16 @@ ${resumeData.personalDetails.fullName}`;
                                  {activeSuggestionSection === 'summary' && (
                                    <div>
                                       
-                                       {/* Generate Resume Summary Button */}
-                                       <div className="mt-4 pt-3 border-t">
-                                         <Button 
-                                           variant="default" 
-                                           size="sm" 
-                                           className="w-full gap-2"
-                                           onClick={() => setShowResumeSummaryDialog(true)}
-                                         >
-                                           <Sparkles className="h-4 w-4" />
-                                           Generate Resume Summary
+                                        {/* Generate Resume Summary Button */}
+                                        <div className="mt-4 pt-3 border-t">
+                                          <Button 
+                                            variant="default" 
+                                            size="sm" 
+                                            className="w-full gap-2"
+                                            onClick={handleGenerateResumeSummaryClick}
+                                          >
+                                            <Sparkles className="h-4 w-4" />
+                                            Generate Resume Summary
                                          </Button>
                                        </div>
                                    </div>
@@ -3179,6 +3205,15 @@ ${resumeData.personalDetails.fullName}`;
           </Tabs>
         </div>
       </main>
+
+      {/* Prerequisite Check Dialog */}
+      <ResumePrerequisiteDialog
+        open={showPrerequisiteDialog}
+        onOpenChange={setShowPrerequisiteDialog}
+        onProceed={() => setShowResumeSummaryDialog(true)}
+        hasKeySkills={hasCompletedKeySkills()}
+        hasExperience={hasCompletedExperience()}
+      />
 
       {/* Generate Resume Summary Dialog */}
       <GenerateResumeSummaryDialog
