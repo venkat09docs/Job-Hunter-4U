@@ -61,7 +61,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
   });
   
   const { isAdmin, role: userRole } = useRole();
-  const canManageContent = isAdmin || userRole === 'recruiter' || userRole === 'institute_admin';
+  const canManageContent = isAdmin || userRole === 'recruiter'; // Only admins and recruiters
   const { toast } = useToast();
   const {
     loading,
@@ -503,7 +503,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
 
         {!canManageContent ? (
           <div className="text-center py-8">
-            <p>Only administrators, recruiters, and institute admins can manage course content.</p>
+            <p>Only super administrators and recruiters can manage course content.</p>
             <p className="text-sm text-muted-foreground mt-2">Your current role: {userRole}</p>
             <Button onClick={() => onOpenChange(false)} className="mt-4">
               Close
@@ -777,12 +777,12 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="article">📝 Article</SelectItem>
-                          <SelectItem value="checklist">✅ Checklist</SelectItem>
-                          {userRole === 'admin' && <SelectItem value="video">🎥 Video</SelectItem>}
+                          {isAdmin && <SelectItem value="checklist">✅ Checklist</SelectItem>}
+                          {isAdmin && <SelectItem value="video">🎥 Video</SelectItem>}
                         </SelectContent>
                       </Select>
                       <p className="text-xs text-muted-foreground mt-1">
-                        User role: {userRole} | Available options: Article, Checklist{userRole === 'admin' && ', Video'}
+                        User role: {userRole} | Available options: Article{isAdmin && ', Checklist, Video'}
                       </p>
                     </div>
                   </div>
