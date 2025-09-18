@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useBlocker } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -35,8 +35,40 @@ const AttemptAssignment = () => {
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
+  const [showNavigationWarning, setShowNavigationWarning] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
   const [timeExpired, setTimeExpired] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Block navigation when assignment is in progress
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      currentLocation.pathname !== nextLocation.pathname && 
+      !timeExpired && 
+      !isSubmitting &&
+      currentAttempt?.status === 'started'
+  );
+
+  useEffect(() => {
+    if (blocker.state === 'blocked') {
+      setPendingNavigation(() => () => blocker.proceed());
+      setShowNavigationWarning(true);
+    }
+  }, [blocker]);
+
+  // Handle page refresh/close
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (currentAttempt?.status === 'started' && !timeExpired && !isSubmitting) {
+        e.preventDefault();
+        e.returnValue = 'You are in the middle of an assignment. Your progress will be lost if you leave.';
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [currentAttempt?.status, timeExpired, isSubmitting]);
 
   useEffect(() => {
     if (!attemptId) return;
@@ -200,6 +232,8 @@ const AttemptAssignment = () => {
     } finally {
       setIsSubmitting(false);
       setShowSubmitConfirm(false);
+      setShowNavigationWarning(false);
+      setPendingNavigation(null);
     }
   };
 
@@ -282,6 +316,27 @@ const AttemptAssignment = () => {
     ).length;
   };
 
+  const handleNavigationWarning = (shouldSubmit: boolean) => {
+    if (shouldSubmit) {
+      handleSubmitAttempt();
+    } else {
+      setShowNavigationWarning(false);
+      setPendingNavigation(null);
+      if (blocker.state === 'blocked') {
+        blocker.reset();
+      }
+    }
+  };
+
+  const handleBackToAssignments = () => {
+    if (currentAttempt?.status === 'started' && !timeExpired && !isSubmitting) {
+      setPendingNavigation(() => () => navigate('/dashboard/skill-level?tab=my-assignments'));
+      setShowNavigationWarning(true);
+    } else {
+      navigate('/dashboard/skill-level?tab=my-assignments');
+    }
+  };
+
   if (loading || !assignment || !currentAttempt) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -304,7 +359,7 @@ const AttemptAssignment = () => {
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
         <div className="container flex h-16 items-center justify-between px-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/skill-level?tab=my-assignments')}>
+            <Button variant="ghost" size="sm" onClick={handleBackToAssignments}>
               <Home className="h-4 w-4" />
               <span className="hidden sm:inline ml-2">Back to Assignments</span>
             </Button>
@@ -397,6 +452,57 @@ const AttemptAssignment = () => {
                 )}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Navigation Warning Dialog */}
+        {showNavigationWarning && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <Card className="w-full max-w-md mx-4">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-amber-600" />
+                  Assignment in Progress
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2 text-sm">
+                  <p>You are currently attempting an assignment.</p>
+                  <p>You have answered {getAnsweredQuestionsCount()} out of {questions.length} questions.</p>
+                  <p className="font-medium text-amber-600">
+                    Do you want to submit your assignment or continue working on it?
+                  </p>
+                </div>
+                
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => handleNavigationWarning(false)}
+                    className="flex-1"
+                    disabled={isSubmitting}
+                  >
+                    Continue Assignment
+                  </Button>
+                  <Button
+                    onClick={() => handleNavigationWarning(true)}
+                    disabled={isSubmitting}
+                    className="flex-1 bg-green-600 hover:bg-green-700"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Clock className="w-4 h-4 mr-2 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4 mr-2" />
+                        Submit Assignment
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         )}
 
