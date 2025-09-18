@@ -33,7 +33,6 @@ const CrackInterview = () => {
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when new messages are added
   useEffect(() => {
     if (scrollAreaRef.current) {
       const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
@@ -118,22 +117,9 @@ const CrackInterview = () => {
     });
   };
 
-  const quickStarterQuestions = [
-    "Help me practice behavioral interview questions",
-    "What are common technical interview questions?",
-    "How do I answer 'Tell me about yourself'?",
-    "Help me prepare for a software engineer interview",
-    "What questions should I ask the interviewer?"
-  ];
-
-  const handleQuickQuestion = (question: string) => {
-    setInputMessage(question);
-  };
-
   return (
     <ResizableLayout>
       <div className="flex flex-col h-full bg-gradient-to-br from-background via-background to-primary/5">
-        {/* Header */}
         <div className="flex-shrink-0 border-b bg-card/50 backdrop-blur-sm">
           <div className="flex items-center gap-4 p-6">
             <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500">
@@ -150,7 +136,6 @@ const CrackInterview = () => {
           </div>
         </div>
 
-        {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden p-6">
           <Card className="flex-1 flex flex-col overflow-hidden border-0 shadow-xl bg-card/50 backdrop-blur-sm">
             <CardHeader className="flex-shrink-0 pb-4">
@@ -161,7 +146,6 @@ const CrackInterview = () => {
             </CardHeader>
             
             <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
-              {/* Messages */}
               <ScrollArea ref={scrollAreaRef} className="flex-1 px-6">
                 <div className="space-y-4 pb-4">
                   {messages.map((message) => (
@@ -210,27 +194,6 @@ const CrackInterview = () => {
                 </div>
               </ScrollArea>
 
-              {/* Quick Starter Questions */}
-              {messages.length === 1 && (
-                <div className="px-6 py-4 border-t bg-muted/20">
-                  <p className="text-xs text-muted-foreground mb-2">Quick starters:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {quickStarterQuestions.map((question, index) => (
-                      <Button
-                        key={index}
-                        variant="outline"
-                        size="sm"
-                        className="text-xs h-8 border-primary/20 hover:border-primary/40"
-                        onClick={() => handleQuickQuestion(question)}
-                      >
-                        {question}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Input Area */}
               <div className="flex-shrink-0 p-6 border-t bg-background/50">
                 <div className="flex gap-2">
                   <Input
