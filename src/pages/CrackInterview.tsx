@@ -33,6 +33,17 @@ const CrackInterview = () => {
   const { profile } = useProfile();
   const { toast } = useToast();
   
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [inputMessage, setInputMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  const { isRecording, isProcessing, startRecording, stopRecording } = useVoiceRecorder({
+    onTranscriptionComplete: (text: string) => {
+      setInputMessage(text);
+    }
+  });
+  
   // Conversation starter questions for interview practice
   const starterQuestions = [
     "Tell me about yourself and your background",
@@ -49,7 +60,7 @@ const CrackInterview = () => {
     id: '1',
     type: 'assistant' as const,
     content: `Hello! I'm your AI Interview Coach. I'm here to help you prepare for interviews, practice common questions, and build confidence. 
-    
+
 Here are some popular interview questions you can practice:
 
 ${starterQuestions.map((q, index) => `${index + 1}. ${q}`).join('\n')}
@@ -58,16 +69,12 @@ What type of interview are you preparing for, or would you like to practice with
     timestamp: new Date()
   });
 
-  const [messages, setMessages] = useState<ChatMessage[]>([getInitialMessage()]);
-  const [inputMessage, setInputMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-
-  const { isRecording, isProcessing, startRecording, stopRecording } = useVoiceRecorder({
-    onTranscriptionComplete: (text: string) => {
-      setInputMessage(text);
+  // Initialize messages on component mount
+  useEffect(() => {
+    if (messages.length === 0) {
+      setMessages([getInitialMessage()]);
     }
-  });
+  }, []);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
