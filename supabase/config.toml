@@ -38,3 +38,9 @@ verify_jwt = false
 
 [functions.instamojo-create-order-debug]
 verify_jwt = false
+
+[functions.interview-coach-chat]
+verify_jwt = true
+
+[functions.voice-to-text]
+verify_jwt = true
