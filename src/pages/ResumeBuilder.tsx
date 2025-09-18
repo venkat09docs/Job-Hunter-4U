@@ -68,9 +68,7 @@ const ResumeBuilder = () => {
   const navigate = useNavigate();
   const [status, setStatus] = useState<StatusType>('draft');
   const [loading, setLoading] = useState(false);
-  const [aiSuggestions, setAiSuggestions] = useState('');
   const [coverLetterSuggestions, setCoverLetterSuggestions] = useState('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const [showCoverLetter, setShowCoverLetter] = useState(false);
   const [showCoverLetterFields, setShowCoverLetterFields] = useState(false);
   const [coverLetterName, setCoverLetterName] = useState('');
@@ -344,51 +342,6 @@ const ResumeBuilder = () => {
     }));
   }, []);
 
-  const generateResumeSuggestions = async () => {
-    if (showSuggestions) {
-      // Close suggestions if already open
-      setShowSuggestions(false);
-      setAiSuggestions('');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Generate resume suggestions with notes from "Write an Effective Resume" tool
-      let suggestions = `Based on your information, here are some resume enhancement suggestions:
-
-**Professional Summary Enhancement:**
-Dynamic professional with ${resumeData.experience.length} years of experience in ${resumeData.skills.slice(0, 3).join(', ')}. Proven track record of delivering results and driving innovation.
-
-**Experience Improvements:**
-- Quantify your achievements with specific numbers and metrics
-- Use action verbs like "Led," "Implemented," "Achieved," "Optimized"
-- Focus on results and impact rather than just responsibilities
-
-**Skills Optimization:**
-Consider adding these relevant skills: Project Management, Data Analysis, Team Leadership
-
-**Additional Suggestions:**
-- Include relevant certifications prominently
-- Tailor your resume to specific job descriptions
-- Keep it concise but comprehensive (1-2 pages)`;
-
-      setAiSuggestions(suggestions);
-      setShowSuggestions(true);
-      
-      toast({
-        title: 'Resume suggestions generated!',
-        description: 'Review and edit the AI-generated content below.',
-      });
-    } catch (error) {
-      toast({
-        title: 'Error generating suggestions',
-        description: 'Please try again later.',
-        variant: 'destructive'
-      });
-    }
-    setLoading(false);
-  };
 
   const generateCoverLetter = async () => {
     setLoading(true);
@@ -2781,12 +2734,11 @@ ${resumeData.personalDetails.fullName}`;
                   {/* Action Buttons */}
                   <div className="flex gap-4">
                     <Button 
-                      onClick={generateResumeSuggestions}
-                      disabled={loading}
-                      className="gap-2"
+                      onClick={() => window.open('/dashboard/digital-career-hub?toolId=b1d7a888-49b8-412b-861b-b6d850eda7a4', '_blank')}
+                      className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
                     >
-                      <Sparkles className="h-4 w-4" />
-                      {showSuggestions ? 'Close AI Resume Suggestions' : 'Generate Resume Suggestions'}
+                      <FileEdit className="h-4 w-4" />
+                      Write an Effective Resume
                     </Button>
                     <Button 
                       onClick={saveFinalVersion}
@@ -2823,143 +2775,6 @@ ${resumeData.personalDetails.fullName}`;
                     </DropdownMenu>
                   </div>
 
-                  {/* AI Suggestions */}
-                  {showSuggestions && (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {/* Left Column - AI Suggestions */}
-                      <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                          <div>
-                            <CardTitle>AI Resume Suggestions</CardTitle>
-                            <CardDescription>
-                              Review these AI-generated suggestions
-                            </CardDescription>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              navigator.clipboard.writeText(aiSuggestions);
-                              toast({
-                                title: 'Copied to clipboard!',
-                                description: 'Resume suggestions have been copied.',
-                              });
-                            }}
-                            className="gap-2"
-                          >
-                            <Copy className="h-4 w-4" />
-                            Copy
-                          </Button>
-                        </CardHeader>
-                        <CardContent>
-                          <Textarea 
-                            value={aiSuggestions}
-                            onChange={(e) => setAiSuggestions(e.target.value)}
-                            rows={12}
-                            className="font-mono text-sm max-h-96 overflow-y-auto resize-none"
-                            placeholder="AI suggestions will appear here..."
-                          />
-                        </CardContent>
-                      </Card>
-
-                      {/* Right Column - Tool Notes */}
-                      <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                          <div>
-                            <CardTitle className="flex items-center gap-2">
-                              <FileText className="h-4 w-4" />
-                              "Write an Effective Resume" Tool Notes
-                            </CardTitle>
-                            <CardDescription>
-                              Your saved notes from the effective resume tool
-                            </CardDescription>
-                          </div>
-                          {(!effectiveResumeNotes || effectiveResumeNotes.length === 0) && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => window.open('/dashboard/digital-career-hub?toolId=b1d7a888-49b8-412b-861b-b6d850eda7a4', '_blank')}
-                              className="gap-2"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                              Go to Tool
-                            </Button>
-                          )}
-                        </CardHeader>
-                        <CardContent>
-                          {effectiveResumeNotes && effectiveResumeNotes.length > 0 ? (
-                            <div className="space-y-3 max-h-96 overflow-y-auto">
-                              {effectiveResumeNotes.map((note, index) => {
-                                // Extract all messages for display
-                                const assistantContent = note.messages
-                                  ?.filter(msg => msg.type === 'assistant')
-                                  ?.map(msg => msg.content)
-                                  ?.join('\n\n') || '';
-                                
-                                const userContent = note.messages
-                                  ?.filter(msg => msg.type === 'user')
-                                  ?.map(msg => msg.content)
-                                  ?.join('\n\n') || '';
-                                
-                                // Use assistant content if available, otherwise use user content
-                                const displayContent = assistantContent || userContent || 'No content available';
-                                
-                                console.log('Note Debug:', {
-                                  noteId: note.id,
-                                  title: note.title,
-                                  messagesCount: note.messages?.length,
-                                  assistantContent,
-                                  userContent,
-                                  displayContent: displayContent.substring(0, 100) + '...'
-                                });
-                                
-                                return (
-                                  <div key={note.id} className="p-3 bg-muted/20 rounded-lg border">
-                                    <div className="flex justify-between items-start mb-2">
-                                      <h5 className="font-medium text-sm">{note.title || `Note ${index + 1}`}</h5>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => {
-                                          navigator.clipboard.writeText(displayContent);
-                                          toast({
-                                            title: 'Copied!',
-                                            description: 'Note content copied to clipboard.',
-                                          });
-                                        }}
-                                        className="h-6 w-6 p-0"
-                                      >
-                                        <Copy className="h-3 w-3" />
-                                      </Button>
-                                    </div>
-                                    <p className="text-xs text-muted-foreground mb-2">
-                                      {new Date(note.created_at).toLocaleDateString()} • {note.messages?.length || 0} messages
-                                    </p>
-                                    <div className="text-sm text-foreground/80 max-h-32 overflow-y-auto border rounded p-2 bg-background/50">
-                                      {displayContent ? (
-                                        <pre className="whitespace-pre-wrap font-sans text-xs leading-relaxed">{displayContent}</pre>
-                                      ) : (
-                                        <p className="text-muted-foreground italic">No content to display</p>
-                                      )}
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          ) : (
-                            <div className="p-4 bg-muted/50 rounded-lg border border-dashed">
-                              <p className="text-sm text-muted-foreground mb-3">
-                                No notes found from "Write an Effective Resume" tool. Generate content using the tool to see personalized resume guidance here.
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                Debug: Tool ID = {EFFECTIVE_RESUME_TOOL_ID}
-                              </p>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    </div>
-                  )}
                 </div>
 
                 {/* Right Column - Suggestions/Preview */}
