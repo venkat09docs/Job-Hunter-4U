@@ -3036,66 +3036,20 @@ ${resumeData.personalDetails.fullName}`;
                                    </div>
                                  )}
 
-                                {/* Top Skills Notes - Show for skills section */}
-                                {activeSuggestionSection === 'skills' && (
-                                  <div>
-                                    <h4 className="font-medium mb-3 flex items-center gap-2">
-                                      <StickyNote className="h-4 w-4" />
-                                      Your Top Skills Notes
-                                    </h4>
-                                    <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
-                                      {getTopSkillsNotes().length > 0 ? (
-                                        getTopSkillsNotes().map((note, index) => (
-                                          <div key={index} className="p-3 bg-muted/50 rounded-lg border relative group">
-                                            <div className="flex justify-between items-start mb-1">
-                                              <h5 className="font-medium text-sm pr-8">{note.title}</h5>
-                                              <button
-                                                onClick={() => copyToClipboard(note.content)}
-                                                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
-                                                title="Copy content"
-                                              >
-                                                <Copy className="h-3 w-3" />
-                                              </button>
-                                            </div>
-                                            <p className="text-xs text-muted-foreground mb-2">
-                                              {new Date(note.createdAt).toLocaleDateString()}
-                                            </p>
-                                            <div className="text-sm text-foreground/80 max-h-32 overflow-y-auto">
-                                              <p className="whitespace-pre-wrap break-words">
-                                                {note.content}
-                                              </p>
-                                            </div>
-                                          </div>
-                                        ))
-                                        ) : (
-                                          <div className="text-sm text-muted-foreground space-y-3">
-                                            <p>
-                                              No notes found in "1. Resume Builder - Top 6 Skills" tool. 
-                                              Create notes there to see them here.
-                                            </p>
-                                            <Button 
-                                              variant="outline" 
-                                              size="sm" 
-                                              className="gap-2"
-                                              onClick={() => window.open('/dashboard/digital-career-hub?toolId=20c53c53-70c1-4d50-b0af-655fe09aef7b', '_blank')}
-                                            >
-                                              <ExternalLink className="h-3 w-3" />
-                                              Go to Top Skills Tool
-                                            </Button>
-                                          </div>
-                                         )}
-                                     </div>
-                                     <Button 
-                                       variant="outline" 
-                                       size="sm" 
-                                       className="gap-2 mt-3"
-                                       onClick={() => setShowKeySkillsDialog(true)}
-                                     >
-                                       <Sparkles className="h-3 w-3" />
-                                       Generate Key Skills
-                                     </Button>
+                                 {/* Top Skills Notes - Show for skills section */}
+                                 {activeSuggestionSection === 'skills' && (
+                                   <div>
+                                      <Button 
+                                        variant="default" 
+                                        size="sm" 
+                                        className="gap-2 w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                                        onClick={() => setShowKeySkillsDialog(true)}
+                                      >
+                                        <Sparkles className="h-3 w-3" />
+                                        Generate Key Skills
+                                      </Button>
                                    </div>
-                                  )}
+                                 )}
 
                                 {/* Experience Notes - Show for experience section */}
                                 {activeSuggestionSection === 'experience' && (
