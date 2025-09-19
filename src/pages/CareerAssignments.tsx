@@ -77,18 +77,6 @@ const CareerAssignments = () => {
   // TODO: Replace with actual LinkedIn course ID from database
   const LINKEDIN_COURSE_ID = 'linkedin-course-id-placeholder';
 
-  // Fetch subcategories and course progress
-  useEffect(() => {
-    console.log('🔍 CareerAssignments useEffect triggered', { user: user?.id, hasUser: !!user });
-    if (user && !isLoading) {
-      // Only fetch subcategories after assignments are loaded
-      fetchSubCategories();
-      fetchResumeCourseProgress();
-      fetchLinkedInCourseProgress();
-      setupRealtimeSubscription();
-    }
-  }, [user, isLoading]);
-  
   const fetchResumeCourseProgress = async () => {
     try {
       console.log('🎓 Fetching resume course progress for course ID:', RESUME_COURSE_ID);
@@ -115,6 +103,18 @@ const CareerAssignments = () => {
     }
   };
 
+  // Fetch subcategories and course progress
+  useEffect(() => {
+    console.log('🔍 CareerAssignments useEffect triggered', { user: user?.id, hasUser: !!user });
+    if (user && !isLoading) {
+      // Only fetch subcategories after assignments are loaded
+      fetchSubCategories();
+      fetchResumeCourseProgress();
+      fetchLinkedInCourseProgress();
+      setupRealtimeSubscription();
+    }
+  }, [user, isLoading]);
+   
   const fetchSubCategories = async () => {
     try {
       console.log('🔍 Fetching subcategories...');
