@@ -877,18 +877,9 @@ const CareerAssignments = () => {
                               <Progress value={categoryProgress} className="w-24 h-2" />
                             </div>
                               <Button
-                                onClick={(e) => {
-                                  console.log('🎓 Complete Course button clicked - EVENT TRIGGERED');
-                                  e.preventDefault();
-                                  e.stopPropagation();
+                                onClick={() => {
                                   console.log('🎓 Complete Course button clicked');
                                   const categoryName = subCategory.name.toLowerCase();
-                                  console.log('🎓 Category name:', categoryName);
-                                  console.log('🎓 Resume course progress:', resumeCourseProgress);
-                                  console.log('🎓 Is enabled:', isEnabled);
-                                  console.log('🎓 Can access feature:', canAccessFeature("career_assignments"));
-                                  
-                                  // Always allow navigation to course for resume category
                                   if (categoryName.includes('resume') && resumeCourseProgress < 100) {
                                     console.log('🎓 Navigating to course');
                                     navigate('/course/3656d01b-f153-4480-8c69-28155b271077');
@@ -899,8 +890,7 @@ const CareerAssignments = () => {
                                 }}
                                 size="sm"
                                 variant={subCategory.name.toLowerCase().includes('resume') && resumeCourseProgress < 100 ? "default" : "outline"}
-                                disabled={false}
-                                className="ml-4 relative z-50 pointer-events-auto"
+                                className="ml-4"
                               >
                                 {subCategory.name.toLowerCase().includes('resume') && resumeCourseProgress < 100 
                                   ? 'Complete Course' 
