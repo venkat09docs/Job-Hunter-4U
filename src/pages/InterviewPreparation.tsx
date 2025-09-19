@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, MessageCircle, FileText, BookOpen, Target } from 'lucide-react';
+import { ArrowLeft, Users, ClipboardCheck, Library, Code } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 
@@ -17,7 +17,7 @@ export default function InterviewPreparation() {
       id: 'interview-coach',
       title: 'Interview Coach',
       description: 'AI-powered interview practice with real-time feedback',
-      icon: MessageCircle,
+      icon: Users,
       route: '/dashboard/crack-interview',
       color: 'bg-gradient-to-br from-blue-500 to-blue-600'
     },
@@ -25,7 +25,7 @@ export default function InterviewPreparation() {
       id: 'evaluate-assignments',
       title: 'Evaluate Your Assignments',
       description: 'AI-powered assignment creation and evaluation system',
-      icon: FileText,
+      icon: ClipboardCheck,
       route: '/dashboard/evaluate-assignments',
       color: 'bg-gradient-to-br from-green-500 to-green-600'
     },
@@ -33,7 +33,7 @@ export default function InterviewPreparation() {
       id: 'study-materials',
       title: 'Study Materials',
       description: 'Access interview preparation resources and guides',
-      icon: BookOpen,
+      icon: Library,
       route: '#',
       color: 'bg-gradient-to-br from-purple-500 to-purple-600'
     },
@@ -41,7 +41,7 @@ export default function InterviewPreparation() {
       id: 'coding-copilot',
       title: 'Coding Copilot',
       description: 'AI-powered coding assistant for real-time programming help',
-      icon: Target,
+      icon: Code,
       route: '/dashboard/coding-copilot',
       color: 'bg-gradient-to-br from-purple-500 to-purple-600'
     }
