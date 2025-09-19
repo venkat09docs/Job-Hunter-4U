@@ -59,7 +59,7 @@ const getMainItems = (isAdmin: boolean, isInstituteAdmin: boolean, isRecruiter: 
   { title: "Dashboard", url: "/dashboard", icon: Home, featureKey: null },
   { title: "Skill Level Up", url: "/dashboard/skill-level", icon: Award, featureKey: null },
   { title: "Profile Level Up", url: "/dashboard/level-up", icon: Trophy, featureKey: null },
-  { title: "Crack Interview", url: "/dashboard/crack-interview", icon: MessageSquare, featureKey: null },
+  { title: "Interview Level Up", url: "/dashboard/interview-preparation", icon: MessageSquare, featureKey: null },
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap, featureKey: "digital-career-hub" },
   { title: "Resource Library", url: "/dashboard/library", icon: Archive, featureKey: "page_resources_library" },
   { title: "Knowledge Base", url: "/dashboard/knowledge-base", icon: BookOpen, featureKey: null },

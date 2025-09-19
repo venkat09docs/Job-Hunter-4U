@@ -1,10 +1,16 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, FileText, BookOpen, Target } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, MessageCircle, FileText, BookOpen, Target } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 
 export default function InterviewPreparation() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { profile, hasActiveSubscription } = useProfile();
 
   const boards = [
     {
@@ -47,8 +53,87 @@ export default function InterviewPreparation() {
     }
   };
 
+  const getInitials = () => {
+    if (profile?.username) {
+      return profile.username.substring(0, 2).toUpperCase();
+    }
+    if (user?.email) {
+      return user.email.substring(0, 2).toUpperCase();
+    }
+    return 'U';
+  };
+
+  const getSubscriptionStatus = () => {
+    if (hasActiveSubscription() && profile?.subscription_plan) {
+      return {
+        plan: profile.subscription_plan,
+        status: 'Active',
+        variant: 'default' as const
+      };
+    }
+    return {
+      plan: 'Free Plan',
+      status: 'Free',
+      variant: 'secondary' as const
+    };
+  };
+
+  const subscriptionInfo = getSubscriptionStatus();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      {/* Top Header Menu */}
+      <div className="border-b bg-background/80 backdrop-blur-sm">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            {/* Left side - Go to Dashboard */}
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Go to Dashboard
+            </Button>
+
+            {/* Right side - User Profile and Plan */}
+            <div className="flex items-center gap-4">
+              {/* Current Plan Badge */}
+              <div className="flex flex-col items-end">
+                <Badge variant={subscriptionInfo.variant} className="mb-1">
+                  {subscriptionInfo.plan}
+                </Badge>
+                <span className="text-xs text-muted-foreground">
+                  Status: {subscriptionInfo.status}
+                </span>
+              </div>
+
+              {/* User Profile */}
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <p className="text-sm font-medium text-foreground">
+                    {profile?.full_name || user?.email || 'User'}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    @{profile?.username || 'user'}
+                  </p>
+                </div>
+                <Avatar className="h-10 w-10">
+                  <AvatarImage
+                    src={profile?.profile_image_url || ''}
+                    alt={profile?.username || 'User'}
+                  />
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    {getInitials()}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-2">
