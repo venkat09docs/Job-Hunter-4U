@@ -14,7 +14,7 @@ import {
   Loader2, 
   Mic, 
   MicOff, 
-  RotateCcw,
+  
   StickyNote,
   X,
   ArrowLeft
@@ -188,11 +188,6 @@ Click on any starter question below or type "hi" to begin!`,
     }
   };
 
-  const startOver = () => {
-    setMessages([getInitialMessage()]);
-    setInputMessage('');
-    setShowStarterQuestions(true);
-  };
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', { 
@@ -244,15 +239,6 @@ Click on any starter question below or type "hi" to begin!`,
             >
               {showNotesPanel ? <X className="h-4 w-4" /> : <StickyNote className="h-4 w-4" />}
               {showNotesPanel ? 'Hide Notes' : 'Notes'}
-            </Button>
-            <Button
-              onClick={startOver}
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2 hover:bg-destructive hover:text-destructive-foreground"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Start Over
             </Button>
           </div>
         </div>
