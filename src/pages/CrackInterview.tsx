@@ -16,13 +16,15 @@ import {
   MicOff, 
   RotateCcw,
   StickyNote,
-  X
+  X,
+  ArrowLeft
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { InterviewNotesPanel } from "@/components/InterviewNotesPanel";
+import { useNavigate } from "react-router-dom";
 
 interface ChatMessage {
   id: string;
@@ -35,6 +37,7 @@ const CrackInterview = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState("");
@@ -195,9 +198,21 @@ You can click on any of the starter questions below or ask me anything about int
       {/* Simple Header */}
       <div className="flex-shrink-0 border-b bg-card/50 backdrop-blur-sm p-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-            Crack Interview
-          </h1>
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={() => navigate('/dashboard')}
+              variant="ghost"
+              size="sm"
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Dashboard
+            </Button>
+            <div className="h-6 w-px bg-border" />
+            <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Crack Interview
+            </h1>
+          </div>
           <div className="flex items-center gap-2">
             <Button
               onClick={() => setShowNotesPanel(!showNotesPanel)}
