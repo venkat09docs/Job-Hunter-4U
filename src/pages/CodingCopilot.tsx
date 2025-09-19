@@ -6,11 +6,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Send, Bot, User, Code, FileText, Wrench } from 'lucide-react';
+import { ArrowLeft, Send, Bot, User, Code, FileText, Wrench, Mic, MicOff, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { useVoiceRecorder } from '@/hooks/useVoiceRecorder';
 
 interface ChatMessage {
   id: string;
@@ -29,6 +30,12 @@ export default function CodingCopilot() {
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  const { isRecording, isProcessing, startRecording, stopRecording } = useVoiceRecorder({
+    onTranscriptionComplete: (text: string) => {
+      setInputMessage(text);
+    }
+  });
 
   // Initialize with welcome message
   useEffect(() => {
@@ -52,12 +59,13 @@ What coding challenge can I help you with today?`,
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
     if (scrollAreaRef.current) {
-      const scrollElement = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollElement) {
-        scrollElement.scrollTop = scrollElement.scrollHeight;
+      const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (viewport) {
+        viewport.scrollTop = viewport.scrollHeight;
       }
     }
   }, [messages]);
+
 
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
@@ -107,6 +115,14 @@ What coding challenge can I help you with today?`,
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
+    }
+  };
+
+  const handleVoiceToggle = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
     }
   };
 
@@ -345,17 +361,38 @@ What coding challenge can I help you with today?`,
                           onKeyDown={handleKeyPress}
                           placeholder="Ask for help with code, debugging, or programming concepts..."
                           className="min-h-[60px] resize-none flex-1"
-                          disabled={isLoading}
+                          disabled={isLoading || isRecording || isProcessing}
                         />
                         <Button
+                          onClick={handleVoiceToggle}
+                          disabled={isLoading || isProcessing}
+                          variant={isRecording ? "destructive" : "outline"}
+                          size="lg"
+                          className={`px-4 ${isRecording ? 'animate-pulse' : ''}`}
+                        >
+                          {isProcessing ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : isRecording ? (
+                            <MicOff className="h-4 w-4" />
+                          ) : (
+                            <Mic className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
                           onClick={sendMessage}
-                          disabled={!inputMessage.trim() || isLoading}
+                          disabled={!inputMessage.trim() || isLoading || isRecording || isProcessing}
                           size="lg"
                           className="px-4"
                         >
                           <Send className="h-4 w-4" />
                         </Button>
                       </div>
+                      {(isRecording || isProcessing) && (
+                        <div className="mt-2 text-sm text-muted-foreground text-center">
+                          {isRecording && "🎤 Recording... Click stop when finished"}
+                          {isProcessing && "🤖 Converting speech to text..."}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>
