@@ -3004,8 +3004,73 @@ ${resumeData.personalDetails.fullName}`;
 
             <TabsContent value="cover-letter" className="space-y-6 mt-6">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Cover Letter Suggestions - Left Column */}
+                {showCoverLetterFields && (
+                  <div className="lg:col-span-1">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Cover Letter Suggestions</CardTitle>
+                        <CardDescription>
+                          Tips to improve your cover letter
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {/* Cover Letter Tips */}
+                        <div>
+                          <h4 className="font-medium mb-3 flex items-center gap-2">
+                            <Sparkles className="h-4 w-4" />
+                            Cover Letter Tips
+                          </h4>
+                          <div className="space-y-2 text-sm text-muted-foreground">
+                            <p>• Start with a strong opening that grabs attention</p>
+                            <p>• Mention the specific job title and company name</p>
+                            <p>• Highlight 2-3 key achievements relevant to the role</p>
+                            <p>• Show knowledge about the company and role</p>
+                            <p>• Use keywords from the job description</p>
+                            <p>• Keep it concise - ideally one page</p>
+                            <p>• End with a strong call to action</p>
+                            <p>• Proofread for grammar and spelling errors</p>
+                          </div>
+                        </div>
+
+                        {/* Helpful Tools - Only show tools with saved notes */}
+                        {(getCoverLetterNotes().length > 0 || getJobTrackerNotes().length > 0) && (
+                          <div>
+                            <h4 className="font-medium mb-3 flex items-center gap-2">
+                              <ExternalLink className="h-4 w-4" />
+                              Helpful Tools
+                            </h4>
+                            <div className="space-y-2 text-sm">
+                              {getCoverLetterNotes().length > 0 && (
+                                <Button
+                                  variant="outline"
+                                  className="w-full justify-start gap-2 h-auto p-3"
+                                  onClick={() => window.open('/dashboard/digital-career-hub?toolId=5bd39f3b-1ed9-41eb-bc4c-ab7d0fe27a55', '_blank')}
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                  🎯 AI Career Hub - Cover Letter Generator
+                                </Button>
+                              )}
+                              {getJobTrackerNotes().length > 0 && (
+                                <Button
+                                  variant="outline"
+                                  className="w-full justify-start gap-2 h-auto p-3"
+                                  onClick={() => window.open('/dashboard/digital-career-hub?toolId=343aeaa1-fe2d-40fb-b660-a2064774bee3', '_blank')}
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                  🔍 Job Application Tracker
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
                 {/* Main Cover Letter Generator */}
-                <div className="lg:col-span-2">
+                <div className={showCoverLetterFields ? "lg:col-span-2" : "lg:col-span-3"}>
                   <Card>
                     <CardHeader>
                       <CardTitle>Cover Letter Generator</CardTitle>
@@ -3083,123 +3148,6 @@ ${resumeData.personalDetails.fullName}`;
                     </CardContent>
                   </Card>
                 </div>
-
-                {/* Cover Letter Suggestions - Right Column */}
-                {showCoverLetterFields && (
-                  <div className="lg:col-span-1">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg">Cover Letter Suggestions</CardTitle>
-                        <CardDescription>
-                          Tips and your saved notes to improve your cover letter
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {/* Cover Letter Tips */}
-                        <div>
-                          <h4 className="font-medium mb-3 flex items-center gap-2">
-                            <Sparkles className="h-4 w-4" />
-                            Cover Letter Tips
-                          </h4>
-                          <div className="space-y-2 text-sm text-muted-foreground">
-                            <p>• Start with a strong opening that grabs attention</p>
-                            <p>• Mention the specific job title and company name</p>
-                            <p>• Highlight 2-3 key achievements relevant to the role</p>
-                            <p>• Show knowledge about the company and role</p>
-                            <p>• Use keywords from the job description</p>
-                            <p>• Keep it concise - ideally one page</p>
-                            <p>• End with a strong call to action</p>
-                            <p>• Proofread for grammar and spelling errors</p>
-                          </div>
-                        </div>
-
-                        {/* Cover Letter Notes */}
-                        <div>
-                          <h4 className="font-medium mb-3 flex items-center gap-2">
-                            <StickyNote className="h-4 w-4" />
-                            Your Cover Letter Notes
-                          </h4>
-                          <div className="space-y-2 max-h-64 overflow-y-auto">
-                            {getCoverLetterNotes().length > 0 ? (
-                              getCoverLetterNotes().map((note, index) => (
-                                <div key={index} className="p-3 bg-muted/50 rounded-lg border">
-                                  <div className="flex items-start justify-between gap-2 mb-2">
-                                    <h5 className="font-medium text-sm">{note.title}</h5>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-6 w-6 p-0"
-                                      onClick={() => {
-                                        navigator.clipboard.writeText(note.content);
-                                        toast({
-                                          title: "Copied!",
-                                          description: "Note content copied to clipboard",
-                                        });
-                                      }}
-                                    >
-                                      <Copy className="h-3 w-3" />
-                                    </Button>
-                                  </div>
-                                  <p className="text-xs text-muted-foreground mb-2">
-                                    {new Date(note.createdAt).toLocaleDateString()}
-                                  </p>
-                                  <div className="text-sm text-foreground/80 max-h-32 overflow-y-auto">
-                                    {note.content}
-                                  </div>
-                                </div>
-                              ))
-                            ) : (
-                              <div className="text-sm text-muted-foreground p-3 bg-muted/30 rounded-lg border border-dashed">
-                                <p className="mb-2">No notes found from the "Write a powerful cover letter" tool.</p>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  className="gap-2"
-                                  onClick={() => window.open('/dashboard/digital-career-hub?toolId=5bd39f3b-1ed9-41eb-bc4c-ab7d0fe27a55', '_blank')}
-                                >
-                                  <ExternalLink className="h-3 w-3" />
-                                  Go to Cover Letter Tool
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Helpful Tools - Only show tools with saved notes */}
-                        {(getCoverLetterNotes().length > 0 || getJobTrackerNotes().length > 0) && (
-                          <div>
-                            <h4 className="font-medium mb-3 flex items-center gap-2">
-                              <ExternalLink className="h-4 w-4" />
-                              Helpful Tools
-                            </h4>
-                            <div className="space-y-2 text-sm">
-                              {getCoverLetterNotes().length > 0 && (
-                                <Button
-                                  variant="outline"
-                                  className="w-full justify-start gap-2 h-auto p-3"
-                                  onClick={() => window.open('/dashboard/digital-career-hub?toolId=5bd39f3b-1ed9-41eb-bc4c-ab7d0fe27a55', '_blank')}
-                                >
-                                  <ExternalLink className="h-4 w-4" />
-                                  🎯 AI Career Hub - Cover Letter Generator
-                                </Button>
-                              )}
-                              {getJobTrackerNotes().length > 0 && (
-                                <Button
-                                  variant="outline"
-                                  className="w-full justify-start gap-2 h-auto p-3"
-                                  onClick={() => window.open('/dashboard/digital-career-hub?toolId=343aeaa1-fe2d-40fb-b660-a2064774bee3', '_blank')}
-                                >
-                                  <ExternalLink className="h-4 w-4" />
-                                  🔍 Job Application Tracker
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </div>
-                )}
               </div>
             </TabsContent>
           </Tabs>
