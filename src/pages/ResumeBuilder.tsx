@@ -3015,50 +3015,10 @@ ${resumeData.personalDetails.fullName}`;
                                 {activeSuggestionSection === 'experience' && (
                                   <div className="space-y-4">
                                      {/* Achievements Notes removed as per user request */}
-
-                                     {/* Capstone Project Ideas */}
-                                     <div>
-                                       <Button 
-                                         variant="default" 
-                                         size="sm" 
-                                         className="gap-2 w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-                                         onClick={() => window.open('/dashboard/digital-career-hub?toolId=c0df061d-c6de-400f-a33e-2ea98f425d75', '_blank')}
-                                       >
-                                         Get Capstone Project Ideas
-                                       </Button>
-                                     </div>
                                   </div>
                                 )}
 
-                                 {/* Job Tracker Notes - Show for other sections except summary, skills, experience, education, and personalDetails */}
-                                 {activeSuggestionSection !== 'summary' && activeSuggestionSection !== 'skills' && activeSuggestionSection !== 'experience' && activeSuggestionSection !== 'education' && activeSuggestionSection !== 'personalDetails' && (
-                                  <div>
-                                    <h4 className="font-medium mb-3 flex items-center gap-2">
-                                      <StickyNote className="h-4 w-4" />
-                                      Your Job Tracker Notes
-                                    </h4>
-                                    <div className="space-y-2 max-h-48 overflow-y-auto">
-                                      {getJobTrackerNotes().length > 0 ? (
-                                        getJobTrackerNotes().map((note, index) => (
-                                          <div key={index} className="p-3 bg-muted/50 rounded-lg border">
-                                            <h5 className="font-medium text-sm mb-1">{note.title}</h5>
-                                            <p className="text-xs text-muted-foreground mb-2">
-                                              {new Date(note.createdAt).toLocaleDateString()}
-                                            </p>
-                                            <p className="text-sm text-foreground/80 line-clamp-3">
-                                              {note.content}
-                                            </p>
-                                          </div>
-                                        ))
-                                      ) : (
-                                        <p className="text-sm text-muted-foreground">
-                                          No notes found in Job Application Tracker & Checklist. 
-                                          Create notes there to see them here.
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
-                                )}
+                                  {/* Job Tracker Notes section removed from certifications, awards, and interests sections as per user request */}
                              </div>
                             ) : (
                               <div className="space-y-6">
