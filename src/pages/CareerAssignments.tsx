@@ -65,14 +65,17 @@ const CareerAssignments = () => {
   
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [resumeCourseProgress, setResumeCourseProgress] = useState<number>(0);
+  const [linkedinCourseProgress, setLinkedInCourseProgress] = useState<number>(0);
   
   // Stats
   const [totalPoints, setTotalPoints] = useState(0);
   const [maxPoints, setMaxPoints] = useState(0);
   const [completedTasks, setCompletedTasks] = useState(0);
   
-  // Course ID for "Build ATS Supported Resume"
+  // Course IDs
   const RESUME_COURSE_ID = '3656d01b-f153-4480-8c69-28155b271077';
+  // TODO: Replace with actual LinkedIn course ID from database
+  const LINKEDIN_COURSE_ID = 'linkedin-course-id-placeholder';
 
   // Fetch subcategories and course progress
   useEffect(() => {
@@ -81,6 +84,7 @@ const CareerAssignments = () => {
       // Only fetch subcategories after assignments are loaded
       fetchSubCategories();
       fetchResumeCourseProgress();
+      fetchLinkedInCourseProgress();
       setupRealtimeSubscription();
     }
   }, [user, isLoading]);
@@ -95,6 +99,19 @@ const CareerAssignments = () => {
     } catch (error) {
       console.error('🎓 Error fetching resume course progress:', error);
       setResumeCourseProgress(0);
+    }
+  };
+
+  const fetchLinkedInCourseProgress = async () => {
+    try {
+      console.log('🎓 Fetching LinkedIn course progress for course ID:', LINKEDIN_COURSE_ID);
+      const progress = await getCourseProgress(LINKEDIN_COURSE_ID);
+      console.log('🎓 Raw LinkedIn course progress response:', progress);
+      setLinkedInCourseProgress(progress?.progress_percentage || 0);
+      console.log('🎓 LinkedIn course progress set to:', progress?.progress_percentage || 0);
+    } catch (error) {
+      console.error('🎓 Error fetching LinkedIn course progress:', error);
+      setLinkedInCourseProgress(0);
     }
   };
 
@@ -283,9 +300,9 @@ const CareerAssignments = () => {
     const resumeSubCat = subCategories.find(sc => sc.name.toLowerCase().includes('resume'));
     const resumeProgress = resumeSubCat ? getSubCategoryProgress(resumeSubCat.id) : 0;
     
-    // LinkedIn profile requires Resume to be 100% complete
+    // LinkedIn profile requires Resume to be 100% complete AND LinkedIn course to be completed
     if (categoryName.includes('linkedin')) {
-      return resumeProgress >= 100;
+      return resumeProgress >= 100 && linkedinCourseProgress >= 100;
     }
     
     // Digital profile and GitHub profile require both Resume and LinkedIn to be 100% complete
@@ -358,8 +375,13 @@ const CareerAssignments = () => {
     const resumeSubCat = subCategories.find(sc => sc.name.toLowerCase().includes('resume'));
     const resumeProgress = resumeSubCat ? getSubCategoryProgress(resumeSubCat.id) : 0;
     
-    if (categoryName.includes('linkedin') && resumeProgress < 100) {
-      return 'Complete Resume Building tasks first to unlock LinkedIn Profile';
+    if (categoryName.includes('linkedin')) {
+      if (resumeProgress < 100) {
+        return 'Complete Resume Building tasks first to unlock LinkedIn Profile';
+      }
+      if (linkedinCourseProgress < 100) {
+        return 'Complete the "Supercharge Your LinkedIn" course first to unlock LinkedIn Profile tasks';
+      }
     }
     
     if (categoryName.includes('digital') || categoryName.includes('github')) {
