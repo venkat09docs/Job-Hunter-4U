@@ -25,6 +25,7 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/componen
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { InterviewNotesPanel } from "@/components/InterviewNotesPanel";
 import { useNavigate } from "react-router-dom";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 
 interface ChatMessage {
   id: string;
@@ -195,23 +196,37 @@ You can click on any of the starter questions below or ask me anything about int
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Simple Header */}
+      {/* Header with Breadcrumb Navigation */}
       <div className="flex-shrink-0 border-b bg-card/50 backdrop-blur-sm p-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={() => navigate('/dashboard')}
-              variant="ghost"
-              size="sm"
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Dashboard
-            </Button>
-            <div className="h-6 w-px bg-border" />
-            <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              Crack Interview
-            </h1>
+          <div className="flex items-center gap-4">
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink
+                    onClick={() => navigate('/dashboard')}
+                    className="cursor-pointer hover:text-foreground"
+                  >
+                    Dashboard
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbLink
+                    onClick={() => navigate('/dashboard/interview-preparation')}
+                    className="cursor-pointer hover:text-foreground"
+                  >
+                    Interview Level Up
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    Crack Interview
+                  </BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
           </div>
           <div className="flex items-center gap-2">
             <Button
