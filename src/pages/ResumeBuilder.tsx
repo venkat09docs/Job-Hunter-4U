@@ -383,6 +383,70 @@ const ResumeBuilder = () => {
     }
   }, [user]);
 
+  const saveSection = useCallback(async (sectionName: string) => {
+    if (!user) {
+      console.error('No user found for save operation');
+      return;
+    }
+    
+    console.log('Saving section:', sectionName, 'for user:', user.id);
+    console.log('Resume data to save:', resumeData);
+    
+    try {
+      // Use the new upsert function for proper data persistence
+      console.log('Calling upsert_resume_data function...');
+      const { data, error } = await supabase.rpc('upsert_resume_data', {
+        p_user_id: user.id,
+        p_personal_details: resumeData.personalDetails as any,
+        p_experience: resumeData.experience as any,
+        p_education: resumeData.education as any,
+        p_skills_interests: {
+          skills: resumeData.skills.filter(skill => skill.trim()),
+          interests: resumeData.interests.filter(interest => interest.trim())
+        } as any,
+        p_certifications_awards: resumeData.certifications.filter(cert => cert.trim()) as any,
+        p_awards: resumeData.awards.filter(award => award.trim()) as any,
+        p_professional_summary: resumeData.professionalSummary,
+        p_status: status
+      });
+
+      console.log('Upsert result - data:', data, 'error:', error);
+
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+
+      console.log('Section saved successfully:', sectionName);
+      setRightColumnContent('preview');
+      toast({
+        title: `${sectionName} saved!`,
+        description: 'Your changes have been saved permanently.',
+      });
+    } catch (error) {
+      console.error('Error saving section:', error);
+      toast({
+        title: 'Error saving section',
+        description: `Error: ${error?.message || 'Please try again later.'}`,
+        variant: 'destructive'
+      });
+    }
+  }, [user, resumeData, status, toast]);
+
+  const handleSectionToggle = useCallback((sectionKey: string) => {
+    const isOpening = !openSections[sectionKey];
+    setOpenSections(prev => ({ ...prev, [sectionKey]: isOpening }));
+    
+    if (isOpening) {
+      // Show suggestions when opening a section
+      setActiveSuggestionSection(sectionKey as SectionType);
+      setRightColumnContent('suggestions');
+    } else {
+      // Show preview when closing a section
+      setRightColumnContent('preview');
+    }
+  }, [openSections]);
+
   // Debug logging for effective resume notes
   useEffect(() => {
     console.log('Effective Resume Notes Debug:', {
@@ -1770,56 +1834,6 @@ ${resumeData.personalDetails.fullName}`;
     }
   };
 
-  const saveSection = useCallback(async (sectionName: string) => {
-    if (!user) {
-      console.error('No user found for save operation');
-      return;
-    }
-    
-    console.log('Saving section:', sectionName, 'for user:', user.id);
-    console.log('Resume data to save:', resumeData);
-    
-    try {
-      // Use the new upsert function for proper data persistence
-      console.log('Calling upsert_resume_data function...');
-      const { data, error } = await supabase.rpc('upsert_resume_data', {
-        p_user_id: user.id,
-        p_personal_details: resumeData.personalDetails as any,
-        p_experience: resumeData.experience as any,
-        p_education: resumeData.education as any,
-        p_skills_interests: {
-          skills: resumeData.skills.filter(skill => skill.trim()),
-          interests: resumeData.interests.filter(interest => interest.trim())
-        } as any,
-        p_certifications_awards: resumeData.certifications.filter(cert => cert.trim()) as any,
-        p_awards: resumeData.awards.filter(award => award.trim()) as any,
-        p_professional_summary: resumeData.professionalSummary,
-        p_status: status
-      });
-
-      console.log('Upsert result - data:', data, 'error:', error);
-
-      if (error) {
-        console.error('Database error:', error);
-        throw error;
-      }
-
-      console.log('Section saved successfully:', sectionName);
-      setRightColumnContent('preview');
-      toast({
-        title: `${sectionName} saved!`,
-        description: 'Your changes have been saved permanently.',
-      });
-    } catch (error) {
-      console.error('Error saving section:', error);
-      toast({
-        title: 'Error saving section',
-        description: `Error: ${error?.message || 'Please try again later.'}`,
-        variant: 'destructive'
-      });
-    }
-  }, [user, resumeData, status]);
-
   const getSuggestions = (section: SectionType) => {
     const suggestions = {
       personalDetails: [
@@ -2143,20 +2157,6 @@ ${resumeData.personalDetails.fullName}`;
       </div>
     );
   };
-
-  const handleSectionToggle = useCallback((sectionKey: string) => {
-    const isOpening = !openSections[sectionKey];
-    setOpenSections(prev => ({ ...prev, [sectionKey]: isOpening }));
-    
-    if (isOpening) {
-      // Show suggestions when opening a section
-      setActiveSuggestionSection(sectionKey as SectionType);
-      setRightColumnContent('suggestions');
-    } else {
-      // Show preview when closing a section
-      setRightColumnContent('preview');
-    }
-  }, [openSections]);
 
 
   return (
