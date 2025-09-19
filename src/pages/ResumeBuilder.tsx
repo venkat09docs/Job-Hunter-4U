@@ -183,6 +183,157 @@ const ResumeBuilder = () => {
     summary: false
   });
   
+  // ALL useCallback and useEffect hooks MUST be here before any conditional logic
+  const updateResumeData = useCallback((updates: Partial<ResumeData>) => {
+    setResumeData(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  const updatePersonalDetails = useCallback((field: string, value: string) => {
+    setResumeData(prev => ({
+      ...prev,
+      personalDetails: { ...prev.personalDetails, [field]: value }
+    }));
+  }, []);
+
+  const updateProfessionalSummary = useCallback((value: string) => {
+    setResumeData(prev => ({ ...prev, professionalSummary: value }));
+  }, []);
+
+  const handleSummaryGenerated = useCallback((summary: string) => {
+    updateProfessionalSummary(summary);
+  }, [updateProfessionalSummary]);
+
+  const handleSkillsGenerated = useCallback((skills: string[]) => {
+    setResumeData(prev => ({ ...prev, skills: skills }));
+  }, []);
+
+  const handleAchievementsGenerated = useCallback((achievements: string, experienceIndex: number) => {
+    setResumeData(prev => ({
+      ...prev,
+      experience: prev.experience.map((exp, index) => 
+        index === experienceIndex 
+          ? { ...exp, description: achievements }
+          : exp
+      )
+    }));
+  }, []);
+
+  const openAchievementsDialog = useCallback((experienceIndex: number) => {
+    setCurrentExperienceIndex(experienceIndex);
+    setShowAchievementsDialog(true);
+  }, []);
+
+  const updateChecklist = useCallback(() => {
+    setChecklist({
+      personalInfo: !!(resumeData.personalDetails.fullName && resumeData.personalDetails.email && resumeData.personalDetails.phone),
+      experience: resumeData.experience.some(exp => exp.company && exp.role),
+      education: resumeData.education.some(edu => edu.institution && edu.degree),
+      skills: resumeData.skills.some(skill => skill.trim()),
+      summary: !!resumeData.professionalSummary.trim()
+    });
+  }, [resumeData]);
+
+  const addArrayItem = useCallback((field: keyof ResumeData, defaultValue: any) => {
+    setResumeData(prev => ({
+      ...prev,
+      [field]: [...(prev[field] as any[]), defaultValue]
+    }));
+  }, []);
+
+  const removeArrayItem = useCallback((field: keyof ResumeData, index: number) => {
+    setResumeData(prev => ({
+      ...prev,
+      [field]: (prev[field] as any[]).filter((_, i) => i !== index)
+    }));
+  }, []);
+
+  const updateArrayItem = useCallback((field: keyof ResumeData, index: number, value: any) => {
+    setResumeData(prev => ({
+      ...prev,
+      [field]: (prev[field] as any[]).map((item, i) => i === index ? value : item)
+    }));
+  }, []);
+
+  const updateSkill = useCallback((index: number, value: string) => {
+    setResumeData(prev => ({
+      ...prev,
+      skills: prev.skills.map((skill, i) => i === index ? value : skill)
+    }));
+  }, []);
+
+  const updateInterest = useCallback((index: number, value: string) => {
+    setResumeData(prev => ({
+      ...prev,
+      interests: prev.interests.map((interest, i) => i === index ? value : interest)
+    }));
+  }, []);
+
+  const updateCertification = useCallback((index: number, value: string) => {
+    setResumeData(prev => ({
+      ...prev,
+      certifications: prev.certifications.map((cert, i) => i === index ? value : cert)
+    }));
+  }, []);
+
+  const updateAward = useCallback((index: number, value: string) => {
+    setResumeData(prev => ({
+      ...prev,
+      awards: prev.awards.map((award, i) => i === index ? value : award)
+    }));
+  }, []);
+
+  const hasCompletedKeySkills = useCallback(() => {
+    return resumeData.skills.some(skill => skill.trim() !== '');
+  }, [resumeData.skills]);
+
+  const hasCompletedExperience = useCallback(() => {
+    return resumeData.experience.some(exp => 
+      exp.company.trim() !== '' && 
+      exp.role.trim() !== '' && 
+      exp.duration.trim() !== ''
+    );
+  }, [resumeData.experience]);
+
+  const handleGenerateResumeSummaryClick = useCallback(() => {
+    const hasSkills = hasCompletedKeySkills();
+    const hasExperience = hasCompletedExperience();
+    
+    if (hasSkills && hasExperience) {
+      setShowResumeSummaryDialog(true);
+    } else {
+      setShowPrerequisiteDialog(true);
+    }
+  }, [hasCompletedKeySkills, hasCompletedExperience]);
+
+  // Debug logging for effective resume notes
+  useEffect(() => {
+    console.log('Effective Resume Notes Debug:', {
+      toolId: EFFECTIVE_RESUME_TOOL_ID,
+      notesCount: effectiveResumeNotes?.length || 0,
+      notes: effectiveResumeNotes?.map(note => ({
+        id: note.id,
+        title: note.title,
+        messagesCount: note.messages?.length || 0,
+        messages: note.messages,
+        created_at: note.created_at
+      }))
+    });
+  }, [effectiveResumeNotes, EFFECTIVE_RESUME_TOOL_ID]);
+
+  // Load existing resume data
+  useEffect(() => {
+    if (user) {
+      loadResumeData();
+    }
+  }, [user]);
+
+  // Fetch saved cover letters count
+  useEffect(() => {
+    if (user) {
+      fetchSavedCoverLettersCount();
+    }
+  }, [user]);
+  
   // Show loading state while premium features are loading
   if (premiumLoading) {
     return (
@@ -242,79 +393,7 @@ const ResumeBuilder = () => {
     );
   }
   
-  // Use useCallback to prevent re-renders that lose focus
-  const updateResumeData = useCallback((updates: Partial<ResumeData>) => {
-    setResumeData(prev => ({ ...prev, ...updates }));
-  }, []);
-
-  const updatePersonalDetails = useCallback((field: string, value: string) => {
-    setResumeData(prev => ({
-      ...prev,
-      personalDetails: { ...prev.personalDetails, [field]: value }
-    }));
-  }, []);
-
-  const updateProfessionalSummary = useCallback((value: string) => {
-    setResumeData(prev => ({ ...prev, professionalSummary: value }));
-  }, []);
-
-  const handleSummaryGenerated = useCallback((summary: string) => {
-    updateProfessionalSummary(summary);
-  }, [updateProfessionalSummary]);
-
-  const handleSkillsGenerated = useCallback((skills: string[]) => {
-    // Replace existing skills with generated skills
-    setResumeData(prev => ({ ...prev, skills: skills }));
-  }, []);
-
-  const handleAchievementsGenerated = useCallback((achievements: string, experienceIndex: number) => {
-    // Update the specific experience's description with generated achievements
-    setResumeData(prev => ({
-      ...prev,
-      experience: prev.experience.map((exp, index) => 
-        index === experienceIndex 
-          ? { ...exp, description: achievements }
-          : exp
-      )
-    }));
-  }, []);
-
-  const openAchievementsDialog = useCallback((experienceIndex: number) => {
-    setCurrentExperienceIndex(experienceIndex);
-    setShowAchievementsDialog(true);
-  }, []);
-
-  // Update checklist based on form data
-  const updateChecklist = useCallback(() => {
-    setChecklist({
-      personalInfo: !!(resumeData.personalDetails.fullName && resumeData.personalDetails.email && resumeData.personalDetails.phone),
-      experience: resumeData.experience.some(exp => exp.company && exp.role),
-      education: resumeData.education.some(edu => edu.institution && edu.degree),
-      skills: resumeData.skills.some(skill => skill.trim()),
-      summary: !!resumeData.professionalSummary.trim()
-    });
-  }, [resumeData]);
-
-  // Debug logging for effective resume notes
-  useEffect(() => {
-    console.log('Effective Resume Notes Debug:', {
-      toolId: EFFECTIVE_RESUME_TOOL_ID,
-      notesCount: effectiveResumeNotes?.length || 0,
-      notes: effectiveResumeNotes?.map(note => ({
-        id: note.id,
-        title: note.title,
-        messagesCount: note.messages?.length || 0,
-        messages: note.messages,
-        created_at: note.created_at
-      }))
-    });
-  }, [effectiveResumeNotes, EFFECTIVE_RESUME_TOOL_ID]);
-
-  // Load existing resume data
-  useEffect(() => {
-    loadResumeData();
-  }, [user]);
-
+  // Regular functions (non-hooks) can stay after conditional returns
   const loadResumeData = async () => {
     if (!user) return;
     
@@ -373,80 +452,6 @@ const ResumeBuilder = () => {
     }
   };
 
-
-
-  const addArrayItem = useCallback((field: keyof ResumeData, defaultValue: any) => {
-    setResumeData(prev => ({
-      ...prev,
-      [field]: [...(prev[field] as any[]), defaultValue]
-    }));
-  }, []);
-
-  const removeArrayItem = useCallback((field: keyof ResumeData, index: number) => {
-    setResumeData(prev => ({
-      ...prev,
-      [field]: (prev[field] as any[]).filter((_, i) => i !== index)
-    }));
-  }, []);
-
-  const updateArrayItem = useCallback((field: keyof ResumeData, index: number, value: any) => {
-    setResumeData(prev => ({
-      ...prev,
-      [field]: (prev[field] as any[]).map((item, i) => i === index ? value : item)
-    }));
-  }, []);
-
-  const updateSkill = useCallback((index: number, value: string) => {
-    setResumeData(prev => ({
-      ...prev,
-      skills: prev.skills.map((skill, i) => i === index ? value : skill)
-    }));
-  }, []);
-
-  const updateInterest = useCallback((index: number, value: string) => {
-    setResumeData(prev => ({
-      ...prev,
-      interests: prev.interests.map((interest, i) => i === index ? value : interest)
-    }));
-  }, []);
-
-  const updateCertification = useCallback((index: number, value: string) => {
-    setResumeData(prev => ({
-      ...prev,
-      certifications: prev.certifications.map((cert, i) => i === index ? value : cert)
-    }));
-  }, []);
-
-  const updateAward = useCallback((index: number, value: string) => {
-    setResumeData(prev => ({
-      ...prev,
-      awards: prev.awards.map((award, i) => i === index ? value : award)
-    }));
-  }, []);
-
-  // Helper functions to check completion status
-  const hasCompletedKeySkills = useCallback(() => {
-    return resumeData.skills.some(skill => skill.trim() !== '');
-  }, [resumeData.skills]);
-
-  const hasCompletedExperience = useCallback(() => {
-    return resumeData.experience.some(exp => 
-      exp.company.trim() !== '' && 
-      exp.role.trim() !== '' && 
-      exp.duration.trim() !== ''
-    );
-  }, [resumeData.experience]);
-
-  const handleGenerateResumeSummaryClick = useCallback(() => {
-    const hasSkills = hasCompletedKeySkills();
-    const hasExperience = hasCompletedExperience();
-    
-    if (hasSkills && hasExperience) {
-      setShowResumeSummaryDialog(true);
-    } else {
-      setShowPrerequisiteDialog(true);
-    }
-  }, [hasCompletedKeySkills, hasCompletedExperience]);
 
   const handleGenerateCoverLetter = async () => {
     setIsGeneratingCoverLetter(true);
