@@ -75,7 +75,6 @@ const ResumeBuilder = () => {
   const [showCoverLetterFields, setShowCoverLetterFields] = useState(false);
   const [coverLetterName, setCoverLetterName] = useState('');
   const [coverLetterContent, setCoverLetterContent] = useState('');
-  const [showCoverLetterSuggestions, setShowCoverLetterSuggestions] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [savedCoverLetters, setSavedCoverLetters] = useState<any[]>([]);
   const [showResumeSummaryDialog, setShowResumeSummaryDialog] = useState(false);
@@ -3004,9 +3003,9 @@ ${resumeData.personalDetails.fullName}`;
             </TabsContent>
 
             <TabsContent value="cover-letter" className="space-y-6 mt-6">
-              <div className="relative flex min-h-[600px]">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Main Cover Letter Generator */}
-                <div className={`flex-1 transition-all duration-300 ${showCoverLetterSuggestions ? 'mr-80' : ''}`}>
+                <div className={showCoverLetterFields ? "lg:col-span-2" : "lg:col-span-3"}>
                   <Card>
                     <CardHeader>
                       <CardTitle>Cover Letter Generator</CardTitle>
@@ -3085,38 +3084,17 @@ ${resumeData.personalDetails.fullName}`;
                   </Card>
                 </div>
 
-                {/* Toggle Button */}
+                {/* Cover Letter Suggestions - Right Column */}
                 {showCoverLetterFields && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowCoverLetterSuggestions(!showCoverLetterSuggestions)}
-                    className={`fixed top-1/2 -translate-y-1/2 z-50 transition-all duration-300 ${
-                      showCoverLetterSuggestions ? 'right-[336px]' : 'right-4'
-                    }`}
-                  >
-                    {showCoverLetterSuggestions ? (
-                      <ChevronRight className="h-4 w-4" />
-                    ) : (
-                      <ChevronLeft className="h-4 w-4" />
-                    )}
-                  </Button>
-                )}
-
-                {/* Cover Letter Suggestions - Right Sidebar */}
-                {showCoverLetterFields && (
-                  <div className={`fixed right-0 top-0 h-full w-80 bg-background border-l transition-transform duration-300 z-40 ${
-                    showCoverLetterSuggestions ? 'translate-x-0' : 'translate-x-full'
-                  }`}>
-                    <div className="h-full overflow-y-auto p-6">
-                      <div className="space-y-6">
-                        <div>
-                          <h3 className="text-lg font-semibold mb-2">Cover Letter Suggestions</h3>
-                          <p className="text-sm text-muted-foreground">
-                            Tips to improve your cover letter
-                          </p>
-                        </div>
-
+                  <div className="lg:col-span-1">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Cover Letter Suggestions</CardTitle>
+                        <CardDescription>
+                          Tips to improve your cover letter
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
                         {/* Cover Letter Tips */}
                         <div>
                           <h4 className="font-medium mb-3 flex items-center gap-2">
@@ -3166,8 +3144,8 @@ ${resumeData.personalDetails.fullName}`;
                             </div>
                           </div>
                         )}
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 )}
               </div>
