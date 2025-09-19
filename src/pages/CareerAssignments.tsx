@@ -23,7 +23,6 @@ import { useProfile } from '@/hooks/useProfile';
 import { useUserIndustry } from '@/hooks/useUserIndustry';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useChapterCompletion } from '@/hooks/useChapterCompletion';
-import { TestButton } from '@/components/TestButton';
 
 interface SubCategory {
   id: string;
@@ -219,7 +218,6 @@ const CareerAssignments = () => {
   if (isLoading) {
     return (
       <div className="container mx-auto p-6">
-        <TestButton />
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
           <p className="mt-4 text-lg">Loading your assignments...</p>
@@ -621,7 +619,6 @@ const CareerAssignments = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-8">
-        <TestButton />
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
@@ -861,43 +858,23 @@ const CareerAssignments = () => {
                      const isEnabled = isSubCategoryEnabled(subCategory);
                      const disabledMessage = !isEnabled ? getDisabledMessage(subCategory) : '';
                     
-                    return (
-                      <AccordionItem key={subCategory.id} value={subCategory.id} className={!isEnabled ? 'opacity-60' : ''}>
-                        <AccordionTrigger className="text-lg font-semibold hover:no-underline" disabled={!isEnabled}>
-                          <div className="flex items-center justify-between w-full">
-                            <div className="flex items-center gap-3">
-                              {isEnabled ? (
-                                <Target className="w-5 h-5 text-primary" />
-                              ) : (
-                                <Lock className="w-5 h-5 text-muted-foreground" />
-                              )}
-                              <span className={!isEnabled ? 'text-muted-foreground' : ''}>
-                                {subCategory.name} ({categoryTasks.length} tasks)
-                              </span>
-                              <Progress value={categoryProgress} className="w-24 h-2" />
-                            </div>
-                              <Button
-                                onClick={() => {
-                                  console.log('🎓 Complete Course button clicked');
-                                  const categoryName = subCategory.name.toLowerCase();
-                                  if (categoryName.includes('resume') && resumeCourseProgress < 100) {
-                                    console.log('🎓 Navigating to course');
-                                    navigate('/course/3656d01b-f153-4480-8c69-28155b271077');
-                                  } else if (isEnabled) {
-                                    console.log('🎓 Initializing tasks');
-                                    initializeSubCategoryTasks(subCategory.id);
-                                  }
-                                }}
-                                size="sm"
-                                variant={subCategory.name.toLowerCase().includes('resume') && resumeCourseProgress < 100 ? "default" : "outline"}
-                                className="ml-4"
-                              >
-                                {subCategory.name.toLowerCase().includes('resume') && resumeCourseProgress < 100 
-                                  ? 'Complete Course' 
-                                  : 'Initialize Tasks'}
-                              </Button>
-                          </div>
-                        </AccordionTrigger>
+                     return (
+                       <AccordionItem key={subCategory.id} value={subCategory.id} className={!isEnabled ? 'opacity-60' : ''}>
+                         <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                           <div className="flex items-center justify-between w-full">
+                             <div className="flex items-center gap-3">
+                               {isEnabled ? (
+                                 <Target className="w-5 h-5 text-primary" />
+                               ) : (
+                                 <Lock className="w-5 h-5 text-muted-foreground" />
+                               )}
+                               <span className={!isEnabled ? 'text-muted-foreground' : ''}>
+                                 {subCategory.name} ({categoryTasks.length} tasks)
+                               </span>
+                               <Progress value={categoryProgress} className="w-24 h-2" />
+                             </div>
+                           </div>
+                         </AccordionTrigger>
                          <AccordionContent className="space-y-4 pt-4">
                            {(() => {
                              const categoryName = subCategory.name.toLowerCase();
@@ -912,16 +889,16 @@ const CareerAssignments = () => {
                                        <p className="text-xs mb-2">Course Progress: {Math.round(resumeCourseProgress)}%</p>
                                        <Progress value={resumeCourseProgress} className="w-48 mx-auto h-2" />
                                      </div>
-                                      <Button 
-                                        onClick={() => {
-                                          console.log('🎓 View Course button clicked in accordion content');
-                                          navigate('/course/3656d01b-f153-4480-8c69-28155b271077');
-                                        }}
-                                        className="mt-3"
-                                      >
-                                        <BookOpen className="w-4 h-4 mr-2" />
-                                        View Course
-                                      </Button>
+                                       <Button 
+                                         onClick={() => {
+                                           console.log('🎓 Complete Course button clicked in accordion content');
+                                           navigate('/course/3656d01b-f153-4480-8c69-28155b271077');
+                                         }}
+                                         className="mt-3"
+                                       >
+                                         <BookOpen className="w-4 h-4 mr-2" />
+                                         Complete Course
+                                       </Button>
                                    </>
                                  ) : (
                                    <>
