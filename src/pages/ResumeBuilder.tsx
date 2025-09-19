@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CollapsibleSection } from '@/components/CollapsibleSection';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { SubscriptionStatus, SubscriptionUpgrade } from '@/components/SubscriptionUpgrade';
@@ -75,6 +76,14 @@ const ResumeBuilder = () => {
   const [showCoverLetterFields, setShowCoverLetterFields] = useState(false);
   const [coverLetterName, setCoverLetterName] = useState('');
   const [coverLetterContent, setCoverLetterContent] = useState('');
+  const [showGenerateCoverLetterDialog, setShowGenerateCoverLetterDialog] = useState(false);
+  const [coverLetterFormData, setCoverLetterFormData] = useState({
+    company: '',
+    role: '',
+    skillsExperience: '',
+    jobDescription: ''
+  });
+  const [isGeneratingCoverLetter, setIsGeneratingCoverLetter] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [savedCoverLetters, setSavedCoverLetters] = useState<any[]>([]);
   const [showResumeSummaryDialog, setShowResumeSummaryDialog] = useState(false);
@@ -370,6 +379,47 @@ const ResumeBuilder = () => {
       setShowPrerequisiteDialog(true);
     }
   }, [hasCompletedKeySkills, hasCompletedExperience]);
+
+  const handleGenerateCoverLetter = async () => {
+    setIsGeneratingCoverLetter(true);
+    try {
+      const response = await supabase.functions.invoke('generate-cover-letter', {
+        body: {
+          company: coverLetterFormData.company,
+          role: coverLetterFormData.role,
+          skillsExperience: coverLetterFormData.skillsExperience,
+          jobDescription: coverLetterFormData.jobDescription
+        }
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to generate cover letter');
+      }
+
+      setCoverLetterContent(response.data.coverLetter);
+      setShowGenerateCoverLetterDialog(false);
+      
+      // Auto-generate a name if not provided
+      if (!coverLetterName.trim()) {
+        const currentDate = new Date().toLocaleDateString();
+        setCoverLetterName(`Cover Letter for ${coverLetterFormData.company} - ${currentDate}`);
+      }
+
+      toast({
+        title: 'Cover letter generated!',
+        description: 'AI-powered cover letter has been generated successfully.',
+      });
+    } catch (error) {
+      console.error('Error generating cover letter:', error);
+      toast({
+        title: 'Error generating cover letter',
+        description: error.message || 'Please try again later.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsGeneratingCoverLetter(false);
+    }
+  };
 
 
   const generateCoverLetter = async () => {
@@ -3008,10 +3058,24 @@ ${resumeData.personalDetails.fullName}`;
                 <div className={showCoverLetterFields ? "lg:col-span-2" : "lg:col-span-3"}>
                   <Card>
                     <CardHeader>
-                      <CardTitle>Cover Letter Generator</CardTitle>
-                      <CardDescription>
-                        Generate a personalized cover letter based on your resume data
-                      </CardDescription>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle>Cover Letter Generator</CardTitle>
+                          <CardDescription>
+                            Generate a personalized cover letter based on your resume data
+                          </CardDescription>
+                        </div>
+                        {showCoverLetterFields && (
+                          <Button
+                            onClick={() => setShowGenerateCoverLetterDialog(true)}
+                            className="flex items-center gap-2"
+                            disabled={isGeneratingCoverLetter}
+                          >
+                            <Sparkles className="h-4 w-4" />
+                            {isGeneratingCoverLetter ? 'Generating...' : 'Generate Cover Letter'}
+                          </Button>
+                        )}
+                      </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       {!showCoverLetterFields ? (
@@ -3190,6 +3254,89 @@ ${resumeData.personalDetails.fullName}`;
         onOpenChange={setShowWriteEffectiveResumeDialog}
         onResumeGenerated={setGeneratedResumeText}
       />
+
+      {/* Generate Cover Letter Dialog */}
+      <Dialog open={showGenerateCoverLetterDialog} onOpenChange={setShowGenerateCoverLetterDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5" />
+              Generate Cover Letter
+            </DialogTitle>
+            <DialogDescription>
+              Fill in the details below to generate a personalized cover letter using AI
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="company" className="text-sm font-medium">
+                Company Name *
+              </Label>
+              <Input
+                id="company"
+                value={coverLetterFormData.company}
+                onChange={(e) => setCoverLetterFormData(prev => ({ ...prev, company: e.target.value }))}
+                placeholder="e.g. Google, Microsoft, Amazon..."
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="role" className="text-sm font-medium">
+                Job Role *
+              </Label>
+              <Input
+                id="role"
+                value={coverLetterFormData.role}
+                onChange={(e) => setCoverLetterFormData(prev => ({ ...prev, role: e.target.value }))}
+                placeholder="e.g. Software Engineer, Product Manager..."
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="skillsExperience" className="text-sm font-medium">
+                Skills & Experience *
+              </Label>
+              <Textarea
+                id="skillsExperience"
+                value={coverLetterFormData.skillsExperience}
+                onChange={(e) => setCoverLetterFormData(prev => ({ ...prev, skillsExperience: e.target.value }))}
+                placeholder="List your relevant skills and experience for this role..."
+                rows={3}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="jobDescription" className="text-sm font-medium">
+                Job Description *
+              </Label>
+              <Textarea
+                id="jobDescription"
+                value={coverLetterFormData.jobDescription}
+                onChange={(e) => setCoverLetterFormData(prev => ({ ...prev, jobDescription: e.target.value }))}
+                placeholder="Paste the job description or key requirements..."
+                rows={4}
+                className="mt-1"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 mt-6">
+            <Button
+              variant="outline"
+              onClick={() => setShowGenerateCoverLetterDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleGenerateCoverLetter}
+              disabled={!coverLetterFormData.company || !coverLetterFormData.role || !coverLetterFormData.skillsExperience || !coverLetterFormData.jobDescription || isGeneratingCoverLetter}
+              className="gap-2"
+            >
+              <Sparkles className="h-4 w-4" />
+              {isGeneratingCoverLetter ? 'Generating...' : 'Generate Cover Letter'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
