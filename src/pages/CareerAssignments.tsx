@@ -23,6 +23,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { useUserIndustry } from '@/hooks/useUserIndustry';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useChapterCompletion } from '@/hooks/useChapterCompletion';
+import { TestButton } from '@/components/TestButton';
 
 interface SubCategory {
   id: string;
@@ -218,6 +219,7 @@ const CareerAssignments = () => {
   if (isLoading) {
     return (
       <div className="container mx-auto p-6">
+        <TestButton />
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
           <p className="mt-4 text-lg">Loading your assignments...</p>
@@ -270,10 +272,13 @@ const CareerAssignments = () => {
   // Helper function to check if a subcategory should be enabled
   const isSubCategoryEnabled = (subCategory: SubCategory) => {
     const categoryName = subCategory.name.toLowerCase();
+    console.log('🎓 Checking if subcategory enabled:', categoryName, 'progress:', resumeCourseProgress);
     
     // Resume building requires course completion first
     if (categoryName.includes('resume')) {
-      return resumeCourseProgress >= 100;
+      const enabled = resumeCourseProgress >= 100;
+      console.log('🎓 Resume category enabled:', enabled);
+      return enabled;
     }
     
     // Find Resume subcategory and check if it's completed
@@ -872,12 +877,15 @@ const CareerAssignments = () => {
                             </div>
                               <Button
                                 onClick={(e) => {
+                                  console.log('🎓 Complete Course button clicked - EVENT TRIGGERED');
+                                  e.preventDefault();
                                   e.stopPropagation();
                                   console.log('🎓 Complete Course button clicked');
                                   const categoryName = subCategory.name.toLowerCase();
                                   console.log('🎓 Category name:', categoryName);
                                   console.log('🎓 Resume course progress:', resumeCourseProgress);
                                   console.log('🎓 Is enabled:', isEnabled);
+                                  console.log('🎓 Can access feature:', canAccessFeature("career_assignments"));
                                   
                                   if (isEnabled) {
                                     if (categoryName.includes('resume') && resumeCourseProgress < 100) {
@@ -895,7 +903,8 @@ const CareerAssignments = () => {
                                 size="sm"
                                 variant={subCategory.name.toLowerCase().includes('resume') && resumeCourseProgress < 100 ? "default" : "outline"}
                                 disabled={!canAccessFeature("career_assignments") || (!isEnabled && !(subCategory.name.toLowerCase().includes('resume') && resumeCourseProgress < 100))}
-                                className="ml-4"
+                                className="ml-4 relative z-10"
+                                style={{ pointerEvents: 'auto' }}
                               >
                                 {subCategory.name.toLowerCase().includes('resume') && resumeCourseProgress < 100 
                                   ? 'Complete Course' 
