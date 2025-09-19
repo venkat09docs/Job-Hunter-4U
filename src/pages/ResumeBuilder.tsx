@@ -21,7 +21,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToolChats } from '@/hooks/useToolChats';
 import jsPDF from 'jspdf';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, ExternalHyperlink } from 'docx';
-import { FileText, Download, CheckCircle, Plus, Minus, Sparkles, FileEdit, ArrowLeft, Save, Eye, StickyNote, ChevronDown, Copy, ExternalLink } from 'lucide-react';
+import { FileText, Download, CheckCircle, Plus, Minus, Sparkles, FileEdit, ArrowLeft, Save, Eye, StickyNote, ChevronDown, Copy, ExternalLink, ChevronRight, ChevronLeft } from 'lucide-react';
 import { GenerateResumeSummaryDialog } from '@/components/GenerateResumeSummaryDialog';
 import { GenerateKeySkillsDialog } from '@/components/GenerateKeySkillsDialog';
 import { GenerateAchievementsDialog } from '@/components/GenerateAchievementsDialog';
@@ -75,6 +75,7 @@ const ResumeBuilder = () => {
   const [showCoverLetterFields, setShowCoverLetterFields] = useState(false);
   const [coverLetterName, setCoverLetterName] = useState('');
   const [coverLetterContent, setCoverLetterContent] = useState('');
+  const [showCoverLetterSuggestions, setShowCoverLetterSuggestions] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [savedCoverLetters, setSavedCoverLetters] = useState<any[]>([]);
   const [showResumeSummaryDialog, setShowResumeSummaryDialog] = useState(false);
@@ -3003,74 +3004,9 @@ ${resumeData.personalDetails.fullName}`;
             </TabsContent>
 
             <TabsContent value="cover-letter" className="space-y-6 mt-6">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Cover Letter Suggestions - Left Column */}
-                {showCoverLetterFields && (
-                  <div className="lg:col-span-1">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg">Cover Letter Suggestions</CardTitle>
-                        <CardDescription>
-                          Tips to improve your cover letter
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {/* Cover Letter Tips */}
-                        <div>
-                          <h4 className="font-medium mb-3 flex items-center gap-2">
-                            <Sparkles className="h-4 w-4" />
-                            Cover Letter Tips
-                          </h4>
-                          <div className="space-y-2 text-sm text-muted-foreground">
-                            <p>• Start with a strong opening that grabs attention</p>
-                            <p>• Mention the specific job title and company name</p>
-                            <p>• Highlight 2-3 key achievements relevant to the role</p>
-                            <p>• Show knowledge about the company and role</p>
-                            <p>• Use keywords from the job description</p>
-                            <p>• Keep it concise - ideally one page</p>
-                            <p>• End with a strong call to action</p>
-                            <p>• Proofread for grammar and spelling errors</p>
-                          </div>
-                        </div>
-
-                        {/* Helpful Tools - Only show tools with saved notes */}
-                        {(getCoverLetterNotes().length > 0 || getJobTrackerNotes().length > 0) && (
-                          <div>
-                            <h4 className="font-medium mb-3 flex items-center gap-2">
-                              <ExternalLink className="h-4 w-4" />
-                              Helpful Tools
-                            </h4>
-                            <div className="space-y-2 text-sm">
-                              {getCoverLetterNotes().length > 0 && (
-                                <Button
-                                  variant="outline"
-                                  className="w-full justify-start gap-2 h-auto p-3"
-                                  onClick={() => window.open('/dashboard/digital-career-hub?toolId=5bd39f3b-1ed9-41eb-bc4c-ab7d0fe27a55', '_blank')}
-                                >
-                                  <ExternalLink className="h-4 w-4" />
-                                  🎯 AI Career Hub - Cover Letter Generator
-                                </Button>
-                              )}
-                              {getJobTrackerNotes().length > 0 && (
-                                <Button
-                                  variant="outline"
-                                  className="w-full justify-start gap-2 h-auto p-3"
-                                  onClick={() => window.open('/dashboard/digital-career-hub?toolId=343aeaa1-fe2d-40fb-b660-a2064774bee3', '_blank')}
-                                >
-                                  <ExternalLink className="h-4 w-4" />
-                                  🔍 Job Application Tracker
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </div>
-                )}
-
+              <div className="relative flex min-h-[600px]">
                 {/* Main Cover Letter Generator */}
-                <div className={showCoverLetterFields ? "lg:col-span-2" : "lg:col-span-3"}>
+                <div className={`flex-1 transition-all duration-300 ${showCoverLetterSuggestions ? 'mr-80' : 'mr-0'}`}>
                   <Card>
                     <CardHeader>
                       <CardTitle>Cover Letter Generator</CardTitle>
@@ -3148,6 +3084,92 @@ ${resumeData.personalDetails.fullName}`;
                     </CardContent>
                   </Card>
                 </div>
+
+                {/* Toggle Button */}
+                {showCoverLetterFields && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowCoverLetterSuggestions(!showCoverLetterSuggestions)}
+                    className={`fixed right-4 top-1/2 -translate-y-1/2 z-50 transition-all duration-300 ${
+                      showCoverLetterSuggestions ? 'right-80' : 'right-4'
+                    }`}
+                  >
+                    {showCoverLetterSuggestions ? (
+                      <ChevronRight className="h-4 w-4" />
+                    ) : (
+                      <ChevronLeft className="h-4 w-4" />
+                    )}
+                  </Button>
+                )}
+
+                {/* Cover Letter Suggestions - Right Sidebar */}
+                {showCoverLetterFields && (
+                  <div className={`fixed right-0 top-0 h-full w-80 bg-background border-l transition-transform duration-300 z-40 ${
+                    showCoverLetterSuggestions ? 'translate-x-0' : 'translate-x-full'
+                  }`}>
+                    <div className="h-full overflow-y-auto p-6">
+                      <div className="space-y-6">
+                        <div>
+                          <h3 className="text-lg font-semibold mb-2">Cover Letter Suggestions</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Tips to improve your cover letter
+                          </p>
+                        </div>
+
+                        {/* Cover Letter Tips */}
+                        <div>
+                          <h4 className="font-medium mb-3 flex items-center gap-2">
+                            <Sparkles className="h-4 w-4" />
+                            Cover Letter Tips
+                          </h4>
+                          <div className="space-y-2 text-sm text-muted-foreground">
+                            <p>• Start with a strong opening that grabs attention</p>
+                            <p>• Mention the specific job title and company name</p>
+                            <p>• Highlight 2-3 key achievements relevant to the role</p>
+                            <p>• Show knowledge about the company and role</p>
+                            <p>• Use keywords from the job description</p>
+                            <p>• Keep it concise - ideally one page</p>
+                            <p>• End with a strong call to action</p>
+                            <p>• Proofread for grammar and spelling errors</p>
+                          </div>
+                        </div>
+
+                        {/* Helpful Tools - Only show tools with saved notes */}
+                        {(getCoverLetterNotes().length > 0 || getJobTrackerNotes().length > 0) && (
+                          <div>
+                            <h4 className="font-medium mb-3 flex items-center gap-2">
+                              <ExternalLink className="h-4 w-4" />
+                              Helpful Tools
+                            </h4>
+                            <div className="space-y-2 text-sm">
+                              {getCoverLetterNotes().length > 0 && (
+                                <Button
+                                  variant="outline"
+                                  className="w-full justify-start gap-2 h-auto p-3"
+                                  onClick={() => window.open('/dashboard/digital-career-hub?toolId=5bd39f3b-1ed9-41eb-bc4c-ab7d0fe27a55', '_blank')}
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                  🎯 AI Career Hub - Cover Letter Generator
+                                </Button>
+                              )}
+                              {getJobTrackerNotes().length > 0 && (
+                                <Button
+                                  variant="outline"
+                                  className="w-full justify-start gap-2 h-auto p-3"
+                                  onClick={() => window.open('/dashboard/digital-career-hub?toolId=343aeaa1-fe2d-40fb-b660-a2064774bee3', '_blank')}
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                  🔍 Job Application Tracker
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </TabsContent>
           </Tabs>
