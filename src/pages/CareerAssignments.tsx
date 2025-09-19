@@ -621,6 +621,7 @@ const CareerAssignments = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-8">
+        <TestButton />
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
@@ -887,29 +888,23 @@ const CareerAssignments = () => {
                                   console.log('🎓 Is enabled:', isEnabled);
                                   console.log('🎓 Can access feature:', canAccessFeature("career_assignments"));
                                   
-                                  if (isEnabled) {
-                                    if (categoryName.includes('resume') && resumeCourseProgress < 100) {
-                                      console.log('🎓 Navigating to course (enabled branch)');
-                                      navigate('/course/3656d01b-f153-4480-8c69-28155b271077');
-                                    } else {
-                                      console.log('🎓 Initializing tasks');
-                                      initializeSubCategoryTasks(subCategory.id);
-                                    }
-                                  } else if (categoryName.includes('resume') && resumeCourseProgress < 100) {
-                                    console.log('🎓 Navigating to course (disabled branch)');
+                                  // Always allow navigation to course for resume category
+                                  if (categoryName.includes('resume') && resumeCourseProgress < 100) {
+                                    console.log('🎓 Navigating to course');
                                     navigate('/course/3656d01b-f153-4480-8c69-28155b271077');
+                                  } else if (isEnabled) {
+                                    console.log('🎓 Initializing tasks');
+                                    initializeSubCategoryTasks(subCategory.id);
                                   }
                                 }}
                                 size="sm"
                                 variant={subCategory.name.toLowerCase().includes('resume') && resumeCourseProgress < 100 ? "default" : "outline"}
-                                disabled={!canAccessFeature("career_assignments") || (!isEnabled && !(subCategory.name.toLowerCase().includes('resume') && resumeCourseProgress < 100))}
-                                className="ml-4 relative z-10"
-                                style={{ pointerEvents: 'auto' }}
+                                disabled={false}
+                                className="ml-4 relative z-50 pointer-events-auto"
                               >
                                 {subCategory.name.toLowerCase().includes('resume') && resumeCourseProgress < 100 
                                   ? 'Complete Course' 
                                   : 'Initialize Tasks'}
-                                {(!canAccessFeature("career_assignments") || (!isEnabled && !(subCategory.name.toLowerCase().includes('resume') && resumeCourseProgress < 100))) && <Lock className="w-4 h-4 ml-2" />}
                               </Button>
                           </div>
                         </AccordionTrigger>
