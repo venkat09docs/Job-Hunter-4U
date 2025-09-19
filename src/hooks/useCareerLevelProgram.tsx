@@ -487,7 +487,8 @@ export const useCareerLevelProgram = () => {
         // Determine assignment status based on attempts
         const hasStartedAttempt = userAttempts.some(attempt => attempt.status === 'started');
         const submittedAttempts = userAttempts.filter(attempt => 
-          attempt.status === 'submitted' || attempt.status === 'auto_submitted'
+          (attempt.status === 'submitted' || attempt.status === 'auto_submitted') &&
+          attempt.submitted_at !== null
         );
         const hasSubmittedAttempts = submittedAttempts.length > 0;
         

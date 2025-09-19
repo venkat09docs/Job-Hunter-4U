@@ -190,11 +190,10 @@ const AssignmentDetail: React.FC = () => {
   const getAssignmentStatus = () => {
     if (!assignment) return 'draft';
     
-    // Check if user has submitted attempts
+    // Check if user has actually submitted attempts (not just pre-created attempts)
     const submittedAttempts = userAttempts.filter(a => 
-      a.status === 'submitted' || 
-      a.review_status === 'pending' || 
-      a.review_status === 'in_review'
+      (a.status === 'submitted' || a.status === 'auto_submitted') && 
+      a.submitted_at !== null
     );
     
     const completedAttempts = userAttempts.filter(a => 
