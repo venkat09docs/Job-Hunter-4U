@@ -894,7 +894,8 @@ const CareerAssignments = () => {
                                            console.log('🎓 Complete Course button clicked in accordion content');
                                            navigate('/course/3656d01b-f153-4480-8c69-28155b271077');
                                          }}
-                                         className="mt-3"
+                                         className="mt-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                                         size="lg"
                                        >
                                          <BookOpen className="w-4 h-4 mr-2" />
                                          Complete Course
