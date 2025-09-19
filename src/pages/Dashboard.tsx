@@ -442,20 +442,12 @@ const Dashboard = () => {
   const flowRemaining = Math.max(0, githubWeeklyTotal - githubWeeklyCompleted);
   const weeklyTarget = githubWeeklyTotal;
 
-  // Mock task data to use as fallback while database issue is resolved
-  const mockTaskStats = {
-    RESUME: { total: 9, completed: 6, inProgress: 2, pending: 1 },
-    LINKEDIN: { total: 11, completed: 4, inProgress: 3, pending: 4 },
-    GITHUB: { total: 8, completed: 3, inProgress: 1, pending: 4 },
-    DIGITAL_PROFILE: { total: 12, completed: 5, inProgress: 4, pending: 3 }
-  };
-
   // Calculate task statistics for each category (only if getTasksByModule is available)
   const calculateTaskStats = (module: 'RESUME' | 'LINKEDIN' | 'DIGITAL_PROFILE' | 'GITHUB') => {
     if (!getTasksByModule || !assignments || assignments.length === 0) {
-      // Use mock data as fallback while database issue is resolved
-      console.log(`📊 Using mock data for ${module} tasks`);
-      return mockTaskStats[module] || { total: 0, completed: 0, inProgress: 0, pending: 0 };
+      // Return zeros when no data is available
+      console.log(`📊 No data available for ${module} tasks, showing zeros`);
+      return { total: 0, completed: 0, inProgress: 0, pending: 0 };
     }
     
     try {
@@ -480,8 +472,8 @@ const Dashboard = () => {
       return { total, completed, inProgress, pending };
     } catch (error) {
       console.error(`Error calculating stats for ${module}:`, error);
-      // Fallback to mock data on error
-      return mockTaskStats[module] || { total: 0, completed: 0, inProgress: 0, pending: 0 };
+      // Return zeros on error instead of mock data
+      return { total: 0, completed: 0, inProgress: 0, pending: 0 };
     }
   };
 
