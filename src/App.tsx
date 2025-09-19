@@ -85,6 +85,7 @@ import CourseContentView from "./pages/CourseContentView";
 import CourseContentManagement from "./pages/CourseContentManagement";
 import CrackInterview from "./pages/CrackInterview";
 import EvaluateAssignments from "./pages/EvaluateAssignments";
+import CodingCopilot from "./pages/CodingCopilot";
 // Import InterviewPreparation component  
 import InterviewPreparation from "./pages/InterviewPreparation";
 
@@ -551,6 +552,14 @@ const AppContent = () => {
             } 
           />
           <Route 
+            path="/dashboard/coding-copilot" 
+            element={
+              <ProtectedRoute>
+                <CodingCopilot />
+              </ProtectedRoute>
+            } 
+          />
+          <Route
             path="/dashboard/career-level/assignments/new" 
             element={
               <ProtectedRoute>

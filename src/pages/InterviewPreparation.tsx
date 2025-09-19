@@ -38,12 +38,12 @@ export default function InterviewPreparation() {
       color: 'bg-gradient-to-br from-purple-500 to-purple-600'
     },
     {
-      id: 'mock-interviews',
-      title: 'Mock Interviews',
-      description: 'Schedule and take practice interviews',
+      id: 'coding-copilot',
+      title: 'Coding Copilot',
+      description: 'AI-powered coding assistant for real-time programming help',
       icon: Target,
-      route: '#',
-      color: 'bg-gradient-to-br from-orange-500 to-orange-600'
+      route: '/dashboard/coding-copilot',
+      color: 'bg-gradient-to-br from-purple-500 to-purple-600'
     }
   ];
 

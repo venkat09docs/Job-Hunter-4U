@@ -47,3 +47,6 @@ verify_jwt = true
 
 [functions.voice-to-text]
 verify_jwt = true
+
+[functions.coding-copilot-chat]
+verify_jwt = true
