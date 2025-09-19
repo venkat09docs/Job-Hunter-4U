@@ -66,6 +66,8 @@ const CareerAssignments = () => {
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [resumeCourseProgress, setResumeCourseProgress] = useState<number>(0);
   const [linkedinCourseProgress, setLinkedInCourseProgress] = useState<number>(0);
+  const [digitalProfileCourseProgress, setDigitalProfileCourseProgress] = useState<number>(0);
+  const [githubCourseProgress, setGitHubCourseProgress] = useState<number>(0);
   
   // Stats
   const [totalPoints, setTotalPoints] = useState(0);
@@ -76,6 +78,10 @@ const CareerAssignments = () => {
   const RESUME_COURSE_ID = '3656d01b-f153-4480-8c69-28155b271077';
   // TODO: Replace with actual LinkedIn course ID from database
   const LINKEDIN_COURSE_ID = 'linkedin-course-id-placeholder';
+  // TODO: Replace with actual Digital Profile course ID from database (user will create this course)
+  const DIGITAL_PROFILE_COURSE_ID = 'digital-profile-course-id-placeholder';
+  // TODO: Replace with actual GitHub and Blog Management course ID from database
+  const GITHUB_COURSE_ID = 'github-blog-management-course-id-placeholder';
 
   const fetchResumeCourseProgress = async () => {
     try {
@@ -103,6 +109,32 @@ const CareerAssignments = () => {
     }
   };
 
+  const fetchDigitalProfileCourseProgress = async () => {
+    try {
+      console.log('🎓 Fetching Digital Profile course progress for course ID:', DIGITAL_PROFILE_COURSE_ID);
+      const progress = await getCourseProgress(DIGITAL_PROFILE_COURSE_ID);
+      console.log('🎓 Raw Digital Profile course progress response:', progress);
+      setDigitalProfileCourseProgress(progress?.progress_percentage || 0);
+      console.log('🎓 Digital Profile course progress set to:', progress?.progress_percentage || 0);
+    } catch (error) {
+      console.error('🎓 Error fetching Digital Profile course progress:', error);
+      setDigitalProfileCourseProgress(0);
+    }
+  };
+
+  const fetchGitHubCourseProgress = async () => {
+    try {
+      console.log('🎓 Fetching GitHub course progress for course ID:', GITHUB_COURSE_ID);
+      const progress = await getCourseProgress(GITHUB_COURSE_ID);
+      console.log('🎓 Raw GitHub course progress response:', progress);
+      setGitHubCourseProgress(progress?.progress_percentage || 0);
+      console.log('🎓 GitHub course progress set to:', progress?.progress_percentage || 0);
+    } catch (error) {
+      console.error('🎓 Error fetching GitHub course progress:', error);
+      setGitHubCourseProgress(0);
+    }
+  };
+
   // Fetch subcategories and course progress
   useEffect(() => {
     console.log('🔍 CareerAssignments useEffect triggered', { user: user?.id, hasUser: !!user });
@@ -111,6 +143,8 @@ const CareerAssignments = () => {
       fetchSubCategories();
       fetchResumeCourseProgress();
       fetchLinkedInCourseProgress();
+      fetchDigitalProfileCourseProgress();
+      fetchGitHubCourseProgress();
       setupRealtimeSubscription();
     }
   }, [user, isLoading]);
@@ -305,59 +339,58 @@ const CareerAssignments = () => {
       return resumeProgress >= 100 && linkedinCourseProgress >= 100;
     }
     
-    // Digital profile and GitHub profile require both Resume and LinkedIn to be 100% complete
-    if (categoryName.includes('digital') || categoryName.includes('github')) {
+    // Digital profile requires LinkedIn to be completed AND Digital Profile course to be completed
+    if (categoryName.includes('digital')) {
       const linkedinSubCat = subCategories.find(sc => sc.name.toLowerCase().includes('linkedin'));
       const linkedinProgress = linkedinSubCat ? getSubCategoryProgress(linkedinSubCat.id) : 0;
       
-      const prerequisitesMet = resumeProgress >= 100 && linkedinProgress >= 100;
+      const prerequisitesMet = linkedinProgress >= 100 && digitalProfileCourseProgress >= 100;
       
-      // Additional checks for Digital profile (subscription required)
-      if (categoryName.includes('digital')) {
-        console.log('🔍 Digital profile check:', {
-          categoryName,
-          prerequisitesMet,
-          resumeProgress,
-          linkedinProgress,
-          profile: {
-            subscription_active: profile?.subscription_active,
-            subscription_plan: profile?.subscription_plan,
-            hasProfile: !!profile
-          }
-        });
-        
-        // Digital profile is only available for 6-month or 1-year plans, not 3-month
-        const hasValidSubscription = profile?.subscription_active && (
-          profile?.subscription_plan === '6-month' || 
-          profile?.subscription_plan === '1-year' ||
-          profile?.subscription_plan?.includes('6-month') ||
-          profile?.subscription_plan?.includes('1-year') ||
-          profile?.subscription_plan?.includes('6 Months') ||
-          profile?.subscription_plan?.includes('1 Year') ||
-          profile?.subscription_plan?.includes('12 Months') ||
-          (profile?.subscription_plan?.includes('Year') && !profile?.subscription_plan?.includes('3'))
-        );
-        // Explicitly exclude 3-month plans
-        const isThreeMonthPlan = profile?.subscription_plan === '3-month' || 
-                                profile?.subscription_plan?.includes('3-month') ||
-                                profile?.subscription_plan?.includes('3 month') ||
-                                profile?.subscription_plan?.includes('3 Months');
-        
-        console.log('🔍 Digital profile subscription check:', {
-          hasValidSubscription,
-          isThreeMonthPlan,
-          finalResult: prerequisitesMet && hasValidSubscription && !isThreeMonthPlan
-        });
-        
-        return prerequisitesMet && hasValidSubscription && !isThreeMonthPlan;
-      }
+      console.log('🔍 Digital profile check:', {
+        categoryName,
+        prerequisitesMet,
+        linkedinProgress,
+        digitalProfileCourseProgress,
+        profile: {
+          subscription_active: profile?.subscription_active,
+          subscription_plan: profile?.subscription_plan,
+          hasProfile: !!profile
+        }
+      });
       
-      // Additional checks for GitHub profile (IT industry required)
-      if (categoryName.includes('github')) {
-        return prerequisitesMet && isIT();
-      }
+      // Digital profile is only available for 6-month or 1-year plans, not 3-month
+      const hasValidSubscription = profile?.subscription_active && (
+        profile?.subscription_plan === '6-month' || 
+        profile?.subscription_plan === '1-year' ||
+        profile?.subscription_plan?.includes('6-month') ||
+        profile?.subscription_plan?.includes('1-year') ||
+        profile?.subscription_plan?.includes('6 Months') ||
+        profile?.subscription_plan?.includes('1 Year') ||
+        profile?.subscription_plan?.includes('12 Months') ||
+        (profile?.subscription_plan?.includes('Year') && !profile?.subscription_plan?.includes('3'))
+      );
+      // Explicitly exclude 3-month plans
+      const isThreeMonthPlan = profile?.subscription_plan === '3-month' || 
+                              profile?.subscription_plan?.includes('3-month') ||
+                              profile?.subscription_plan?.includes('3 month') ||
+                              profile?.subscription_plan?.includes('3 Months');
       
-      return prerequisitesMet;
+      console.log('🔍 Digital profile subscription check:', {
+        hasValidSubscription,
+        isThreeMonthPlan,
+        finalResult: prerequisitesMet && hasValidSubscription && !isThreeMonthPlan
+      });
+      
+      return prerequisitesMet && hasValidSubscription && !isThreeMonthPlan;
+    }
+    
+    // GitHub profile requires LinkedIn to be completed AND GitHub course to be completed AND IT industry
+    if (categoryName.includes('github')) {
+      const linkedinSubCat = subCategories.find(sc => sc.name.toLowerCase().includes('linkedin'));
+      const linkedinProgress = linkedinSubCat ? getSubCategoryProgress(linkedinSubCat.id) : 0;
+      
+      const prerequisitesMet = linkedinProgress >= 100 && githubCourseProgress >= 100;
+      return prerequisitesMet && isIT();
     }
     
     return true;
@@ -384,48 +417,57 @@ const CareerAssignments = () => {
       }
     }
     
-    if (categoryName.includes('digital') || categoryName.includes('github')) {
+    if (categoryName.includes('digital')) {
       const linkedinSubCat = subCategories.find(sc => sc.name.toLowerCase().includes('linkedin'));
       const linkedinProgress = linkedinSubCat ? getSubCategoryProgress(linkedinSubCat.id) : 0;
       
-      if (resumeProgress < 100) {
-        return 'Complete Resume Building tasks first';
+      if (linkedinProgress < 100) {
+        return 'Complete LinkedIn Profile tasks first to unlock Digital Profile';
       }
+      
+      if (digitalProfileCourseProgress < 100) {
+        return 'Complete the "Build Digital Profile" course first to unlock Digital Profile tasks';
+      }
+      
+      // Check if user has 3-month plan (should be excluded)
+      const isThreeMonthPlan = profile?.subscription_plan === '3-month' || 
+                              profile?.subscription_plan?.includes('3-month') ||
+                              profile?.subscription_plan?.includes('3 month');
+      
+      if (isThreeMonthPlan) {
+        return 'Digital profile is only available for 6-month or 1-year subscription plans';
+      }
+      
+      const hasValidSubscription = profile?.subscription_active && (
+        profile?.subscription_plan === '6-month' || 
+        profile?.subscription_plan === '1-year' ||
+        profile?.subscription_plan?.includes('6-month') ||
+        profile?.subscription_plan?.includes('1-year') ||
+        profile?.subscription_plan?.includes('6 Months') ||
+        profile?.subscription_plan?.includes('1 Year') ||
+        profile?.subscription_plan?.includes('12 Months') ||
+        (profile?.subscription_plan?.includes('Year') && !profile?.subscription_plan?.includes('3'))
+      );
+      
+      if (!hasValidSubscription) {
+        return 'Subscription is required either 6 months or 1 year plan for the digital profile';
+      }
+    }
+    
+    if (categoryName.includes('github')) {
+      const linkedinSubCat = subCategories.find(sc => sc.name.toLowerCase().includes('linkedin'));
+      const linkedinProgress = linkedinSubCat ? getSubCategoryProgress(linkedinSubCat.id) : 0;
       
       if (linkedinProgress < 100) {
-        return 'Complete LinkedIn Profile tasks first';
+        return 'Complete LinkedIn Profile tasks first to unlock GitHub Profile';
       }
       
-      if (categoryName.includes('digital')) {
-        // Check if user has 3-month plan (should be excluded)
-        const isThreeMonthPlan = profile?.subscription_plan === '3-month' || 
-                                profile?.subscription_plan?.includes('3-month') ||
-                                profile?.subscription_plan?.includes('3 month');
-        
-        if (isThreeMonthPlan) {
-          return 'Digital profile is only available for 6-month or 1-year subscription plans';
-        }
-        
-        const hasValidSubscription = profile?.subscription_active && (
-          profile?.subscription_plan === '6-month' || 
-          profile?.subscription_plan === '1-year' ||
-          profile?.subscription_plan?.includes('6-month') ||
-          profile?.subscription_plan?.includes('1-year') ||
-          profile?.subscription_plan?.includes('6 Months') ||
-          profile?.subscription_plan?.includes('1 Year') ||
-          profile?.subscription_plan?.includes('12 Months') ||
-          (profile?.subscription_plan?.includes('Year') && !profile?.subscription_plan?.includes('3'))
-        );
-        
-        if (!hasValidSubscription) {
-          return 'Subscription is required either 6 months or 1 year plan for the digital profile';
-        }
+      if (githubCourseProgress < 100) {
+        return 'Complete the "GitHub and Blog Management" course first to unlock GitHub Profile tasks';
       }
       
-      if (categoryName.includes('github')) {
-        if (!isIT()) {
-          return 'GitHub profile is available only for IT professionals';
-        }
+      if (!isIT()) {
+        return 'GitHub profile is available only for IT professionals';
       }
     }
     
