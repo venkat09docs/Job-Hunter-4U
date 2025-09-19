@@ -78,7 +78,7 @@ const AIAssistantChat = () => {
   }, [isOpen]);
   
   // Hide AI Assistant Chat on specific pages
-  const hideOnRoutes = ['/dashboard/crack-interview'];
+  const hideOnRoutes = ['/dashboard/crack-interview', '/dashboard/evaluate-assignments', '/dashboard/coding-copilot'];
   const shouldHide = hideOnRoutes.some(route => location.pathname === route);
   
   // Hide AI assistant on course content view pages
