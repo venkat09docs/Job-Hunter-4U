@@ -25,14 +25,7 @@ const AIAssistantChat = () => {
   const { toast } = useToast();
   const location = useLocation();
   
-  // Hide AI Assistant Chat on specific pages
-  const hideOnRoutes = ['/dashboard/crack-interview'];
-  const shouldHide = hideOnRoutes.some(route => location.pathname === route);
-  
-  if (shouldHide) {
-    return null;
-  }
-  
+  // All hooks must be called before any conditional logic
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState("");
@@ -40,10 +33,19 @@ const AIAssistantChat = () => {
   const [showPricing, setShowPricing] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
+  const hasValidSubscription = hasActiveSubscription();
+  
+  // Hide AI Assistant Chat on specific pages
+  const hideOnRoutes = ['/dashboard/crack-interview'];
+  const shouldHide = hideOnRoutes.some(route => location.pathname === route);
+  
   // Hide AI assistant on course content view pages
   const shouldHideAssistant = location.pathname.startsWith('/course/');
-
-  const hasValidSubscription = hasActiveSubscription();
+  
+  // Early returns after all hooks have been called
+  if (shouldHide) {
+    return null;
+  }
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
@@ -195,7 +197,7 @@ const AIAssistantChat = () => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  // Don't render AI assistant on course content view pages
+  // Don't render AI assistant on course content view pages or if should hide
   if (shouldHideAssistant) {
     return null;
   }
