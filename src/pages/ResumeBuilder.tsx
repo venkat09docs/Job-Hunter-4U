@@ -305,6 +305,84 @@ const ResumeBuilder = () => {
     }
   }, [hasCompletedKeySkills, hasCompletedExperience]);
 
+  const loadResumeData = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('resume_data')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
+
+      if (data) {
+        const personalDetails = data.personal_details as any || {};
+        const experience = Array.isArray(data.experience) ? (data.experience as unknown as Experience[]) : [{ company: '', role: '', duration: '', description: '' }];
+        const education = Array.isArray(data.education) ? (data.education as unknown as Education[]) : [{ institution: '', degree: '', duration: '', gpa: '' }];
+        const skillsInterests = data.skills_interests as any || {};
+        
+        // Handle both old and new data formats
+        let certifications = [''];
+        let awards = [''];
+        
+        if (data.awards && Array.isArray(data.awards)) {
+          // New format: awards are stored separately
+          awards = (data.awards as string[]).length > 0 ? (data.awards as string[]) : [''];
+        }
+        
+        if (data.certifications_awards && Array.isArray(data.certifications_awards)) {
+          // If we have the old combined format and no separate awards, keep them as certifications
+          certifications = (data.certifications_awards as string[]).length > 0 ? (data.certifications_awards as string[]) : [''];
+        }
+
+        setResumeData({
+          personalDetails: {
+            fullName: personalDetails.fullName || '',
+            email: personalDetails.email || '',
+            phone: personalDetails.phone || '',
+            location: personalDetails.location || '',
+            linkedIn: personalDetails.linkedIn || '',
+            github: personalDetails.github || ''
+          },
+          experience: experience,
+          education: education,
+          skills: Array.isArray(skillsInterests.skills) ? skillsInterests.skills : [''],
+          interests: Array.isArray(skillsInterests.interests) ? skillsInterests.interests : [''],
+          certifications: certifications,
+          awards: awards,
+          professionalSummary: data.professional_summary || ''
+        });
+        setStatus(data.status as StatusType || 'draft');
+      }
+    } catch (error) {
+      console.error('Error loading resume data:', error);
+    }
+  }, [user]);
+
+  const fetchSavedCoverLettersCount = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('saved_cover_letters')
+        .select('id')
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Error fetching cover letters count:', error);
+        return;
+      }
+
+      setSavedCoverLetters(data || []);
+    } catch (error) {
+      console.error('Error fetching cover letters count:', error);
+    }
+  }, [user]);
+
   // Debug logging for effective resume notes
   useEffect(() => {
     console.log('Effective Resume Notes Debug:', {
@@ -325,14 +403,14 @@ const ResumeBuilder = () => {
     if (user) {
       loadResumeData();
     }
-  }, [user]);
+  }, [user, loadResumeData]);
 
   // Fetch saved cover letters count
   useEffect(() => {
     if (user) {
       fetchSavedCoverLettersCount();
     }
-  }, [user]);
+  }, [user, fetchSavedCoverLettersCount]);
   
   // Show loading state while premium features are loading
   if (premiumLoading) {
@@ -393,66 +471,7 @@ const ResumeBuilder = () => {
     );
   }
   
-  // Regular functions (non-hooks) can stay after conditional returns
-  const loadResumeData = async () => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('resume_data')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') {
-        throw error;
-      }
-
-      if (data) {
-        const personalDetails = data.personal_details as any || {};
-        const experience = Array.isArray(data.experience) ? (data.experience as unknown as Experience[]) : [{ company: '', role: '', duration: '', description: '' }];
-        const education = Array.isArray(data.education) ? (data.education as unknown as Education[]) : [{ institution: '', degree: '', duration: '', gpa: '' }];
-        const skillsInterests = data.skills_interests as any || {};
-        
-        // Handle both old and new data formats
-        let certifications = [''];
-        let awards = [''];
-        
-        if (data.awards && Array.isArray(data.awards)) {
-          // New format: awards are stored separately
-          awards = (data.awards as string[]).length > 0 ? (data.awards as string[]) : [''];
-        }
-        
-        if (data.certifications_awards && Array.isArray(data.certifications_awards)) {
-          // If we have the old combined format and no separate awards, keep them as certifications
-          certifications = (data.certifications_awards as string[]).length > 0 ? (data.certifications_awards as string[]) : [''];
-        }
-
-        setResumeData({
-          personalDetails: {
-            fullName: personalDetails.fullName || '',
-            email: personalDetails.email || '',
-            phone: personalDetails.phone || '',
-            location: personalDetails.location || '',
-            linkedIn: personalDetails.linkedIn || '',
-            github: personalDetails.github || ''
-          },
-          experience: experience,
-          education: education,
-          skills: Array.isArray(skillsInterests.skills) ? skillsInterests.skills : [''],
-          interests: Array.isArray(skillsInterests.interests) ? skillsInterests.interests : [''],
-          certifications: certifications,
-          awards: awards,
-          professionalSummary: data.professional_summary || ''
-        });
-        setStatus(data.status as StatusType || 'draft');
-      }
-    } catch (error) {
-      console.error('Error loading resume data:', error);
-    }
-  };
-
-
+  // All regular functions (non-hooks) can stay after conditional returns
   const handleGenerateCoverLetter = async () => {
     setIsGeneratingCoverLetter(true);
     try {
@@ -616,26 +635,6 @@ ${resumeData.personalDetails.fullName}`;
       title: 'Download Started',
       description: 'Your cover letter has been downloaded.',
     });
-  };
-
-  useEffect(() => {
-    if (user) {
-      fetchSavedCoverLettersCount();
-    }
-  }, [user]);
-
-  const fetchSavedCoverLettersCount = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('saved_cover_letters')
-        .select('id')
-        .eq('user_id', user?.id);
-
-      if (error) throw error;
-      setSavedCoverLetters(data || []);
-    } catch (error) {
-      console.error('Error fetching saved cover letters count:', error);
-    }
   };
 
   const saveToSupabase = async () => {
