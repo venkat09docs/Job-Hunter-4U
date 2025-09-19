@@ -3006,7 +3006,7 @@ ${resumeData.personalDetails.fullName}`;
             <TabsContent value="cover-letter" className="space-y-6 mt-6">
               <div className="relative flex min-h-[600px]">
                 {/* Main Cover Letter Generator */}
-                <div className={`flex-1 transition-all duration-300 ${showCoverLetterSuggestions ? 'mr-80' : 'mr-0'}`}>
+                <div className={`flex-1 transition-all duration-300 ${showCoverLetterSuggestions ? 'mr-80' : ''}`}>
                   <Card>
                     <CardHeader>
                       <CardTitle>Cover Letter Generator</CardTitle>
@@ -3091,8 +3091,8 @@ ${resumeData.personalDetails.fullName}`;
                     variant="outline"
                     size="sm"
                     onClick={() => setShowCoverLetterSuggestions(!showCoverLetterSuggestions)}
-                    className={`fixed right-4 top-1/2 -translate-y-1/2 z-50 transition-all duration-300 ${
-                      showCoverLetterSuggestions ? 'right-80' : 'right-4'
+                    className={`fixed top-1/2 -translate-y-1/2 z-50 transition-all duration-300 ${
+                      showCoverLetterSuggestions ? 'right-[336px]' : 'right-4'
                     }`}
                   >
                     {showCoverLetterSuggestions ? (
