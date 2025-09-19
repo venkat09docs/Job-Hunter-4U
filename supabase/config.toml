@@ -42,5 +42,8 @@ verify_jwt = false
 [functions.interview-coach-chat]
 verify_jwt = true
 
+[functions.assignment-evaluator-chat]
+verify_jwt = true
+
 [functions.voice-to-text]
 verify_jwt = true

@@ -22,11 +22,11 @@ export default function InterviewPreparation() {
       color: 'bg-gradient-to-br from-blue-500 to-blue-600'
     },
     {
-      id: 'interview-questions',
-      title: 'Question Bank',
-      description: 'Browse common interview questions by category',
+      id: 'evaluate-assignments',
+      title: 'Evaluate Your Assignments',
+      description: 'AI-powered assignment creation and evaluation system',
       icon: FileText,
-      route: '#',
+      route: '/dashboard/evaluate-assignments',
       color: 'bg-gradient-to-br from-green-500 to-green-600'
     },
     {

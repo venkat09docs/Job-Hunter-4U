@@ -84,6 +84,7 @@ import AttemptResults from "./pages/career-level/AttemptResults";
 import CourseContentView from "./pages/CourseContentView";
 import CourseContentManagement from "./pages/CourseContentManagement";
 import CrackInterview from "./pages/CrackInterview";
+import EvaluateAssignments from "./pages/EvaluateAssignments";
 // Import InterviewPreparation component  
 import InterviewPreparation from "./pages/InterviewPreparation";
 
@@ -538,6 +539,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <CrackInterview />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/evaluate-assignments" 
+            element={
+              <ProtectedRoute>
+                <EvaluateAssignments />
               </ProtectedRoute>
             } 
           />
