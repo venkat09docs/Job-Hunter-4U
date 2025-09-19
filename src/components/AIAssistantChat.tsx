@@ -35,18 +35,6 @@ const AIAssistantChat = () => {
 
   const hasValidSubscription = hasActiveSubscription();
   
-  // Hide AI Assistant Chat on specific pages
-  const hideOnRoutes = ['/dashboard/crack-interview'];
-  const shouldHide = hideOnRoutes.some(route => location.pathname === route);
-  
-  // Hide AI assistant on course content view pages
-  const shouldHideAssistant = location.pathname.startsWith('/course/');
-  
-  // Early returns after all hooks have been called
-  if (shouldHide) {
-    return null;
-  }
-
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -88,6 +76,18 @@ const AIAssistantChat = () => {
       }]);
     }
   }, [isOpen]);
+  
+  // Hide AI Assistant Chat on specific pages
+  const hideOnRoutes = ['/dashboard/crack-interview'];
+  const shouldHide = hideOnRoutes.some(route => location.pathname === route);
+  
+  // Hide AI assistant on course content view pages
+  const shouldHideAssistant = location.pathname.startsWith('/course/');
+  
+  // Early returns after all hooks have been called
+  if (shouldHide) {
+    return null;
+  }
 
   const logChatToSupabase = async (userMessage: string, aiResponse: string) => {
     try {
