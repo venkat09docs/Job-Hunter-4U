@@ -87,11 +87,13 @@ const CareerAssignments = () => {
   
   const fetchResumeCourseProgress = async () => {
     try {
+      console.log('🎓 Fetching resume course progress for course ID:', RESUME_COURSE_ID);
       const progress = await getCourseProgress(RESUME_COURSE_ID);
+      console.log('🎓 Raw course progress response:', progress);
       setResumeCourseProgress(progress?.progress_percentage || 0);
-      console.log('🎓 Resume course progress:', progress?.progress_percentage || 0);
+      console.log('🎓 Resume course progress set to:', progress?.progress_percentage || 0);
     } catch (error) {
-      console.error('Error fetching resume course progress:', error);
+      console.error('🎓 Error fetching resume course progress:', error);
       setResumeCourseProgress(0);
     }
   };
@@ -868,30 +870,38 @@ const CareerAssignments = () => {
                               </span>
                               <Progress value={categoryProgress} className="w-24 h-2" />
                             </div>
-                             <Button
-                               onClick={(e) => {
-                                 e.stopPropagation();
-                                 const categoryName = subCategory.name.toLowerCase();
-                                 if (isEnabled) {
-                                   if (categoryName.includes('resume') && resumeCourseProgress < 100) {
-                                     navigate('/course/3656d01b-f153-4480-8c69-28155b271077');
-                                   } else {
-                                     initializeSubCategoryTasks(subCategory.id);
-                                   }
-                                 } else if (categoryName.includes('resume') && resumeCourseProgress < 100) {
-                                   navigate('/course/3656d01b-f153-4480-8c69-28155b271077');
-                                 }
-                               }}
-                               size="sm"
-                               variant={subCategory.name.toLowerCase().includes('resume') && resumeCourseProgress < 100 ? "default" : "outline"}
-                               disabled={!canAccessFeature("career_assignments") || (!isEnabled && !(subCategory.name.toLowerCase().includes('resume') && resumeCourseProgress < 100))}
-                               className="ml-4"
-                             >
-                               {subCategory.name.toLowerCase().includes('resume') && resumeCourseProgress < 100 
-                                 ? 'Complete Course' 
-                                 : 'Initialize Tasks'}
-                               {(!canAccessFeature("career_assignments") || (!isEnabled && !(subCategory.name.toLowerCase().includes('resume') && resumeCourseProgress < 100))) && <Lock className="w-4 h-4 ml-2" />}
-                             </Button>
+                              <Button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  console.log('🎓 Complete Course button clicked');
+                                  const categoryName = subCategory.name.toLowerCase();
+                                  console.log('🎓 Category name:', categoryName);
+                                  console.log('🎓 Resume course progress:', resumeCourseProgress);
+                                  console.log('🎓 Is enabled:', isEnabled);
+                                  
+                                  if (isEnabled) {
+                                    if (categoryName.includes('resume') && resumeCourseProgress < 100) {
+                                      console.log('🎓 Navigating to course (enabled branch)');
+                                      navigate('/course/3656d01b-f153-4480-8c69-28155b271077');
+                                    } else {
+                                      console.log('🎓 Initializing tasks');
+                                      initializeSubCategoryTasks(subCategory.id);
+                                    }
+                                  } else if (categoryName.includes('resume') && resumeCourseProgress < 100) {
+                                    console.log('🎓 Navigating to course (disabled branch)');
+                                    navigate('/course/3656d01b-f153-4480-8c69-28155b271077');
+                                  }
+                                }}
+                                size="sm"
+                                variant={subCategory.name.toLowerCase().includes('resume') && resumeCourseProgress < 100 ? "default" : "outline"}
+                                disabled={!canAccessFeature("career_assignments") || (!isEnabled && !(subCategory.name.toLowerCase().includes('resume') && resumeCourseProgress < 100))}
+                                className="ml-4"
+                              >
+                                {subCategory.name.toLowerCase().includes('resume') && resumeCourseProgress < 100 
+                                  ? 'Complete Course' 
+                                  : 'Initialize Tasks'}
+                                {(!canAccessFeature("career_assignments") || (!isEnabled && !(subCategory.name.toLowerCase().includes('resume') && resumeCourseProgress < 100))) && <Lock className="w-4 h-4 ml-2" />}
+                              </Button>
                           </div>
                         </AccordionTrigger>
                          <AccordionContent className="space-y-4 pt-4">
@@ -908,13 +918,16 @@ const CareerAssignments = () => {
                                        <p className="text-xs mb-2">Course Progress: {Math.round(resumeCourseProgress)}%</p>
                                        <Progress value={resumeCourseProgress} className="w-48 mx-auto h-2" />
                                      </div>
-                                     <Button 
-                                       onClick={() => navigate('/course/3656d01b-f153-4480-8c69-28155b271077')}
-                                       className="mt-3"
-                                     >
-                                       <BookOpen className="w-4 h-4 mr-2" />
-                                       View Course
-                                     </Button>
+                                      <Button 
+                                        onClick={() => {
+                                          console.log('🎓 View Course button clicked in accordion content');
+                                          navigate('/course/3656d01b-f153-4480-8c69-28155b271077');
+                                        }}
+                                        className="mt-3"
+                                      >
+                                        <BookOpen className="w-4 h-4 mr-2" />
+                                        View Course
+                                      </Button>
                                    </>
                                  ) : (
                                    <>
