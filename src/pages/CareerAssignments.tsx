@@ -5,7 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { 
   Home, Target, Trophy, Clock, FileText, Users, User, Github, 
-  Copy, RefreshCw, Settings, Lock, History, Activity, Shield, Mail
+  Copy, RefreshCw, Settings, Lock, History, Activity, Shield, Mail, BookOpen
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,6 +22,7 @@ import { useGitHubProgress } from '@/hooks/useGitHubProgress';
 import { useProfile } from '@/hooks/useProfile';
 import { useUserIndustry } from '@/hooks/useUserIndustry';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useChapterCompletion } from '@/hooks/useChapterCompletion';
 
 interface SubCategory {
   id: string;
@@ -60,23 +61,40 @@ const CareerAssignments = () => {
   // Progress hooks for different modules
   const { completionPercentage: linkedinProgress } = useLinkedInProgress();
   const { getCompletionPercentage: getGitHubProgress } = useGitHubProgress();
+  const { getCourseProgress } = useChapterCompletion();
   
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
+  const [resumeCourseProgress, setResumeCourseProgress] = useState<number>(0);
   
   // Stats
   const [totalPoints, setTotalPoints] = useState(0);
   const [maxPoints, setMaxPoints] = useState(0);
   const [completedTasks, setCompletedTasks] = useState(0);
+  
+  // Course ID for "Build ATS Supported Resume"
+  const RESUME_COURSE_ID = '3656d01b-f153-4480-8c69-28155b271077';
 
-  // Fetch subcategories only - let useCareerAssignments handle the rest
+  // Fetch subcategories and course progress
   useEffect(() => {
     console.log('🔍 CareerAssignments useEffect triggered', { user: user?.id, hasUser: !!user });
     if (user && !isLoading) {
       // Only fetch subcategories after assignments are loaded
       fetchSubCategories();
+      fetchResumeCourseProgress();
       setupRealtimeSubscription();
     }
   }, [user, isLoading]);
+  
+  const fetchResumeCourseProgress = async () => {
+    try {
+      const progress = await getCourseProgress(RESUME_COURSE_ID);
+      setResumeCourseProgress(progress?.progress_percentage || 0);
+      console.log('🎓 Resume course progress:', progress?.progress_percentage || 0);
+    } catch (error) {
+      console.error('Error fetching resume course progress:', error);
+      setResumeCourseProgress(0);
+    }
+  };
 
   const fetchSubCategories = async () => {
     try {
@@ -251,9 +269,9 @@ const CareerAssignments = () => {
   const isSubCategoryEnabled = (subCategory: SubCategory) => {
     const categoryName = subCategory.name.toLowerCase();
     
-    // Resume building is always enabled (first in sequence)
+    // Resume building requires course completion first
     if (categoryName.includes('resume')) {
-      return true;
+      return resumeCourseProgress >= 100;
     }
     
     // Find Resume subcategory and check if it's completed
@@ -326,6 +344,11 @@ const CareerAssignments = () => {
   // Helper function to get disabled message for subcategory
   const getDisabledMessage = (subCategory: SubCategory) => {
     const categoryName = subCategory.name.toLowerCase();
+    
+    // Resume building requires course completion
+    if (categoryName.includes('resume') && resumeCourseProgress < 100) {
+      return 'Complete the "Build ATS Supported Resume" course first to unlock resume building tasks';
+    }
     
     const resumeSubCat = subCategories.find(sc => sc.name.toLowerCase().includes('resume'));
     const resumeProgress = resumeSubCat ? getSubCategoryProgress(resumeSubCat.id) : 0;
@@ -845,58 +868,91 @@ const CareerAssignments = () => {
                               </span>
                               <Progress value={categoryProgress} className="w-24 h-2" />
                             </div>
-                            <Button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (isEnabled) {
-                                  initializeSubCategoryTasks(subCategory.id);
-                                }
-                              }}
-                              size="sm"
-                              variant="outline"
-                              disabled={!canAccessFeature("career_assignments") || !isEnabled}
-                              className="ml-4"
-                            >
-                              Initialize Tasks
-                              {(!canAccessFeature("career_assignments") || !isEnabled) && <Lock className="w-4 h-4 ml-2" />}
-                            </Button>
+                             <Button
+                               onClick={(e) => {
+                                 e.stopPropagation();
+                                 const categoryName = subCategory.name.toLowerCase();
+                                 if (isEnabled) {
+                                   if (categoryName.includes('resume') && resumeCourseProgress < 100) {
+                                     navigate('/course/3656d01b-f153-4480-8c69-28155b271077');
+                                   } else {
+                                     initializeSubCategoryTasks(subCategory.id);
+                                   }
+                                 } else if (categoryName.includes('resume') && resumeCourseProgress < 100) {
+                                   navigate('/course/3656d01b-f153-4480-8c69-28155b271077');
+                                 }
+                               }}
+                               size="sm"
+                               variant={subCategory.name.toLowerCase().includes('resume') && resumeCourseProgress < 100 ? "default" : "outline"}
+                               disabled={!canAccessFeature("career_assignments") || (!isEnabled && !(subCategory.name.toLowerCase().includes('resume') && resumeCourseProgress < 100))}
+                               className="ml-4"
+                             >
+                               {subCategory.name.toLowerCase().includes('resume') && resumeCourseProgress < 100 
+                                 ? 'Complete Course' 
+                                 : 'Initialize Tasks'}
+                               {(!canAccessFeature("career_assignments") || (!isEnabled && !(subCategory.name.toLowerCase().includes('resume') && resumeCourseProgress < 100))) && <Lock className="w-4 h-4 ml-2" />}
+                             </Button>
                           </div>
                         </AccordionTrigger>
-                        <AccordionContent className="space-y-4 pt-4">
-                          {!isEnabled ? (
-                            <div className="text-center py-8 text-muted-foreground">
-                              <Lock className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                              <p className="font-medium">{disabledMessage}</p>
-                            </div>
-                          ) : (
-                            <>
-                              {categoryTasks.map(assignment => (
-                                <CareerTaskCard
-                                  key={assignment.id}
-                                  assignment={assignment}
-                                  evidence={evidence.filter(e => e.assignment_id === assignment.id)}
-                                  onSubmitEvidence={canAccessFeature("career_assignments") ? submitEvidence : () => {}}
-                                  onUpdateStatus={canAccessFeature("career_assignments") ? updateAssignmentStatus : () => {}}
-                                  isSubmitting={submittingEvidence}
-                                />
-                              ))}
-                              {categoryTasks.length === 0 && (
-                                <div className="text-center py-8 text-muted-foreground">
-                                  <Target className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                                  <p>No {subCategory.name.toLowerCase()} tasks assigned yet</p>
-                                  <Button 
-                                    onClick={handleInitialize} 
-                                    className="mt-3"
-                                    disabled={!canAccessFeature("career_assignments")}
-                                  >
-                                    Initialize Tasks
-                                    {!canAccessFeature("career_assignments") && <Lock className="w-4 h-4 ml-2" />}
-                                  </Button>
-                                </div>
-                              )}
-                            </>
-                          )}
-                        </AccordionContent>
+                         <AccordionContent className="space-y-4 pt-4">
+                           {(() => {
+                             const categoryName = subCategory.name.toLowerCase();
+                             return !isEnabled ? (
+                               <div className="text-center py-8 text-muted-foreground">
+                                 {categoryName.includes('resume') && resumeCourseProgress < 100 ? (
+                                   <>
+                                     <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                     <p className="font-medium mb-2">Complete Course First</p>
+                                     <p className="text-sm mb-4">{getDisabledMessage(subCategory)}</p>
+                                     <div className="mb-4">
+                                       <p className="text-xs mb-2">Course Progress: {Math.round(resumeCourseProgress)}%</p>
+                                       <Progress value={resumeCourseProgress} className="w-48 mx-auto h-2" />
+                                     </div>
+                                     <Button 
+                                       onClick={() => navigate('/course/3656d01b-f153-4480-8c69-28155b271077')}
+                                       className="mt-3"
+                                     >
+                                       <BookOpen className="w-4 h-4 mr-2" />
+                                       View Course
+                                     </Button>
+                                   </>
+                                 ) : (
+                                   <>
+                                     <Lock className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                     <p className="font-medium">{disabledMessage}</p>
+                                   </>
+                                 )}
+                               </div>
+                             ) : (
+                               <>
+                                 {categoryTasks.map(assignment => (
+                                   <CareerTaskCard
+                                     key={assignment.id}
+                                     assignment={assignment}
+                                     evidence={evidence.filter(e => e.assignment_id === assignment.id)}
+                                     onSubmitEvidence={canAccessFeature("career_assignments") ? submitEvidence : () => {}}
+                                     onUpdateStatus={canAccessFeature("career_assignments") ? updateAssignmentStatus : () => {}}
+                                     isSubmitting={submittingEvidence}
+                                   />
+                                 ))}
+                                 {categoryTasks.length === 0 && (
+                                   <div className="text-center py-8 text-muted-foreground">
+                                     <Target className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                     <p>No {subCategory.name.toLowerCase()} tasks assigned yet</p>
+                                     <Button 
+                                       onClick={handleInitialize} 
+                                       className="mt-3"
+                                       disabled={!canAccessFeature("career_assignments")}
+                                     >
+                                       Initialize Tasks
+                                       {!canAccessFeature("career_assignments") && <Lock className="w-4 h-4 ml-2" />}
+                                     </Button>
+                                   </div>
+                                 )}
+                               </>
+                             );
+                           })()}
+                         </AccordionContent>
                       </AccordionItem>
                     );
                   })}
