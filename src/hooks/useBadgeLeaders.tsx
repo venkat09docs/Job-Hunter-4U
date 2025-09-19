@@ -32,10 +32,13 @@ export const useBadgeLeaders = () => {
     try {
       setLoading(true);
 
+      console.log('🏆 Badge Leaders - Institute Status:', { isInstituteUser, instituteId });
+
       let profileBuildData, jobApplyData, linkedinGrowthData, githubRepoData;
 
       // Use institute-specific functions if user is institute user
       if (isInstituteUser && instituteId) {
+        console.log('🏆 Fetching institute-specific badge leaders for institute:', instituteId);
         [profileBuildData, jobApplyData, linkedinGrowthData, githubRepoData] = await Promise.all([
           supabase.rpc('get_institute_badge_leaders_profile_build', { institute_id_param: instituteId }),
           supabase.rpc('get_institute_badge_leaders_job_apply', { institute_id_param: instituteId }),
@@ -43,6 +46,7 @@ export const useBadgeLeaders = () => {
           supabase.rpc('get_institute_badge_leaders_github_repository', { institute_id_param: instituteId })
         ]);
       } else {
+        console.log('🏆 Fetching global badge leaders (non-institute user)');
         // Use global functions for admins/recruiters/non-institute users
         [profileBuildData, jobApplyData, linkedinGrowthData, githubRepoData] = await Promise.all([
           supabase.rpc('get_badge_leaders_profile_build'),
