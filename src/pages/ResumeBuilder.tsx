@@ -72,72 +72,14 @@ type StatusType = 'draft' | 'finalized' | 'downloaded';
 type SectionType = 'personalDetails' | 'experience' | 'education' | 'skills' | 'interests' | 'certifications' | 'awards' | 'summary';
 
 const ResumeBuilder = () => {
+  // ALL HOOKS MUST BE CALLED AT THE TOP - BEFORE ANY EARLY RETURNS OR CONDITIONAL LOGIC
   const { user } = useAuth();
   const { canAccessFeature, loading: premiumLoading } = usePremiumFeatures();
-  
-  // Show loading state while premium features are loading - BEFORE any other hooks
-  if (premiumLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-hero flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Check premium access - BEFORE any other hooks
-  const hasAccess = canAccessFeature('resume_builder');
-  
-  if (!hasAccess) {
-    const navigate = useNavigate();
-    return (
-      <div className="min-h-screen bg-gradient-hero">
-        <header className="border-b bg-background/80 backdrop-blur-sm">
-          <div className="flex items-center justify-between px-4 py-4">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/dashboard')}
-                className="gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Dashboard
-              </Button>
-              <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                Resume Builder
-              </h1>
-            </div>
-            <div className="flex items-center gap-4">
-              <SubscriptionStatus />
-              <UserProfileDropdown />
-            </div>
-          </div>
-        </header>
-        <main className="flex-1 p-8 overflow-auto flex items-center justify-center">
-          <SubscriptionUpgrade featureName="resume_builder">
-            <Card className="max-w-md">
-              <CardHeader>
-                <CardTitle>Premium Feature</CardTitle>
-                <CardDescription>
-                  Resume Builder is a premium feature. Upgrade your plan to access professional resume building tools.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full">Upgrade Now</Button>
-              </CardContent>
-            </Card>
-          </SubscriptionUpgrade>
-        </main>
-      </div>
-    );
-  }
-  
-  // Now all the other hooks can be called safely
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // All state hooks must be at the top too
   const [status, setStatus] = useState<StatusType>('draft');
   const [loading, setLoading] = useState(false);
   const [coverLetterSuggestions, setCoverLetterSuggestions] = useState('');
@@ -191,22 +133,6 @@ const ResumeBuilder = () => {
   const EFFECTIVE_RESUME_TOOL_ID = 'b1d7a888-49b8-412b-861b-b6d850eda7a4';
   const { chats: effectiveResumeNotes } = useToolChats(EFFECTIVE_RESUME_TOOL_ID);
   
-  
-  // Debug logging for effective resume notes
-  useEffect(() => {
-    console.log('Effective Resume Notes Debug:', {
-      toolId: EFFECTIVE_RESUME_TOOL_ID,
-      notesCount: effectiveResumeNotes?.length || 0,
-      notes: effectiveResumeNotes?.map(note => ({
-        id: note.id,
-        title: note.title,
-        messagesCount: note.messages?.length || 0,
-        messages: note.messages,
-        created_at: note.created_at
-      }))
-    });
-  }, [effectiveResumeNotes]);
-  
   // Right column state
   const [rightColumnContent, setRightColumnContent] = useState<'suggestions' | 'preview'>('suggestions');
   const [activeSuggestionSection, setActiveSuggestionSection] = useState<SectionType | null>(null);
@@ -223,7 +149,6 @@ const ResumeBuilder = () => {
     summary: false
   });
 
-  const location = useLocation();
   const [activeTab, setActiveTab] = useState(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
@@ -249,7 +174,74 @@ const ResumeBuilder = () => {
     awards: [''],
     professionalSummary: ''
   });
+  
+  const [checklist, setChecklist] = useState({
+    personalInfo: false,
+    experience: false,
+    education: false,
+    skills: false,
+    summary: false
+  });
+  
+  // Show loading state while premium features are loading
+  if (premiumLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-hero flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
+  // Check premium access
+  const hasAccess = canAccessFeature('resume_builder');
+  
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen bg-gradient-hero">
+        <header className="border-b bg-background/80 backdrop-blur-sm">
+          <div className="flex items-center justify-between px-4 py-4">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/dashboard')}
+                className="gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Dashboard
+              </Button>
+              <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                Resume Builder
+              </h1>
+            </div>
+            <div className="flex items-center gap-4">
+              <SubscriptionStatus />
+              <UserProfileDropdown />
+            </div>
+          </div>
+        </header>
+        <main className="flex-1 p-8 overflow-auto flex items-center justify-center">
+          <SubscriptionUpgrade featureName="resume_builder">
+            <Card className="max-w-md">
+              <CardHeader>
+                <CardTitle>Premium Feature</CardTitle>
+                <CardDescription>
+                  Resume Builder is a premium feature. Upgrade your plan to access professional resume building tools.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full">Upgrade Now</Button>
+              </CardContent>
+            </Card>
+          </SubscriptionUpgrade>
+        </main>
+      </div>
+    );
+  }
+  
   // Use useCallback to prevent re-renders that lose focus
   const updateResumeData = useCallback((updates: Partial<ResumeData>) => {
     setResumeData(prev => ({ ...prev, ...updates }));
@@ -292,14 +284,6 @@ const ResumeBuilder = () => {
     setShowAchievementsDialog(true);
   }, []);
 
-  const [checklist, setChecklist] = useState({
-    personalInfo: false,
-    experience: false,
-    education: false,
-    skills: false,
-    summary: false
-  });
-
   // Update checklist based on form data
   const updateChecklist = useCallback(() => {
     setChecklist({
@@ -310,6 +294,21 @@ const ResumeBuilder = () => {
       summary: !!resumeData.professionalSummary.trim()
     });
   }, [resumeData]);
+
+  // Debug logging for effective resume notes
+  useEffect(() => {
+    console.log('Effective Resume Notes Debug:', {
+      toolId: EFFECTIVE_RESUME_TOOL_ID,
+      notesCount: effectiveResumeNotes?.length || 0,
+      notes: effectiveResumeNotes?.map(note => ({
+        id: note.id,
+        title: note.title,
+        messagesCount: note.messages?.length || 0,
+        messages: note.messages,
+        created_at: note.created_at
+      }))
+    });
+  }, [effectiveResumeNotes, EFFECTIVE_RESUME_TOOL_ID]);
 
   // Load existing resume data
   useEffect(() => {
