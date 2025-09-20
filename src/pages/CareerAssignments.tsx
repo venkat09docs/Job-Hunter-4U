@@ -295,7 +295,19 @@ const CareerAssignments = () => {
         return assignment.career_task_templates?.sub_category_id === subCategoryId;
       });
     
-    console.log('Filtered assignments:', filtered.length);
+    console.log('🔍 Filtered assignments for subcategory:', subCategoryId, 'count:', filtered.length);
+    
+    // Check if this is resume building subcategory and no tasks are assigned
+    const resumeSubCat = subCategories.find(sc => sc.name.toLowerCase().includes('resume'));
+    if (resumeSubCat && subCategoryId === resumeSubCat.id && filtered.length === 0 && resumeCourseProgress >= 100) {
+      console.log('🚨 RESUME TASKS MISSING:', {
+        subCategoryId,
+        resumeCourseProgress,
+        totalAssignments: assignments?.length || 0,
+        shouldHaveTasks: true,
+        message: 'Resume course completed but no tasks assigned - need to initialize'
+      });
+    }
     
     return filtered
       .sort((a, b) => {
@@ -326,7 +338,23 @@ const CareerAssignments = () => {
     // Resume building requires course completion first
     if (categoryName.includes('resume')) {
       const enabled = resumeCourseProgress >= 100;
-      console.log('🎓 Resume category enabled:', enabled);
+      const tasksAssigned = getTasksBySubCategory(subCategory.id).length;
+      
+      console.log('🎓 Resume category check:', {
+        enabled,
+        courseProgress: resumeCourseProgress,
+        tasksAssigned,
+        shouldAutoInitialize: enabled && tasksAssigned === 0
+      });
+      
+      // Auto-initialize resume tasks if course is completed but no tasks assigned
+      if (enabled && tasksAssigned === 0 && !isLoading) {
+        console.log('🚀 Auto-initializing resume tasks...');
+        setTimeout(() => {
+          initializeUserWeek();
+        }, 1000);
+      }
+      
       return enabled;
     }
     
