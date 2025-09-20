@@ -134,6 +134,16 @@ export function AppSidebar() {
   const { user, signOut } = useAuth();
   const { profile, hasActiveSubscription } = useProfile();
   const { isAdmin, isInstituteAdmin, isRecruiter, loading: roleLoading } = useRole();
+  
+  // Debug logging for role detection
+  console.log('🔍 AppSidebar Role Debug:', {
+    isAdmin,
+    isInstituteAdmin, 
+    isRecruiter,
+    roleLoading,
+    userEmail: user?.email,
+    userId: user?.id
+  });
   const { canAccessFeature } = usePremiumFeatures();
   const { isIT } = useUserIndustry();
   const { totalPoints } = useUserPoints();
