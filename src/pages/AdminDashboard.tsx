@@ -12,6 +12,7 @@ import { InstituteDashboard } from '@/components/admin/InstituteDashboard';
 import { SuperAdminDashboard } from '@/components/admin/SuperAdminDashboard';
 import { UserAssignmentManagement } from "@/components/admin/UserAssignmentManagement";
 import AffiliateManagement from "@/components/admin/AffiliateManagement";
+import AdminSetup from '@/components/AdminSetup';
 import { AppSidebar } from '@/components/AppSidebar';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
@@ -125,7 +126,13 @@ export default function AdminDashboard() {
             </TabsList>
 
             <TabsContent value="dashboard">
-              <SuperAdminDashboard />
+              <div className="space-y-6">
+                <SuperAdminDashboard />
+                <div className="mt-8">
+                  <h3 className="text-lg font-semibold mb-4">Admin Setup</h3>
+                  <AdminSetup />
+                </div>
+              </div>
             </TabsContent>
 
             <TabsContent value="institutes">
