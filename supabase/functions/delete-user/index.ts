@@ -72,6 +72,7 @@ serve(async (req) => {
       .eq('user_id', user.id)
 
     if (roleError) {
+      console.error('Role check error:', roleError)
       return new Response(
         JSON.stringify({ error: 'Error checking user permissions' }),
         { 
@@ -84,6 +85,13 @@ serve(async (req) => {
     const roles = userRoles?.map(r => r.role) || []
     const isAdmin = roles.includes('admin')
     const isInstituteAdmin = roles.includes('institute_admin')
+
+    console.log('Delete user permissions check:', { 
+      requestingUserId: user.id, 
+      roles, 
+      isAdmin, 
+      isInstituteAdmin 
+    })
 
     if (!isAdmin && !isInstituteAdmin) {
       return new Response(
@@ -232,13 +240,19 @@ serve(async (req) => {
     // Delete from each table
     for (const table of tablesToDelete) {
       try {
-        await supabaseAdmin
+        console.log(`Attempting to delete from ${table} for user: ${user_id}`)
+        const { error: deleteError } = await supabaseAdmin
           .from(table)
           .delete()
           .eq('user_id', user_id)
-        console.log(`Deleted from ${table}`)
+        
+        if (deleteError) {
+          console.error(`Error deleting from ${table}:`, deleteError)
+        } else {
+          console.log(`Successfully deleted from ${table}`)
+        }
       } catch (error) {
-        console.log(`Error deleting from ${table}:`, error)
+        console.error(`Exception deleting from ${table}:`, error)
         // Continue with other tables even if one fails
       }
     }

@@ -819,10 +819,14 @@ export default function UserManagement() {
     }
 
     try {
+      console.log('🗑️ Deleting user:', { user_id: user.user_id, full_name: user.full_name });
+      
       // Call the edge function to delete user completely
       const { data, error } = await supabase.functions.invoke('delete-user', {
         body: { user_id: user.user_id }
       });
+
+      console.log('✅ Delete user response:', { data, error });
 
       if (error) {
         throw error;
@@ -837,7 +841,10 @@ export default function UserManagement() {
         description: 'User deleted successfully from all systems',
       });
 
-      fetchUsers();
+      // Add a small delay to ensure database consistency before refresh
+      setTimeout(() => {
+        fetchUsers();
+      }, 1000);
     } catch (error: any) {
       console.error('Delete user error:', error);
       toast({
@@ -867,6 +874,8 @@ export default function UserManagement() {
     }
 
     try {
+      console.log('🔄 Creating user with data:', { email: addUserFormData.email, full_name: addUserFormData.full_name, username: addUserFormData.username });
+      
       // Call the edge function to create user
       const { data, error } = await supabase.functions.invoke('create-admin-user', {
         body: {
@@ -877,6 +886,8 @@ export default function UserManagement() {
           role: 'user' // Default role
         }
       });
+
+      console.log('✅ Create user response:', { data, error });
 
       if (error) {
         throw error;
@@ -898,7 +909,11 @@ export default function UserManagement() {
         email: '',
         password: '',
       });
-      fetchUsers();
+      
+      // Add a small delay to ensure database consistency before refresh
+      setTimeout(() => {
+        fetchUsers();
+      }, 1000);
     } catch (error: any) {
       console.error('Create user error:', error);
       toast({
