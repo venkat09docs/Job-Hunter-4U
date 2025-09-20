@@ -518,52 +518,7 @@ const VerifyAssignments = () => {
   const fetchPendingAssignments = async () => {
     if (!user) throw new Error('User not authenticated');
     
-    // First, get user institute assignments to filter LinkedIn tasks appropriately
-    let instituteUserIds: string[] = [];
-    let nonInstituteUserIds: string[] = [];
-    
-    if (isRecruiter || isInstituteAdmin) {
-      // Get all user assignments to determine institute vs non-institute users
-      const { data: allAssignments } = await supabase
-        .from('user_assignments')
-        .select('user_id, institute_id, is_active')
-        .eq('is_active', true);
-      
-      const instituteUsers = new Set<string>();
-      const nonInstituteUsers = new Set<string>();
-      
-      // Get all users who have active institute assignments
-      if (allAssignments) {
-        allAssignments.forEach(assignment => {
-          if (assignment.institute_id && assignment.user_id) {
-            instituteUsers.add(assignment.user_id);
-          }
-        });
-      }
-      
-      // Get all LinkedIn user task user IDs to determine non-institute users
-      const { data: linkedInUsers } = await supabase
-        .from('linkedin_user_tasks')
-        .select('user_id')
-        .eq('status', 'SUBMITTED');
-      
-      if (linkedInUsers) {
-        linkedInUsers.forEach(task => {
-          if (task.user_id && !instituteUsers.has(task.user_id)) {
-            nonInstituteUsers.add(task.user_id);
-          }
-        });
-      }
-      
-      instituteUserIds = Array.from(instituteUsers);
-      nonInstituteUserIds = Array.from(nonInstituteUsers);
-    }
-    
-    // Build LinkedIn query - RLS policies now handle role-based filtering
-    const linkedInQuery = supabase
-      .from('linkedin_user_tasks')
-      .select(`*, linkedin_tasks (id, code, title, description, points_base)`)
-      .eq('status', 'SUBMITTED')
+    console.log('🔍 Fetching pending assignments for role:', { isAdmin, isInstituteAdmin, isRecruiter });
     
     // Fetch all assignment types in parallel with optimized queries
     const [careerResult, linkedInResult, jobHuntingResult, gitHubResult, dailyTasksResult] = await Promise.all([
@@ -578,7 +533,12 @@ const VerifyAssignments = () => {
         .eq('status', 'submitted')
         .order('submitted_at', { ascending: false }),
 
-      linkedInQuery.order('created_at', { ascending: false }),
+      // LinkedIn tasks - RLS policies handle role-based filtering automatically
+      supabase
+        .from('linkedin_user_tasks')
+        .select(`*, linkedin_tasks (id, code, title, description, points_base)`)
+        .eq('status', 'SUBMITTED')
+        .order('created_at', { ascending: false }),
 
       supabase
         .from('job_hunting_assignments')
@@ -586,22 +546,12 @@ const VerifyAssignments = () => {
         .eq('status', 'submitted')
         .order('submitted_at', { ascending: false }),
 
-      // Apply same filtering logic as LinkedIn tasks for GitHub
-      (() => {
-        let gitHubQuery = supabase
-          .from('github_user_tasks')
-          .select(`*, github_tasks (id, code, title, description, points_base)`)
-          .eq('status', 'SUBMITTED');
-        
-        // Apply same filtering as LinkedIn tasks
-        if (isRecruiter && nonInstituteUserIds.length > 0) {
-          gitHubQuery = gitHubQuery.in('user_id', nonInstituteUserIds);
-        } else if (isInstituteAdmin && instituteUserIds.length > 0) {
-          gitHubQuery = gitHubQuery.in('user_id', instituteUserIds);
-        }
-        
-        return gitHubQuery.order('created_at', { ascending: false });
-      })(),
+      // GitHub tasks - RLS policies handle role-based filtering automatically
+      supabase
+        .from('github_user_tasks')
+        .select(`*, github_tasks (id, code, title, description, points_base)`)
+        .eq('status', 'SUBMITTED')
+        .order('created_at', { ascending: false }),
 
       supabase
         .from('daily_job_hunting_tasks')
@@ -794,79 +744,17 @@ const VerifyAssignments = () => {
   const fetchVerifiedAssignments = async (page: number) => {
     if (!user) throw new Error('User not authenticated');
     
+    console.log('🔍 Fetching verified assignments for role:', { isAdmin, isInstituteAdmin, isRecruiter });
+    
     const offset = (page - 1) * VERIFIED_PAGE_SIZE;
-
-    // First, get user institute assignments to filter LinkedIn tasks appropriately (same as pending)
-    let linkedInUserFilter: string[] = [];
-    
-    if (isRecruiter || isInstituteAdmin) {
-      // Get all user assignments to determine institute vs non-institute users
-      const { data: allAssignments } = await supabase
-        .from('user_assignments')
-        .select('user_id, institute_id, is_active')
-        .eq('is_active', true);
-      
-      const instituteUsers = new Set<string>();
-      
-      // Get all users who have active institute assignments
-      if (allAssignments) {
-        allAssignments.forEach(assignment => {
-          if (assignment.institute_id && assignment.user_id) {
-            instituteUsers.add(assignment.user_id);
-          }
-        });
-      }
-      
-      if (isRecruiter) {
-        // Get all LinkedIn user task user IDs to determine non-institute users
-        const { data: linkedInUsers } = await supabase
-          .from('linkedin_user_tasks')
-          .select('user_id')
-          .eq('status', 'VERIFIED');
-        
-        if (linkedInUsers) {
-          const nonInstituteUsers = linkedInUsers
-            .filter(task => task.user_id && !instituteUsers.has(task.user_id))
-            .map(task => task.user_id!)
-            .filter(Boolean);
-          
-          linkedInUserFilter = nonInstituteUsers.length > 0 ? nonInstituteUsers : ['no-matches-found'];
-        } else {
-          linkedInUserFilter = ['no-matches-found'];
-        }
-      } else if (isInstituteAdmin && primaryInstitute?.id) {
-        // Institute admins only see LinkedIn assignments from their institute users
-        const { data: instituteUsers } = await supabase
-          .from('user_assignments')
-          .select('user_id')
-          .eq('institute_id', primaryInstitute.id)
-          .eq('is_active', true);
-        
-        linkedInUserFilter = instituteUsers?.map(u => u.user_id).filter(Boolean) || ['no-matches-found'];
-      }
-    }
-    
-    // Build count and data queries with filtering
-    let linkedInCountQuery = supabase.from('linkedin_user_tasks').select('id', { count: 'exact', head: true }).eq('status', 'VERIFIED');
-    let linkedInDataQuery = supabase
-      .from('linkedin_user_tasks')
-      .select(`*, linkedin_tasks (id, code, title, description, points_base)`)
-      .eq('status', 'VERIFIED')
-      .order('created_at', { ascending: false })
-      .range(0, Math.max(100, VERIFIED_PAGE_SIZE * 3));
-    
-    // Apply filtering based on role
-    if ((isRecruiter || isInstituteAdmin) && linkedInUserFilter.length > 0) {
-      linkedInCountQuery = linkedInCountQuery.in('user_id', linkedInUserFilter);
-      linkedInDataQuery = linkedInDataQuery.in('user_id', linkedInUserFilter);
-    }
 
     // Get total count and paginated data in parallel
     const [countResults, dataResults] = await Promise.all([
       // Count queries
       Promise.all([
         supabase.from('career_task_assignments').select('id', { count: 'exact', head: true }).eq('status', 'verified'),
-        linkedInCountQuery,
+        // LinkedIn tasks count - RLS policies handle role-based filtering automatically
+        supabase.from('linkedin_user_tasks').select('id', { count: 'exact', head: true }).eq('status', 'VERIFIED'),
         supabase.from('job_hunting_assignments').select('id', { count: 'exact', head: true }).eq('status', 'verified'),
         supabase.from('github_user_tasks').select('id', { count: 'exact', head: true }).eq('status', 'VERIFIED'),
         supabase.from('daily_job_hunting_tasks').select('id', { count: 'exact', head: true }).eq('status', 'approved')
@@ -886,7 +774,13 @@ const VerifyAssignments = () => {
           .order('verified_at', { ascending: false })
           .range(0, Math.max(100, VERIFIED_PAGE_SIZE * 3)),
 
-        linkedInDataQuery,
+        // LinkedIn tasks data - RLS policies handle role-based filtering automatically
+        supabase
+          .from('linkedin_user_tasks')
+          .select(`*, linkedin_tasks (id, code, title, description, points_base)`)
+          .eq('status', 'VERIFIED')
+          .order('created_at', { ascending: false })
+          .range(0, Math.max(100, VERIFIED_PAGE_SIZE * 3)),
 
         supabase
           .from('job_hunting_assignments')
@@ -895,22 +789,13 @@ const VerifyAssignments = () => {
           .order('verified_at', { ascending: false })
           .range(0, Math.max(100, VERIFIED_PAGE_SIZE * 3)),
 
-        // Apply same filtering logic as LinkedIn tasks for GitHub
-        (() => {
-          let gitHubQuery = supabase
-            .from('github_user_tasks')
-            .select(`*, github_tasks (id, code, title, description, points_base)`)
-            .eq('status', 'VERIFIED');
-          
-          // Apply filtering based on role (same as LinkedIn)
-          if ((isRecruiter || isInstituteAdmin) && linkedInUserFilter.length > 0) {
-            gitHubQuery = gitHubQuery.in('user_id', linkedInUserFilter);
-          }
-          
-          return gitHubQuery
-            .order('created_at', { ascending: false })
-            .range(0, Math.max(100, VERIFIED_PAGE_SIZE * 3));
-        })(),
+        // GitHub tasks - RLS policies handle role-based filtering automatically  
+        supabase
+          .from('github_user_tasks')
+          .select(`*, github_tasks (id, code, title, description, points_base)`)
+          .eq('status', 'VERIFIED')
+          .order('created_at', { ascending: false })
+          .range(0, Math.max(100, VERIFIED_PAGE_SIZE * 3)),
 
         supabase
           .from('daily_job_hunting_tasks')
