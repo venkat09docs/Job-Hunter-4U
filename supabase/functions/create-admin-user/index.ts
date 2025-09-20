@@ -41,9 +41,13 @@ serve(async (req) => {
       .from('user_roles')
       .select('role')
       .eq('user_id', currentUser.id)
-      .maybeSingle()
 
-    if (roleError || !roleData || roleData.role !== 'admin') {
+    if (roleError) {
+      throw new Error('Error checking user permissions')
+    }
+
+    const hasAdminRole = roleData?.some(r => r.role === 'admin') || false
+    if (!hasAdminRole) {
       throw new Error('Insufficient permissions. Only super admins can create users.')
     }
 

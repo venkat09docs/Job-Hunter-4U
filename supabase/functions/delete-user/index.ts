@@ -66,16 +66,26 @@ serve(async (req) => {
     }
 
     // Check if user has admin or institute admin role
-    const { data: userRole, error: roleError } = await supabase
+    const { data: userRoles, error: roleError } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
-      .single()
 
-    const isAdmin = userRole?.role === 'admin'
-    const isInstituteAdmin = userRole?.role === 'institute_admin'
+    if (roleError) {
+      return new Response(
+        JSON.stringify({ error: 'Error checking user permissions' }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
 
-    if (roleError || (!isAdmin && !isInstituteAdmin)) {
+    const roles = userRoles?.map(r => r.role) || []
+    const isAdmin = roles.includes('admin')
+    const isInstituteAdmin = roles.includes('institute_admin')
+
+    if (!isAdmin && !isInstituteAdmin) {
       return new Response(
         JSON.stringify({ error: 'Admin or Institute Admin access required' }),
         { 
