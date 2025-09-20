@@ -44,16 +44,20 @@ Deno.serve(async (req) => {
 
     for (const email of emailsToProcess) {
       try {
+        console.log(`Processing email: ${email}`)
+        
         // Get user by email
         const { data: authUsers, error: authError } = await supabaseClient.auth.admin.listUsers()
         
         if (authError) {
+          console.error('Auth error:', authError)
           throw authError
         }
 
         const user = authUsers.users.find(u => u.email === email)
         
         if (!user) {
+          console.log(`User not found for email: ${email}`)
           results.push({
             email,
             success: false,
@@ -62,8 +66,26 @@ Deno.serve(async (req) => {
           continue
         }
 
-        // Insert admin role for this user
-        const { error: roleError } = await supabaseClient
+        console.log(`Found user: ${user.id} for email: ${email}`)
+
+        // First, insert 'user' role if it doesn't exist
+        const { error: userRoleError } = await supabaseClient
+          .from('user_roles')
+          .upsert([
+            {
+              user_id: user.id,
+              role: 'user'
+            }
+          ], {
+            onConflict: 'user_id,role'
+          })
+
+        if (userRoleError) {
+          console.error('User role error:', userRoleError)
+        }
+
+        // Then insert admin role
+        const { error: adminRoleError } = await supabaseClient
           .from('user_roles')
           .upsert([
             {
@@ -74,13 +96,15 @@ Deno.serve(async (req) => {
             onConflict: 'user_id,role'
           })
 
-        if (roleError) {
+        if (adminRoleError) {
+          console.error('Admin role error:', adminRoleError)
           results.push({
             email,
             success: false,
-            message: `Failed to set admin role: ${roleError.message}`
+            message: `Failed to set admin role: ${adminRoleError.message}`
           })
         } else {
+          console.log(`Successfully set admin role for: ${email}`)
           results.push({
             email,
             success: true,
@@ -89,6 +113,7 @@ Deno.serve(async (req) => {
         }
 
       } catch (error) {
+        console.error('General error:', error)
         results.push({
           email,
           success: false,
