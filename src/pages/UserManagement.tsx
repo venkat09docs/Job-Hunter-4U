@@ -156,6 +156,47 @@ export default function UserManagement() {
     }
   }, [isAdmin, isInstituteAdmin]);
 
+  // Set up real-time listeners for user changes
+  useEffect(() => {
+    if (!isAdmin && !isInstituteAdmin) return;
+
+    console.log('🔄 Setting up real-time user listeners...');
+
+    // Listen for changes to profiles table (user deletions/updates)
+    const profilesChannel = supabase
+      .channel('profiles-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'profiles' },
+        (payload) => {
+          console.log('📡 Profiles table change detected:', payload);
+          // Refresh users when profiles change
+          setTimeout(() => fetchUsers(), 1000);
+        }
+      )
+      .subscribe();
+
+    // Listen for changes to user_assignments table (institute assignments)
+    const assignmentsChannel = supabase
+      .channel('assignments-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'user_assignments' },
+        (payload) => {
+          console.log('📡 User assignments change detected:', payload);
+          // Refresh users when assignments change
+          setTimeout(() => fetchUsers(), 1000);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('🔄 Cleaning up real-time listeners...');
+      supabase.removeChannel(profilesChannel);
+      supabase.removeChannel(assignmentsChannel);
+    };
+  }, [isAdmin, isInstituteAdmin]);
+
   const fetchAvailablePlans = async () => {
     try {
       const { data: plans, error } = await supabase
@@ -560,6 +601,21 @@ export default function UserManagement() {
           return;
         }
 
+        // Cross-check with auth.users to ensure users actually exist
+        // This prevents showing deleted users due to race conditions
+        const profileUserIds = profiles.map(p => p.user_id);
+        const { data: existingAuthUsers, error: authError } = await supabase
+          .from('profiles')
+          .select('user_id')
+          .in('user_id', profileUserIds);
+
+        if (authError) {
+          console.error('❌ Error cross-checking auth users:', authError);
+        }
+
+        const validUserIds = new Set(existingAuthUsers?.map(u => u.user_id) || []);
+        const verifiedProfiles = profiles.filter(profile => validUserIds.has(profile.user_id));
+
         // Get all users with institute assignments to exclude them
         const { data: assignments, error: assignmentsError } = await supabase
           .from('user_assignments')
@@ -573,9 +629,9 @@ export default function UserManagement() {
 
         // Filter out institute users (users with assignments)
         const instituteUserIds = new Set(assignments?.map(a => a.user_id) || []);
-        const filteredProfiles = profiles.filter(profile => !instituteUserIds.has(profile.user_id));
+        const filteredProfiles = verifiedProfiles.filter(profile => !instituteUserIds.has(profile.user_id));
         
-        console.log(`✅ Found ${profiles.length} total users, excluded ${instituteUserIds.size} institute users, showing ${filteredProfiles.length} users`);
+        console.log(`✅ Found ${profiles.length} total users, ${verifiedProfiles.length} verified existing, excluded ${instituteUserIds.size} institute users, showing ${filteredProfiles.length} users`);
 
         // Get user roles for filtered users
         const userIds = filteredProfiles.map(p => p.user_id);

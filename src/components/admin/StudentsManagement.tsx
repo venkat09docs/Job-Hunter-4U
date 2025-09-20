@@ -712,10 +712,18 @@ export const StudentsManagement = () => {
     if (!confirm(`Are you sure you want to permanently delete ${student.full_name || 'this student'}? This will completely remove all their data and cannot be undone.`)) return;
 
     try {
+      console.log('🗑️ Starting user deletion process for:', {
+        userId: student.user_id,
+        fullName: student.full_name,
+        email: student.email || 'N/A'
+      });
+
       // Use the comprehensive delete-user edge function that handles all table references
       const { data, error } = await supabase.functions.invoke('delete-user', {
         body: { user_id: student.user_id }
       });
+
+      console.log('🗑️ Delete user response:', { data, error });
 
       if (error) throw error;
       
@@ -723,15 +731,20 @@ export const StudentsManagement = () => {
         throw new Error(data?.error || 'Failed to delete user completely');
       }
 
+      console.log('✅ User deletion completed successfully');
+
       toast({
         title: 'Success',
         description: 'Student deleted completely from system',
       });
       
-      // Refresh the data to show updated list
-      fetchData(instituteId);
+      // Refresh the data to show updated list with a slight delay to ensure consistency
+      setTimeout(() => {
+        console.log('🔄 Refreshing data after user deletion...');
+        fetchData(instituteId);
+      }, 1500);
     } catch (error: any) {
-      console.error('Delete user error:', error);
+      console.error('❌ Delete user error:', error);
       toast({
         title: 'Error',
         description: error.message || 'Failed to delete student completely',

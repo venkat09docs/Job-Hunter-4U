@@ -258,12 +258,17 @@ serve(async (req) => {
     }
 
     // 16. Finally, delete from auth.users using admin API
+    console.log('🔥 Deleting user from auth.users...')
     const { error: authDeleteError } = await supabaseAdmin.auth.admin.deleteUser(user_id)
     
     if (authDeleteError) {
-      console.error('Error deleting from auth.users:', authDeleteError)
+      console.error('❌ Error deleting from auth.users:', authDeleteError)
       return new Response(
-        JSON.stringify({ error: 'Failed to delete user from authentication system' }),
+        JSON.stringify({ 
+          success: false,
+          error: 'Failed to delete user from authentication system',
+          details: authDeleteError.message 
+        }),
         { 
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -271,7 +276,36 @@ serve(async (req) => {
       )
     }
 
-    console.log(`Successfully deleted user: ${user_id}`)
+    console.log('✅ User deletion completed successfully')
+    
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: 'User deleted successfully from all systems',
+        deleted_user_id: user_id,
+        timestamp: new Date().toISOString()
+      }),
+      { 
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    )
+
+  } catch (error) {
+    console.error('❌ Fatal error during user deletion:', error)
+    return new Response(
+      JSON.stringify({ 
+        success: false,
+        error: 'Internal server error during user deletion',
+        details: error.message || 'Unknown error occurred'
+      }),
+      { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    )
+  }
+})
 
     return new Response(
       JSON.stringify({ success: true, message: 'User successfully deleted' }),
