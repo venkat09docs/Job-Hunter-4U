@@ -5792,6 +5792,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      is_user_in_admin_institute: {
+        Args: { target_user_id: string }
+        Returns: boolean
+      }
       log_security_event: {
         Args: {
           p_action_type: string
