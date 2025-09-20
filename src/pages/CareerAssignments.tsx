@@ -76,12 +76,12 @@ const CareerAssignments = () => {
   
   // Course IDs
   const RESUME_COURSE_ID = '3656d01b-f153-4480-8c69-28155b271077';
-  // TODO: Replace with actual LinkedIn course ID from database
-  const LINKEDIN_COURSE_ID = 'linkedin-course-id-placeholder';
+  // LinkedIn "Supercharge Your LinkedIn" course
+  const LINKEDIN_COURSE_ID = 'f1f6a708-abd7-4b13-af1e-db854adf5445';
   // TODO: Replace with actual Digital Profile course ID from database (user will create this course)
   const DIGITAL_PROFILE_COURSE_ID = 'digital-profile-course-id-placeholder';
-  // TODO: Replace with actual GitHub and Blog Management course ID from database
-  const GITHUB_COURSE_ID = 'github-blog-management-course-id-placeholder';
+  // GitHub and Blog Management course
+  const GITHUB_COURSE_ID = '33ea49c2-b87d-43bb-99d6-6133070da95e';
 
   const fetchResumeCourseProgress = async () => {
     try {
@@ -336,7 +336,19 @@ const CareerAssignments = () => {
     
     // LinkedIn profile requires Resume to be 100% complete AND LinkedIn course to be completed
     if (categoryName.includes('linkedin')) {
-      return resumeProgress >= 100 && linkedinCourseProgress >= 100;
+      const prerequisitesMet = resumeProgress >= 100 && linkedinCourseProgress >= 100;
+      
+      console.log('🔍 LinkedIn enablement check:', {
+        categoryName,
+        resumeProgress,
+        linkedinCourseProgress,
+        resumeCompleted: resumeProgress >= 100,
+        courseCompleted: linkedinCourseProgress >= 100,
+        prerequisitesMet,
+        enabled: prerequisitesMet
+      });
+      
+      return prerequisitesMet;
     }
     
     // Digital profile requires LinkedIn to be completed AND Digital Profile course to be completed
@@ -396,7 +408,6 @@ const CareerAssignments = () => {
     return true;
   };
 
-  // Helper function to get disabled message for subcategory
   const getDisabledMessage = (subCategory: SubCategory) => {
     const categoryName = subCategory.name.toLowerCase();
     
@@ -409,6 +420,13 @@ const CareerAssignments = () => {
     const resumeProgress = resumeSubCat ? getSubCategoryProgress(resumeSubCat.id) : 0;
     
     if (categoryName.includes('linkedin')) {
+      console.log('🔍 LinkedIn prerequisite check:', {
+        resumeProgress,
+        linkedinCourseProgress,
+        resumeRequired: resumeProgress < 100,
+        courseRequired: linkedinCourseProgress < 100
+      });
+      
       if (resumeProgress < 100) {
         return 'Complete Resume Building tasks first to unlock LinkedIn Profile';
       }
