@@ -138,7 +138,9 @@ export const StudentsManagement = () => {
   const fetchInstituteInfo = async () => {
     try {
       if (isInstituteAdmin && user) {
-        // Get institute admin's institute
+        console.log('🔍 Fetching institutes for admin:', user.id);
+        
+        // Get all institutes that this admin manages (not just one)
         const { data, error } = await supabase
           .from('institute_admin_assignments')
           .select(`
@@ -149,26 +151,48 @@ export const StudentsManagement = () => {
             )
           `)
           .eq('user_id', user.id)
-          .eq('is_active', true)
-          .single();
+          .eq('is_active', true);
 
-        if (data) {
-          setInstituteId(data.institute_id);
-          await fetchData(data.institute_id);
+        console.log('📋 Institute admin assignments:', { data, error });
+
+        if (error) {
+          console.error('❌ Error fetching institute assignments:', error);
+          throw error;
         }
+
+        if (!data || data.length === 0) {
+          console.log('⚠️ No institute assignments found for admin');
+          setStudents([]);
+          setFilteredStudents([]);
+          setBatches([]);
+          return;
+        }
+
+        // If admin manages multiple institutes, we'll use the first one for now
+        // In the future, we could add institute selection dropdown
+        const primaryInstitute = data[0];
+        console.log('🏢 Using primary institute:', primaryInstitute);
+        
+        setInstituteId(primaryInstitute.institute_id);
+        await fetchData(primaryInstitute.institute_id);
       } else if (isAdmin) {
-        // For super admins, we'd need to handle multiple institutes
-        // For now, let's fetch all data
+        console.log('🔍 Fetching all data for super admin');
+        // For super admins, fetch all data (no institute filtering)
         await fetchData();
       }
     } catch (error) {
-      console.error('Error fetching institute info:', error);
+      console.error('❌ Error in fetchInstituteInfo:', error);
+      // Set empty data on error to prevent showing all institutes
+      setStudents([]);
+      setFilteredStudents([]);
+      setBatches([]);
     }
   };
 
   const fetchData = async (targetInstituteId?: string) => {
     try {
       setLoading(true);
+      console.log('🔍 Fetching data for institute:', targetInstituteId || 'ALL');
       
       // Fetch batches for the institute
       let batchesQuery = supabase
@@ -178,12 +202,14 @@ export const StudentsManagement = () => {
 
       if (targetInstituteId) {
         batchesQuery = batchesQuery.eq('institute_id', targetInstituteId);
+        console.log('📚 Filtering batches by institute_id:', targetInstituteId);
       }
 
       const { data: batchesData, error: batchesError } = await batchesQuery.order('name');
 
       if (batchesError) throw batchesError;
       setBatches(batchesData || []);
+      console.log('📚 Found batches:', batchesData?.length || 0);
 
       // Fetch students (user assignments) for this institute
       let assignmentsQuery = supabase
@@ -193,6 +219,7 @@ export const StudentsManagement = () => {
           user_id,
           batch_id,
           assigned_at,
+          institute_id,
           batches (
             id,
             name,
@@ -205,10 +232,16 @@ export const StudentsManagement = () => {
 
       if (targetInstituteId) {
         assignmentsQuery = assignmentsQuery.eq('institute_id', targetInstituteId);
+        console.log('👥 Filtering user assignments by institute_id:', targetInstituteId);
       }
 
       const { data: assignmentsData, error: assignmentsError } = await assignmentsQuery
         .order('assigned_at', { ascending: false });
+
+      console.log('👥 User assignments query result:', { 
+        count: assignmentsData?.length || 0, 
+        error: assignmentsError 
+      });
 
       if (assignmentsError) throw assignmentsError;
 
@@ -216,6 +249,7 @@ export const StudentsManagement = () => {
       const userIds = assignmentsData?.map(a => a.user_id) || [];
       
       if (userIds.length === 0) {
+        console.log('⚠️ No users found for institute');
         setStudents([]);
         setFilteredStudents([]);
         return;
