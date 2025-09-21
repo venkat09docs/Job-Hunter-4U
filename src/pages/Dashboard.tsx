@@ -411,12 +411,10 @@ const Dashboard = () => {
   // Calculate progress percentages using career assignments data to sync with Profile Assignments page
   const resumeProgress = getModuleProgress('RESUME');
   const linkedinProgress = (() => {
-    // Calculate LinkedIn progress from LinkedIn sub-category assignments
+    // Calculate LinkedIn progress from LinkedIn Profile subcategory assignments (synchronized with Profile Assignments page)
     if (!assignments || assignments.length === 0) return 0;
     const linkedinTasks = assignments.filter(a => {
-      const templateTitle = a.career_task_templates?.title?.toLowerCase() || '';
-      const templateCategory = a.career_task_templates?.category?.toLowerCase() || '';
-      return templateTitle.includes('linkedin') || templateCategory.includes('linkedin');
+      return a.career_task_templates?.sub_category_id === '1f6bd7f0-117c-4167-8719-f55525b362e2';
     });
     return linkedinTasks.length > 0 
       ? Math.round((linkedinTasks.filter(t => t.status === 'verified').length / linkedinTasks.length) * 100)
@@ -499,12 +497,9 @@ const Dashboard = () => {
                  (title.includes('resume') || category.includes('resume'));
         });
       } else if (categoryName === 'LINKEDIN') {
-        // Get tasks that belong to LinkedIn profile subcategory
+        // Get tasks that belong specifically to LinkedIn Profile subcategory (ID: 1f6bd7f0-117c-4167-8719-f55525b362e2)
         tasks = assignments.filter(a => {
-          const title = a.career_task_templates?.title?.toLowerCase() || '';
-          const category = a.career_task_templates?.category?.toLowerCase() || '';
-          return a.career_task_templates?.sub_category_id && 
-                 (title.includes('linkedin') || category.includes('linkedin'));
+          return a.career_task_templates?.sub_category_id === '1f6bd7f0-117c-4167-8719-f55525b362e2';
         });
       } else if (categoryName === 'GITHUB') {
         // Get tasks that belong to GitHub profile subcategory
