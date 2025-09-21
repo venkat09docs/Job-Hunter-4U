@@ -520,6 +520,16 @@ const Dashboard = () => {
       
       console.log(`📊 ${categoryName} tasks (subcategory-based):`, tasks);
       
+      // Debug logging for RESUME category specifically
+      if (categoryName === 'RESUME') {
+        console.log(`📊 DEBUG RESUME TASKS:`, {
+          totalAssignments: assignments.length,
+          filteredTasks: tasks.length,
+          taskTitles: tasks.map(t => t.career_task_templates?.title),
+          taskStatuses: tasks.map(t => ({ title: t.career_task_templates?.title, status: t.status }))
+        });
+      }
+      
       const total = tasks.length;
       const completed = tasks.filter(t => t.status === 'verified').length;
       const inProgress = tasks.filter(t => 
