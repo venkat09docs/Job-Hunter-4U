@@ -1402,7 +1402,7 @@ const VerifyAssignments = () => {
       </div>
 
       <Tabs defaultValue="pending" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="pending">
             Pending Assignments ({pendingAssignments.length})
           </TabsTrigger>
@@ -1411,9 +1411,6 @@ const VerifyAssignments = () => {
           </TabsTrigger>
           <TabsTrigger value="request-extensions">
             Request Extensions
-          </TabsTrigger>
-          <TabsTrigger value="github-request-extensions">
-            GitHub Request Extensions
           </TabsTrigger>
         </TabsList>
 
@@ -1501,20 +1498,9 @@ const VerifyAssignments = () => {
           </div>
           <AdminReenableRequestsDialog />
           <JobHuntingExtensionRequestsDialog />
-        </TabsContent>
-
-        <TabsContent value="github-request-extensions" className="space-y-4">
-          <div className="text-center mb-6">
-            <h3 className="text-lg font-semibold mb-2 flex items-center justify-center gap-2">
-              <Github className="h-5 w-5" />
-              GitHub Task Extension Requests
-            </h3>
-            <p className="text-muted-foreground">
-              Review and manage extension requests submitted by students for their GitHub weekly tasks
-            </p>
-          </div>
           <AdminGitHubReenableRequestsDialog />
         </TabsContent>
+
       </Tabs>
 
       {/* Review Dialog */}
