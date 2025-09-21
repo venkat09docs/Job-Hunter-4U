@@ -45,7 +45,7 @@ const Affiliate = () => {
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
   const [selectedPayout, setSelectedPayout] = useState<any>(null);
-  const [pricingDialogOpen, setPricingDialogOpen] = useState(false);
+  
 
   // Set page title
   React.useEffect(() => {
@@ -114,23 +114,11 @@ const Affiliate = () => {
                 </ul>
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('Button clicked! Setting pricingDialogOpen to true');
-                    setPricingDialogOpen(true);
-                  }}
-                  className="flex-1"
-                  type="button"
-                >
-                  View Subscription Plans
-                </Button>
+              <div className="flex justify-center">
                 <Button 
                   variant="outline"
                   onClick={() => navigate('/dashboard')}
-                  className="flex-1"
+                  className="w-full sm:w-auto"
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Back to Dashboard
@@ -518,98 +506,6 @@ const Affiliate = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Pricing Dialog Modal */}
-        {pricingDialogOpen && (
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 999999,
-              backgroundColor: 'rgba(0, 0, 0, 0.8)',
-              display: 'flex !important',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '1rem'
-            }}
-            onClick={(e) => {
-              if (e.target === e.currentTarget) {
-                setPricingDialogOpen(false);
-              }
-            }}
-          >
-            <div 
-              className="bg-white dark:bg-gray-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border"
-              style={{
-                backgroundColor: 'white',
-                borderRadius: '8px',
-                maxWidth: '64rem',
-                width: '100%',
-                maxHeight: '90vh',
-                overflowY: 'auto',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                border: '1px solid #e5e7eb'
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-2xl font-bold text-gray-900">Subscription Plans</h2>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => {
-                      console.log('Close button clicked');
-                      setPricingDialogOpen(false);
-                    }}
-                    className="hover:bg-gray-100"
-                  >
-                    ✕ Close
-                  </Button>
-                </div>
-                
-                <div className="space-y-4">
-                  <p className="text-gray-600">
-                    Choose a plan to unlock the affiliate program and all premium features
-                  </p>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Card className="border-2 p-4 hover:border-blue-300 transition-colors">
-                      <h4 className="font-semibold text-lg text-gray-900">One Month Plan</h4>
-                      <p className="text-3xl font-bold text-blue-600">₹1,499</p>
-                      <p className="text-sm text-gray-600 mb-3">Perfect for focused job searching</p>
-                      <Button className="w-full bg-blue-600 hover:bg-blue-700">Select Plan</Button>
-                    </Card>
-                    
-                    <Card className="border-2 p-4 hover:border-green-300 transition-colors">
-                      <h4 className="font-semibold text-lg text-gray-900">3 Months Plan</h4>
-                      <p className="text-3xl font-bold text-green-600">₹3,999</p>
-                      <p className="text-sm text-gray-600 mb-3">Best value for comprehensive career growth</p>
-                      <Button className="w-full bg-green-600 hover:bg-green-700">Select Plan</Button>
-                    </Card>
-                    
-                    <Card className="border-2 p-4 hover:border-purple-300 transition-colors">
-                      <h4 className="font-semibold text-lg text-gray-900">6 Months Plan</h4>
-                      <p className="text-3xl font-bold text-purple-600">₹6,999</p>
-                      <p className="text-sm text-gray-600 mb-3">Extended career development package</p>
-                      <Button className="w-full bg-purple-600 hover:bg-purple-700">Select Plan</Button>
-                    </Card>
-                    
-                    <Card className="border-2 p-4 hover:border-orange-300 transition-colors">
-                      <h4 className="font-semibold text-lg text-gray-900">1 Year Plan</h4>
-                      <p className="text-3xl font-bold text-orange-600">₹11,999</p>
-                      <p className="text-sm text-gray-600 mb-3">Complete career transformation package</p>
-                      <Button className="w-full bg-orange-600 hover:bg-orange-700">Select Plan</Button>
-                    </Card>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Payout Request Dialog */}
         <PayoutRequestDialog
