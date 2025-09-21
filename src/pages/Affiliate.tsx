@@ -11,10 +11,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Copy, Users, DollarSign, Share2, AlertCircle, CheckCircle, ArrowLeft, LayoutDashboard, CreditCard, Settings, TrendingUp } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import PayoutRequestDialog from '@/components/PayoutRequestDialog';
 import AffiliateSettingsDialog from '@/components/AffiliateSettingsDialog';
 import PayoutConfirmationDialog from '@/components/PayoutConfirmationDialog';
 import AffiliatePlansDisplay from '@/components/AffiliatePlansDisplay';
+import PricingDialog from '@/components/PricingDialog';
 
 const Affiliate = () => {
   const navigate = useNavigate();
@@ -43,6 +45,7 @@ const Affiliate = () => {
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
   const [selectedPayout, setSelectedPayout] = useState<any>(null);
+  const [pricingDialogOpen, setPricingDialogOpen] = useState(false);
 
   // Set page title
   React.useEffect(() => {
@@ -113,7 +116,7 @@ const Affiliate = () => {
               
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button 
-                  onClick={() => navigate('/dashboard')}
+                  onClick={() => setPricingDialogOpen(true)}
                   className="flex-1"
                 >
                   View Subscription Plans
@@ -534,6 +537,21 @@ const Affiliate = () => {
           onConfirm={(notes) => confirmPayoutReceipt(selectedPayout?.id, notes)}
           loading={requesting}
         />
+
+        {/* Pricing Dialog */}
+        <Dialog open={pricingDialogOpen} onOpenChange={setPricingDialogOpen}>
+          <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-center text-2xl">
+                Choose Your Subscription Plan
+              </DialogTitle>
+              <p className="text-center text-muted-foreground">
+                Select a plan to unlock the affiliate program and all premium features
+              </p>
+            </DialogHeader>
+            <PricingDialog />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
