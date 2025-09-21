@@ -108,7 +108,7 @@ const Affiliate = () => {
                 <ul className="space-y-1 text-sm text-muted-foreground ml-4">
                   <li>• Get your unique affiliate link</li>
                   <li>• Share it with your network</li>
-                  <li>• Earn up to 20% commission on successful subscriptions</li>
+                  <li>• Earn up to 10% commission on successful subscriptions</li>
                   <li>• Higher rates for longer plans</li>
                   <li>• Track your earnings and referrals</li>
                 </ul>
@@ -175,7 +175,7 @@ const Affiliate = () => {
                 <ul className="space-y-1 text-sm text-muted-foreground ml-4">
                   <li>• Get your unique affiliate link</li>
                   <li>• Share it with your network</li>
-                  <li>• Earn up to 20% commission on successful subscriptions</li>
+                  <li>• Earn up to 10% commission on successful subscriptions</li>
                   <li>• Higher rates for longer plans</li>
                   <li>• Track your earnings and referrals</li>
                 </ul>
@@ -518,25 +518,24 @@ const Affiliate = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Alternative Modal - with enhanced CSS and positioning */}
+        {/* Pricing Dialog Modal */}
         {pricingDialogOpen && (
           <div 
-            className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
             style={{
               position: 'fixed',
               top: 0,
               left: 0,
               right: 0,
               bottom: 0,
-              zIndex: 9999,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              display: 'flex',
+              zIndex: 999999,
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              display: 'flex !important',
               alignItems: 'center',
               justifyContent: 'center',
               padding: '1rem'
             }}
             onClick={(e) => {
-              // Close modal when clicking backdrop
               if (e.target === e.currentTarget) {
                 setPricingDialogOpen(false);
               }
