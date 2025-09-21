@@ -151,6 +151,15 @@ const Affiliate = () => {
                   Back to Dashboard
                 </Button>
               </div>
+              
+              {/* Test - Simple alert dialog */}
+              <Button 
+                onClick={() => alert('Test button works!')}
+                size="sm"
+                variant="secondary"
+              >
+                Test Button (Should show alert)
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -165,6 +174,7 @@ const Affiliate = () => {
       {/* Debug indicator */}
       <div style={debugStyle}>
         Dialog State: {pricingDialogOpen ? 'OPEN' : 'CLOSED'}
+        {pricingDialogOpen && ' - Dialog should be visible!'}
       </div>
       
       <div className="space-y-6">
@@ -538,19 +548,36 @@ const Affiliate = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Pricing Dialog - moved to top level for better state management */}
-        <Dialog open={pricingDialogOpen} onOpenChange={setPricingDialogOpen}>
-          <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
+        {/* Pricing Dialog - Alternative implementation */}
+        <Dialog open={pricingDialogOpen} onOpenChange={(open) => {
+          console.log('Dialog onOpenChange called with:', open);
+          setPricingDialogOpen(open);
+        }}>
+          <DialogContent className="max-w-4xl">
             <DialogHeader>
-              <DialogTitle className="text-center text-2xl">
-                Choose Your Subscription Plan
-              </DialogTitle>
-              <p className="text-center text-muted-foreground">
-                Select a plan to unlock the affiliate program and all premium features
-              </p>
+              <DialogTitle>Subscription Plans</DialogTitle>
             </DialogHeader>
             <div className="p-4">
-              <PricingDialog />
+              <h3 className="text-lg font-semibold mb-4">Choose Your Plan</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="border p-4 rounded-lg">
+                  <h4 className="font-semibold">One Month Plan</h4>
+                  <p className="text-2xl font-bold">₹1,499</p>
+                  <Button className="w-full mt-2">Select Plan</Button>
+                </div>
+                <div className="border p-4 rounded-lg">
+                  <h4 className="font-semibold">3 Months Plan</h4>
+                  <p className="text-2xl font-bold">₹3,999</p>
+                  <Button className="w-full mt-2">Select Plan</Button>
+                </div>
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => setPricingDialogOpen(false)}
+                className="mt-4"
+              >
+                Close
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
