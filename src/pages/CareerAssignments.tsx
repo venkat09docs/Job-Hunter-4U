@@ -1097,7 +1097,7 @@ const CareerAssignments = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Trophy className="w-5 h-5" />
-                      Weekly Score
+                      Profile Score
                     </CardTitle>
                   </CardHeader>
                   <CardContent>

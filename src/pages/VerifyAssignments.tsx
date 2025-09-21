@@ -36,6 +36,7 @@ interface Assignment {
     module?: string;
     points_reward: number;
     category?: string;
+    sub_category_id?: string;
     sub_categories?: { name: string };
   };
   job_hunting_task_templates?: {
@@ -527,7 +528,8 @@ const VerifyAssignments = () => {
         .select(`
           id, user_id, template_id, status, submitted_at, verified_at, points_earned, score_awarded,
           career_task_templates!career_task_assignments_template_id_fkey (
-            id, title, module, points_reward, category
+            id, title, module, points_reward, category, sub_category_id,
+            sub_categories!career_task_templates_sub_category_id_fkey (name)
           )
         `)
         .eq('status', 'submitted')
@@ -767,7 +769,8 @@ const VerifyAssignments = () => {
           .select(`
             id, user_id, template_id, status, submitted_at, verified_at, points_earned, score_awarded,
             career_task_templates!career_task_assignments_template_id_fkey (
-              id, title, module, points_reward, category
+              id, title, module, points_reward, category, sub_category_id,
+              sub_categories!career_task_templates_sub_category_id_fkey (name)
             )
           `)
           .eq('status', 'verified')
@@ -1213,9 +1216,11 @@ const VerifyAssignments = () => {
     const colors = {
       'RESUME': 'bg-blue-100 text-blue-800',
       'LINKEDIN': 'bg-green-100 text-green-800',
+      'LinkedIn Profile': 'bg-green-100 text-green-800',
       'GITHUB': 'bg-purple-100 text-purple-800',
       'JOB_HUNTING': 'bg-orange-100 text-orange-800',
       'DIGITAL_PROFILE': 'bg-pink-100 text-pink-800',
+      'Digital Profile': 'bg-pink-100 text-pink-800',
       'DAILY_TASKS': 'bg-red-100 text-red-800'
     };
     
@@ -1236,7 +1241,7 @@ const VerifyAssignments = () => {
           <div className="flex items-center gap-2">
             {assignment.job_hunting_task_templates ? 
               getModuleBadge('JOB_HUNTING') : 
-              getModuleBadge(assignment.career_task_templates?.module)
+              getModuleBadge(assignment.career_task_templates?.sub_categories?.name || assignment.career_task_templates?.module)
             }
             {getStatusBadge(assignment.status)}
           </div>
@@ -1540,6 +1545,7 @@ const VerifyAssignments = () => {
                 <div>
                   <strong>Module:</strong> {
                     selectedAssignment.job_hunting_task_templates ? 'Job Hunting' : 
+                    selectedAssignment.career_task_templates?.sub_categories?.name || 
                     selectedAssignment.career_task_templates?.module || 'N/A'
                   }
                 </div>
