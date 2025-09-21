@@ -548,39 +548,64 @@ const Affiliate = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Pricing Dialog - Alternative implementation */}
-        <Dialog open={pricingDialogOpen} onOpenChange={(open) => {
-          console.log('Dialog onOpenChange called with:', open);
-          setPricingDialogOpen(open);
-        }}>
-          <DialogContent className="max-w-4xl">
-            <DialogHeader>
-              <DialogTitle>Subscription Plans</DialogTitle>
-            </DialogHeader>
-            <div className="p-4">
-              <h3 className="text-lg font-semibold mb-4">Choose Your Plan</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="border p-4 rounded-lg">
-                  <h4 className="font-semibold">One Month Plan</h4>
-                  <p className="text-2xl font-bold">₹1,499</p>
-                  <Button className="w-full mt-2">Select Plan</Button>
+        {/* Alternative Modal - using fixed positioning instead of Dialog */}
+        {pricingDialogOpen && (
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-gray-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-bold">Subscription Plans</h2>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      console.log('Close button clicked');
+                      setPricingDialogOpen(false);
+                    }}
+                  >
+                    ✕ Close
+                  </Button>
                 </div>
-                <div className="border p-4 rounded-lg">
-                  <h4 className="font-semibold">3 Months Plan</h4>
-                  <p className="text-2xl font-bold">₹3,999</p>
-                  <Button className="w-full mt-2">Select Plan</Button>
+                
+                <div className="space-y-4">
+                  <p className="text-muted-foreground">
+                    Choose a plan to unlock the affiliate program and all premium features
+                  </p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Card className="border p-4">
+                      <h4 className="font-semibold text-lg">One Month Plan</h4>
+                      <p className="text-3xl font-bold text-primary">₹1,499</p>
+                      <p className="text-sm text-muted-foreground mb-3">Perfect for focused job searching</p>
+                      <Button className="w-full">Select Plan</Button>
+                    </Card>
+                    
+                    <Card className="border p-4">
+                      <h4 className="font-semibold text-lg">3 Months Plan</h4>
+                      <p className="text-3xl font-bold text-primary">₹3,999</p>
+                      <p className="text-sm text-muted-foreground mb-3">Best value for comprehensive career growth</p>
+                      <Button className="w-full">Select Plan</Button>
+                    </Card>
+                    
+                    <Card className="border p-4">
+                      <h4 className="font-semibold text-lg">6 Months Plan</h4>
+                      <p className="text-3xl font-bold text-primary">₹6,999</p>
+                      <p className="text-sm text-muted-foreground mb-3">Extended career development package</p>
+                      <Button className="w-full">Select Plan</Button>
+                    </Card>
+                    
+                    <Card className="border p-4">
+                      <h4 className="font-semibold text-lg">1 Year Plan</h4>
+                      <p className="text-3xl font-bold text-primary">₹11,999</p>
+                      <p className="text-sm text-muted-foreground mb-3">Complete career transformation package</p>
+                      <Button className="w-full">Select Plan</Button>
+                    </Card>
+                  </div>
                 </div>
               </div>
-              <Button 
-                variant="outline" 
-                onClick={() => setPricingDialogOpen(false)}
-                className="mt-4"
-              >
-                Close
-              </Button>
             </div>
-          </DialogContent>
-        </Dialog>
+          </div>
+        )}
 
         {/* Payout Request Dialog */}
         <PayoutRequestDialog
