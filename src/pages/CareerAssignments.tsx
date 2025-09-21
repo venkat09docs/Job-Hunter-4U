@@ -1119,6 +1119,58 @@ const CareerAssignments = () => {
                                          Complete Course
                                        </Button>
                                      </>
+                                   ) : categoryName.includes('github') && (() => {
+                                     const linkedinSubCat = subCategories.find(sc => sc.name.toLowerCase().includes('linkedin'));
+                                     const linkedinProgress = linkedinSubCat ? getSubCategoryProgress(linkedinSubCat.id) : 0;
+                                     return linkedinProgress < 100;
+                                   })() ? (
+                                     <>
+                                       <Lock className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                       <p className="font-medium mb-2">Complete LinkedIn Profile First</p>
+                                       <p className="text-sm mb-4">Complete all LinkedIn Profile tasks to unlock GitHub Profile</p>
+                                       <Button 
+                                         onClick={() => {
+                                           // Navigate to LinkedIn subcategory
+                                           navigate('/dashboard/career-assignments?category=linkedin');
+                                         }}
+                                         className="mt-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                                         size="lg"
+                                       >
+                                         <Users className="w-4 h-4 mr-2" />
+                                         Complete LinkedIn Tasks
+                                       </Button>
+                                     </>
+                                   ) : categoryName.includes('github') && githubCourseProgress < 100 && (() => {
+                                     const linkedinSubCat = subCategories.find(sc => sc.name.toLowerCase().includes('linkedin'));
+                                     const linkedinProgress = linkedinSubCat ? getSubCategoryProgress(linkedinSubCat.id) : 0;
+                                     return linkedinProgress >= 100;
+                                   })() ? (
+                                     <>
+                                       <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                       <p className="font-medium mb-2">Complete Course First</p>
+                                       <p className="text-sm mb-4">Complete the "GitHub and Blog Management" course to unlock GitHub Profile tasks</p>
+                                       <div className="mb-4">
+                                         <p className="text-xs mb-2">Course Progress: {Math.round(githubCourseProgress)}%</p>
+                                         <Progress value={githubCourseProgress} className="w-48 mx-auto h-2" />
+                                       </div>
+                                       <Button 
+                                         onClick={() => {
+                                           console.log('🎓 GitHub Complete Course button clicked');
+                                           navigate('/dashboard/skill-level?tab=completed-learning&courseId=' + GITHUB_COURSE_ID + '&courseTitle=GitHub and Blog Management&openForm=true');
+                                         }}
+                                         className="mt-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                                         size="lg"
+                                       >
+                                         <BookOpen className="w-4 h-4 mr-2" />
+                                         Complete Course
+                                       </Button>
+                                     </>
+                                   ) : categoryName.includes('github') && !isIT() ? (
+                                     <>
+                                       <Lock className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                       <p className="font-medium mb-2">IT Industry Required</p>
+                                       <p className="text-sm mb-4">GitHub Profile is available only for IT professionals</p>
+                                     </>
                                    ) : (
                                      <>
                                        <Lock className="w-12 h-12 mx-auto mb-3 opacity-50" />
