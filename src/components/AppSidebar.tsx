@@ -154,6 +154,7 @@ export function AppSidebar() {
   const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState(false);
   const [careerGrowthDialogOpen, setCareerGrowthDialogOpen] = useState(false);
   const [githubToolsDialogOpen, setGithubToolsDialogOpen] = useState(false);
+  const [interviewLevelUpDialogOpen, setInterviewLevelUpDialogOpen] = useState(false);
 
   console.log('🔍 AppSidebar: All hooks called, continuing render');
 
@@ -257,6 +258,9 @@ export function AppSidebar() {
     // Special handling for Skill Level Up to check subscription
     const isSkillLevelUp = false; // Remove subscription check for Skill Level Up
     
+    // Special handling for Interview Level Up to check subscription
+    const isInterviewLevelUp = item.title === "Interview Level Up";
+    
     // Special handling for GitHub Weekly - show subscription dialog instead of navigating
     const isGitHubWeekly = item.title === "GitHub Weekly" && isPremium;
     
@@ -294,6 +298,17 @@ export function AppSidebar() {
       setGithubToolsDialogOpen(true);
     };
     
+    const handleInterviewLevelUpClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      // Check if user has active subscription
+      if (!hasActiveSubscription()) {
+        setInterviewLevelUpDialogOpen(true);
+      } else {
+        // User has subscription, proceed to navigate normally
+        navigate(item.url);
+      }
+    };
+    
     const handleAICareerToolsClick = (e: React.MouseEvent) => {
       e.preventDefault();
       // Check if user has active subscription
@@ -329,6 +344,27 @@ export function AppSidebar() {
                 <Lock className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
               }
             </div>
+          </div>
+        )}
+      </div>
+    ) : isInterviewLevelUp ? (
+      <div
+        onClick={handleInterviewLevelUpClick}
+        className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer ${
+          currentPath === item.url 
+            ? `${colors.activeColor} ${colors.activeBg}`
+            : `text-foreground hover:text-accent-foreground ${colors.hoverBg}`
+        }`}
+      >
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 ${colors.icon}`} />
+        {!isCollapsed && (
+          <div className="flex items-center justify-between flex-1 min-w-0">
+            <span className="text-sm truncate">
+              {item.title}
+            </span>
+            {!hasActiveSubscription() && 
+              <Lock className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+            }
           </div>
         )}
       </div>
@@ -655,6 +691,21 @@ export function AppSidebar() {
             </DialogTitle>
             <p className="text-center text-muted-foreground">
               GitHub Optimization and GitHub Activity Tracker are available with all our subscription plans.
+            </p>
+          </DialogHeader>
+          <PricingDialog eligiblePlans={["One Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"]} />
+        </DialogContent>
+      </Dialog>
+      
+      {/* Interview Level Up Dialog */}
+      <Dialog open={interviewLevelUpDialogOpen} onOpenChange={setInterviewLevelUpDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-center">
+              Upgrade to Access Interview Level Up
+            </DialogTitle>
+            <p className="text-center text-muted-foreground">
+              Get access to comprehensive interview preparation tools and features with our subscription plans.
             </p>
           </DialogHeader>
           <PricingDialog eligiblePlans={["One Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"]} />
