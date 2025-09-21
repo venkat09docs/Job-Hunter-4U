@@ -26,7 +26,7 @@ const CourseCard: React.FC<{
     <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden">
       <div className="relative">
         {/* Course Image */}
-        <div className="h-64 relative overflow-hidden">
+        <div className="h-72 relative overflow-hidden">
           {course.image ? (
             <img 
               src={course.image} 
