@@ -382,7 +382,7 @@ const handler = async (req: Request): Promise<Response> => {
             activity_id: assignmentId,
             points_earned: pointsEarned
           }, {
-            onConflict: 'user_id,activity_id,activity_date'
+            onConflict: 'user_id,activity_type,activity_id,activity_date'
           });
 
         if (pointsError) {
