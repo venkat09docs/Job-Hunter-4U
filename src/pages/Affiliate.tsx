@@ -59,6 +59,18 @@ const Affiliate = () => {
   // Debug state
   console.log('Affiliate page render - pricingDialogOpen:', pricingDialogOpen);
 
+  // Debug visual indicator (remove this after testing)
+  const debugStyle = {
+    position: 'fixed' as const,
+    top: '10px',
+    right: '10px',
+    background: 'red',
+    color: 'white',
+    padding: '5px',
+    zIndex: 9999,
+    fontSize: '12px'
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -119,11 +131,14 @@ const Affiliate = () => {
               
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button 
-                  onClick={() => {
-                    console.log('Pricing dialog button clicked');
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Button clicked! Setting pricingDialogOpen to true');
                     setPricingDialogOpen(true);
                   }}
                   className="flex-1"
+                  type="button"
                 >
                   View Subscription Plans
                 </Button>
@@ -145,9 +160,14 @@ const Affiliate = () => {
 
   // If user doesn't have affiliate account yet
   if (!affiliateData) {
-    return (
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="space-y-6">
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      {/* Debug indicator */}
+      <div style={debugStyle}>
+        Dialog State: {pricingDialogOpen ? 'OPEN' : 'CLOSED'}
+      </div>
+      
+      <div className="space-y-6">
           <div>
             <h1 className="text-3xl font-bold">Affiliate Program</h1>
             <p className="text-muted-foreground mt-2">
@@ -518,6 +538,23 @@ const Affiliate = () => {
           </TabsContent>
         </Tabs>
 
+        {/* Pricing Dialog - moved to top level for better state management */}
+        <Dialog open={pricingDialogOpen} onOpenChange={setPricingDialogOpen}>
+          <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-center text-2xl">
+                Choose Your Subscription Plan
+              </DialogTitle>
+              <p className="text-center text-muted-foreground">
+                Select a plan to unlock the affiliate program and all premium features
+              </p>
+            </DialogHeader>
+            <div className="p-4">
+              <PricingDialog />
+            </div>
+          </DialogContent>
+        </Dialog>
+
         {/* Payout Request Dialog */}
         <PayoutRequestDialog
           open={payoutDialogOpen}
@@ -543,23 +580,6 @@ const Affiliate = () => {
           onConfirm={(notes) => confirmPayoutReceipt(selectedPayout?.id, notes)}
           loading={requesting}
         />
-
-        {/* Pricing Dialog */}
-        <Dialog open={pricingDialogOpen} onOpenChange={setPricingDialogOpen}>
-          <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-center text-2xl">
-                Choose Your Subscription Plan
-              </DialogTitle>
-              <p className="text-center text-muted-foreground">
-                Select a plan to unlock the affiliate program and all premium features
-              </p>
-            </DialogHeader>
-            <div className="p-4">
-              <PricingDialog />
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
     </div>
   );
