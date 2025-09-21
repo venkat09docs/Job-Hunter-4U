@@ -56,21 +56,6 @@ const Affiliate = () => {
     };
   }, []);
 
-  // Debug state
-  console.log('Affiliate page render - pricingDialogOpen:', pricingDialogOpen);
-
-  // Debug visual indicator (remove this after testing)
-  const debugStyle = {
-    position: 'fixed' as const,
-    top: '10px',
-    right: '10px',
-    background: 'red',
-    color: 'white',
-    padding: '5px',
-    zIndex: 9999,
-    fontSize: '12px'
-  };
-
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -151,15 +136,6 @@ const Affiliate = () => {
                   Back to Dashboard
                 </Button>
               </div>
-              
-              {/* Test - Simple alert dialog */}
-              <Button 
-                onClick={() => alert('Test button works!')}
-                size="sm"
-                variant="secondary"
-              >
-                Test Button (Should show alert)
-              </Button>
             </CardContent>
           </Card>
         </div>
@@ -171,12 +147,6 @@ const Affiliate = () => {
   if (!affiliateData) {
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
-      {/* Debug indicator */}
-      <div style={debugStyle}>
-        Dialog State: {pricingDialogOpen ? 'OPEN' : 'CLOSED'}
-        {pricingDialogOpen && ' - Dialog should be visible!'}
-      </div>
-      
       <div className="space-y-6">
           <div>
             <h1 className="text-3xl font-bold">Affiliate Program</h1>
@@ -548,13 +518,47 @@ const Affiliate = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Alternative Modal - using fixed positioning instead of Dialog */}
+        {/* Alternative Modal - with enhanced CSS and positioning */}
         {pricingDialogOpen && (
-          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-gray-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div 
+            className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 9999,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1rem'
+            }}
+            onClick={(e) => {
+              // Close modal when clicking backdrop
+              if (e.target === e.currentTarget) {
+                setPricingDialogOpen(false);
+              }
+            }}
+          >
+            <div 
+              className="bg-white dark:bg-gray-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border"
+              style={{
+                backgroundColor: 'white',
+                borderRadius: '8px',
+                maxWidth: '64rem',
+                width: '100%',
+                maxHeight: '90vh',
+                overflowY: 'auto',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                border: '1px solid #e5e7eb'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-2xl font-bold">Subscription Plans</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Subscription Plans</h2>
                   <Button 
                     variant="outline" 
                     size="sm"
@@ -562,43 +566,44 @@ const Affiliate = () => {
                       console.log('Close button clicked');
                       setPricingDialogOpen(false);
                     }}
+                    className="hover:bg-gray-100"
                   >
                     ✕ Close
                   </Button>
                 </div>
                 
                 <div className="space-y-4">
-                  <p className="text-muted-foreground">
+                  <p className="text-gray-600">
                     Choose a plan to unlock the affiliate program and all premium features
                   </p>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Card className="border p-4">
-                      <h4 className="font-semibold text-lg">One Month Plan</h4>
-                      <p className="text-3xl font-bold text-primary">₹1,499</p>
-                      <p className="text-sm text-muted-foreground mb-3">Perfect for focused job searching</p>
-                      <Button className="w-full">Select Plan</Button>
+                    <Card className="border-2 p-4 hover:border-blue-300 transition-colors">
+                      <h4 className="font-semibold text-lg text-gray-900">One Month Plan</h4>
+                      <p className="text-3xl font-bold text-blue-600">₹1,499</p>
+                      <p className="text-sm text-gray-600 mb-3">Perfect for focused job searching</p>
+                      <Button className="w-full bg-blue-600 hover:bg-blue-700">Select Plan</Button>
                     </Card>
                     
-                    <Card className="border p-4">
-                      <h4 className="font-semibold text-lg">3 Months Plan</h4>
-                      <p className="text-3xl font-bold text-primary">₹3,999</p>
-                      <p className="text-sm text-muted-foreground mb-3">Best value for comprehensive career growth</p>
-                      <Button className="w-full">Select Plan</Button>
+                    <Card className="border-2 p-4 hover:border-green-300 transition-colors">
+                      <h4 className="font-semibold text-lg text-gray-900">3 Months Plan</h4>
+                      <p className="text-3xl font-bold text-green-600">₹3,999</p>
+                      <p className="text-sm text-gray-600 mb-3">Best value for comprehensive career growth</p>
+                      <Button className="w-full bg-green-600 hover:bg-green-700">Select Plan</Button>
                     </Card>
                     
-                    <Card className="border p-4">
-                      <h4 className="font-semibold text-lg">6 Months Plan</h4>
-                      <p className="text-3xl font-bold text-primary">₹6,999</p>
-                      <p className="text-sm text-muted-foreground mb-3">Extended career development package</p>
-                      <Button className="w-full">Select Plan</Button>
+                    <Card className="border-2 p-4 hover:border-purple-300 transition-colors">
+                      <h4 className="font-semibold text-lg text-gray-900">6 Months Plan</h4>
+                      <p className="text-3xl font-bold text-purple-600">₹6,999</p>
+                      <p className="text-sm text-gray-600 mb-3">Extended career development package</p>
+                      <Button className="w-full bg-purple-600 hover:bg-purple-700">Select Plan</Button>
                     </Card>
                     
-                    <Card className="border p-4">
-                      <h4 className="font-semibold text-lg">1 Year Plan</h4>
-                      <p className="text-3xl font-bold text-primary">₹11,999</p>
-                      <p className="text-sm text-muted-foreground mb-3">Complete career transformation package</p>
-                      <Button className="w-full">Select Plan</Button>
+                    <Card className="border-2 p-4 hover:border-orange-300 transition-colors">
+                      <h4 className="font-semibold text-lg text-gray-900">1 Year Plan</h4>
+                      <p className="text-3xl font-bold text-orange-600">₹11,999</p>
+                      <p className="text-sm text-gray-600 mb-3">Complete career transformation package</p>
+                      <Button className="w-full bg-orange-600 hover:bg-orange-700">Select Plan</Button>
                     </Card>
                   </div>
                 </div>
