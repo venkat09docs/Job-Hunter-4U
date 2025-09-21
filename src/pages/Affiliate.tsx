@@ -69,7 +69,70 @@ const Affiliate = () => {
     );
   }
 
-  // No need to check for active subscription anymore since users are auto-eligible
+  // Check if user has active subscription before allowing affiliate program access
+  if (!hasActiveSubscription()) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold">Affiliate Program</h1>
+            <p className="text-muted-foreground mt-2">
+              Earn commissions by referring new users to our platform
+            </p>
+          </div>
+
+          <Card className="max-w-2xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-amber-500" />
+                Active Subscription Required
+              </CardTitle>
+              <CardDescription>
+                You need an active subscription to join our affiliate program
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  The affiliate program is available exclusively to our active subscribers. 
+                  Please subscribe to one of our plans to access this feature.
+                </AlertDescription>
+              </Alert>
+              
+              <div className="space-y-2">
+                <h3 className="font-semibold">Benefits of joining:</h3>
+                <ul className="space-y-1 text-sm text-muted-foreground ml-4">
+                  <li>• Get your unique affiliate link</li>
+                  <li>• Share it with your network</li>
+                  <li>• Earn up to 20% commission on successful subscriptions</li>
+                  <li>• Higher rates for longer plans</li>
+                  <li>• Track your earnings and referrals</li>
+                </ul>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button 
+                  onClick={() => navigate('/dashboard')}
+                  className="flex-1"
+                >
+                  View Subscription Plans
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => navigate('/dashboard')}
+                  className="flex-1"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Dashboard
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   // If user doesn't have affiliate account yet
   if (!affiliateData) {
@@ -91,6 +154,13 @@ const Affiliate = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <Alert>
+                <CheckCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Great! You have an active subscription and are eligible to join our affiliate program.
+                </AlertDescription>
+              </Alert>
+              
               <div className="space-y-2">
                 <h3 className="font-semibold">How it works:</h3>
                 <ul className="space-y-1 text-sm text-muted-foreground ml-4">
@@ -106,10 +176,10 @@ const Affiliate = () => {
                 disabled={creating}
                 className="w-full"
               >
-                {creating ? 'Creating Account...' : 'Join Affiliate Program'}
+                {creating ? 'Submitting Request...' : 'Join Affiliate Program'}
               </Button>
               <p className="text-xs text-muted-foreground">
-                Your affiliate account will be reviewed and approved by our admin team.
+                Your affiliate account request will be reviewed and approved by our admin team.
               </p>
             </CardContent>
           </Card>

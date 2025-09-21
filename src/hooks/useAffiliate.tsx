@@ -133,6 +133,36 @@ export const useAffiliate = () => {
       return;
     }
 
+    // Check if user has active subscription
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('subscription_active, subscription_end_date')
+      .eq('user_id', user.id)
+      .single();
+
+    if (profileError) {
+      toast({
+        title: 'Error',
+        description: 'Unable to verify subscription status',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    // Validate active subscription
+    const hasActiveSubscription = profile?.subscription_active && 
+      profile?.subscription_end_date && 
+      new Date(profile.subscription_end_date) > new Date();
+
+    if (!hasActiveSubscription) {
+      toast({
+        title: 'Subscription Required',
+        description: 'You need an active subscription to join the affiliate program',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     setCreating(true);
     try {
       // Generate affiliate code
@@ -156,14 +186,14 @@ export const useAffiliate = () => {
 
       setAffiliateData(data);
       toast({
-        title: 'Success',
-        description: 'Affiliate account created! Waiting for admin approval.',
+        title: 'Request Submitted',
+        description: 'Your affiliate program request has been submitted for admin approval.',
       });
     } catch (error: any) {
       console.error('Error creating affiliate account:', error);
       toast({
         title: 'Error',
-        description: 'Failed to create affiliate account',
+        description: 'Failed to submit affiliate request',
         variant: 'destructive'
       });
     } finally {
