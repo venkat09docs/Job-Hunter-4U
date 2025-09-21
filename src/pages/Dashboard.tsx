@@ -421,15 +421,11 @@ const Dashboard = () => {
       : 0;
   })();
   const githubProgress = (() => {
-    // Calculate GitHub progress from GitHub sub-category assignments to match Profile Assignments page
+    // Calculate GitHub progress from GitHub Profile subcategory assignments to match Profile Assignments page
     if (!assignments || assignments.length === 0) return 0;
     const githubTasks = assignments.filter(a => {
-      const templateTitle = a.career_task_templates?.title?.toLowerCase() || '';
-      const templateCategory = a.career_task_templates?.category?.toLowerCase() || '';
-      // Check for GitHub-related tasks in sub-categories to match Profile Assignments calculation
-      return templateTitle.includes('github') || templateCategory.includes('github') || 
-             (a.career_task_templates?.sub_category_id && 
-              templateTitle.includes('git') || templateCategory.includes('git'));
+      // Use specific GitHub Profile subcategory ID to match Profile Assignments calculation
+      return a.career_task_templates?.sub_category_id === '1c47c855-7705-456b-867a-0e7a563f54db';
     });
     return githubTasks.length > 0 
       ? Math.round((githubTasks.filter(t => t.status === 'verified').length / githubTasks.length) * 100)
@@ -502,13 +498,9 @@ const Dashboard = () => {
           return a.career_task_templates?.sub_category_id === '1f6bd7f0-117c-4167-8719-f55525b362e2';
         });
       } else if (categoryName === 'GITHUB') {
-        // Get tasks that belong to GitHub profile subcategory
+        // Get tasks that belong specifically to GitHub Profile subcategory (ID: 1c47c855-7705-456b-867a-0e7a563f54db)
         tasks = assignments.filter(a => {
-          const title = a.career_task_templates?.title?.toLowerCase() || '';
-          const category = a.career_task_templates?.category?.toLowerCase() || '';
-          return a.career_task_templates?.sub_category_id && 
-                 (title.includes('github') || category.includes('github') || 
-                  title.includes('git') || category.includes('git'));
+          return a.career_task_templates?.sub_category_id === '1c47c855-7705-456b-867a-0e7a563f54db';
         });
       } else if (categoryName === 'DIGITAL_PROFILE') {
         // Get tasks that belong to digital profile subcategory
