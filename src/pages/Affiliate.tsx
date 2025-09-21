@@ -56,6 +56,9 @@ const Affiliate = () => {
     };
   }, []);
 
+  // Debug state
+  console.log('Affiliate page render - pricingDialogOpen:', pricingDialogOpen);
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -116,7 +119,10 @@ const Affiliate = () => {
               
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button 
-                  onClick={() => setPricingDialogOpen(true)}
+                  onClick={() => {
+                    console.log('Pricing dialog button clicked');
+                    setPricingDialogOpen(true);
+                  }}
                   className="flex-1"
                 >
                   View Subscription Plans
@@ -549,7 +555,9 @@ const Affiliate = () => {
                 Select a plan to unlock the affiliate program and all premium features
               </p>
             </DialogHeader>
-            <PricingDialog />
+            <div className="p-4">
+              <PricingDialog />
+            </div>
           </DialogContent>
         </Dialog>
       </div>
