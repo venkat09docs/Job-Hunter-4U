@@ -988,36 +988,62 @@ const CareerAssignments = () => {
                          <AccordionContent className="space-y-4 pt-4">
                            {(() => {
                              const categoryName = subCategory.name.toLowerCase();
-                             return !isEnabled ? (
-                               <div className="text-center py-8 text-muted-foreground">
-                                 {categoryName.includes('resume') && resumeCourseProgress < 100 ? (
-                                   <>
-                                     <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                                     <p className="font-medium mb-2">Complete Course First</p>
-                                     <p className="text-sm mb-4">{getDisabledMessage(subCategory)}</p>
-                                     <div className="mb-4">
-                                       <p className="text-xs mb-2">Course Progress: {Math.round(resumeCourseProgress)}%</p>
-                                       <Progress value={resumeCourseProgress} className="w-48 mx-auto h-2" />
-                                     </div>
-                      <Button 
-                        onClick={() => {
-                          console.log('🎓 Complete Course button clicked in accordion content');
-                          // Navigate to skill level program with completed learning tab and course info for goal creation
-                          navigate('/dashboard/skill-level?tab=completed-learning&courseId=3656d01b-f153-4480-8c69-28155b271077&courseTitle=Build ATS Supported Resume&openForm=true');
-                        }}
-                        className="mt-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-                        size="lg"
-                      >
-                        <BookOpen className="w-4 h-4 mr-2" />
-                        Complete Course
-                      </Button>
-                                   </>
-                                 ) : (
-                                   <>
-                                     <Lock className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                                     <p className="font-medium">{disabledMessage}</p>
-                                   </>
-                                 )}
+                              return !isEnabled ? (
+                                <div className="text-center py-8 text-muted-foreground">
+                                  {categoryName.includes('resume') && resumeCourseProgress < 100 ? (
+                                    <>
+                                      <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                      <p className="font-medium mb-2">Complete Course First</p>
+                                      <p className="text-sm mb-4">{getDisabledMessage(subCategory)}</p>
+                                      <div className="mb-4">
+                                        <p className="text-xs mb-2">Course Progress: {Math.round(resumeCourseProgress)}%</p>
+                                        <Progress value={resumeCourseProgress} className="w-48 mx-auto h-2" />
+                                      </div>
+                       <Button 
+                         onClick={() => {
+                           console.log('🎓 Complete Course button clicked in accordion content');
+                           // Navigate to skill level program with completed learning tab and course info for goal creation
+                           navigate('/dashboard/skill-level?tab=completed-learning&courseId=3656d01b-f153-4480-8c69-28155b271077&courseTitle=Build ATS Supported Resume&openForm=true');
+                         }}
+                         className="mt-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                         size="lg"
+                       >
+                         <BookOpen className="w-4 h-4 mr-2" />
+                         Complete Course
+                       </Button>
+                                    </>
+                                  ) : categoryName.includes('linkedin') && linkedinCourseProgress < 100 && (() => {
+                                    const resumeSubCat = subCategories.find(sc => sc.name.toLowerCase().includes('resume'));
+                                    const resumeProgress = resumeSubCat ? getSubCategoryProgress(resumeSubCat.id) : 0;
+                                    return resumeProgress >= 100;
+                                  })() ? (
+                                    <>
+                                      <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                      <p className="font-medium mb-2">Complete Course First</p>
+                                      <p className="text-sm mb-4">{getDisabledMessage(subCategory)}</p>
+                                      <div className="mb-4">
+                                        <p className="text-xs mb-2">Course Progress: {Math.round(linkedinCourseProgress)}%</p>
+                                        <Progress value={linkedinCourseProgress} className="w-48 mx-auto h-2" />
+                                      </div>
+                       <Button 
+                         onClick={() => {
+                           console.log('🎓 LinkedIn Complete Course button clicked in accordion content');
+                           // Navigate to skill level program with completed learning tab and course info for goal creation
+                           navigate('/dashboard/skill-level?tab=completed-learning&courseId=f1f6a708-abd7-4b13-af1e-db854adf5445&courseTitle=Supercharge Your LinkedIn&openForm=true');
+                         }}
+                         className="mt-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                         size="lg"
+                       >
+                         <BookOpen className="w-4 h-4 mr-2" />
+                         Complete Course
+                       </Button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Lock className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                      <p className="font-medium">{disabledMessage}</p>
+                                    </>
+                                  )}
                                </div>
                              ) : (
                                <>
