@@ -820,13 +820,11 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 {learningGoalCourses && learningGoalCourses.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-6">
-                    <RecentCoursesCard
-                      courses={learningGoalCourses}
-                      hasActiveSubscription={hasActiveSubscription()}
-                      loading={learningCoursesLoading}
-                    />
-                  </div>
+                  <RecentCoursesCard
+                    courses={learningGoalCourses}
+                    hasActiveSubscription={hasActiveSubscription()}
+                    loading={learningCoursesLoading}
+                  />
                 ) : (
                   <div className="text-center py-8">
                     <BookOpen className="h-12 w-12 mx-auto text-blue-400 mb-3" />

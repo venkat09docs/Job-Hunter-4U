@@ -61,14 +61,14 @@ export const RecentCoursesCard: React.FC<RecentCoursesCardProps> = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {courses.slice(0, 3).map((course) => {
         const isLocked = !course.is_free && !hasActiveSubscription;
         
         return (
-          <Card key={course.id} className="group hover:shadow-lg transition-all duration-300 border-border/50 hover:border-primary/30 relative overflow-hidden">
+          <Card key={course.id} className="group hover:shadow-lg transition-all duration-300 border-border/50 hover:border-primary/30 relative overflow-hidden h-[400px] flex flex-col">
             {/* Course Image */}
-            <div className="relative h-48 overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
+            <div className="relative h-48 overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5 flex-shrink-0">
               {course.image ? (
                 <img 
                   src={course.image} 
@@ -76,8 +76,8 @@ export const RecentCoursesCard: React.FC<RecentCoursesCardProps> = ({
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <BookOpen className="h-16 w-16 text-primary/30" />
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600">
+                  <BookOpen className="h-16 w-16 text-white" />
                 </div>
               )}
               
@@ -91,49 +91,59 @@ export const RecentCoursesCard: React.FC<RecentCoursesCardProps> = ({
                 </div>
               )}
 
-              {/* Category badge */}
-              <div className="absolute top-3 left-3">
+              {/* Category badges overlay */}
+              <div className="absolute bottom-3 left-3 flex gap-2">
                 <Badge variant="secondary" className="text-xs bg-white/90 text-foreground">
                   {course.category || 'General'}
                 </Badge>
-              </div>
-
-              {/* Free/Premium badge */}
-              <div className="absolute top-3 right-3">
-                <Badge 
-                  variant={course.is_free ? "default" : "outline"} 
-                  className={`text-xs ${course.is_free 
-                    ? 'bg-green-500 text-white' 
-                    : 'bg-white/90 text-foreground border-white/50'
-                  }`}
-                >
-                  {course.is_free ? 'Free' : 'Premium'}
+                <Badge variant="secondary" className="text-xs bg-white/90 text-foreground">
+                  Certificate
                 </Badge>
               </div>
             </div>
 
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg font-semibold line-clamp-2 group-hover:text-primary transition-colors">
-                {course.title}
-              </CardTitle>
-              {course.description && (
-                <CardDescription className="text-sm text-muted-foreground line-clamp-2">
-                  {course.description}
-                </CardDescription>
-              )}
-            </CardHeader>
+            <div className="flex flex-col flex-grow p-4">
+              <div className="flex-grow">
+                <h3 className="text-lg font-semibold line-clamp-1 group-hover:text-primary transition-colors mb-2">
+                  {course.title}
+                </h3>
+                <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                  {course.description || course.title}
+                </p>
+                
+                {/* Tags */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <Badge variant="outline" className="text-xs">
+                    Beginner
+                  </Badge>
+                  {course.is_free && (
+                    <Badge variant="outline" className="text-xs text-green-600 border-green-200">
+                      Free
+                    </Badge>
+                  )}
+                </div>
+              </div>
 
-            <CardContent className="pt-0">
+              {/* Action Button */}
               <Button
                 onClick={() => handleViewCourse(course.id)}
                 variant={isLocked ? "outline" : "default"}
-                className="w-full group/btn"
+                className="w-full group/btn mt-auto"
                 disabled={isLocked}
               >
-                <Play className="h-4 w-4 mr-2 group-hover/btn:scale-110 transition-transform" />
-                <span className="whitespace-nowrap">Continue Learning</span>
+                {isLocked ? (
+                  <>
+                    <Lock className="h-4 w-4 mr-2" />
+                    <span className="whitespace-nowrap">Upgrade to Access</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="whitespace-nowrap">Continue Learning</span>
+                    <Play className="h-4 w-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
+                  </>
+                )}
               </Button>
-            </CardContent>
+            </div>
           </Card>
         );
       })}
