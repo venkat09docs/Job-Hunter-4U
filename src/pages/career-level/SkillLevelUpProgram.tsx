@@ -75,12 +75,37 @@ const SkillLevelUpProgram: React.FC = () => {
   // State for course enrollment flow
   const [pendingCourseEnrollment, setPendingCourseEnrollment] = useState<Course | null>(null);
   const [shouldOpenLearningGoalForm, setShouldOpenLearningGoalForm] = useState(false);
+
+  // Check URL params for course enrollment from external navigation
   
   // Internal loading state to avoid multiple loading indicators
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   
   // Get active tab from URL params or default to 'skill-programs'
   const activeTab = searchParams.get('tab') || 'skill-programs';
+
+  // Check URL params for course enrollment from external navigation
+  useEffect(() => {
+    const courseId = searchParams.get('courseId');
+    const courseTitle = searchParams.get('courseTitle');
+    const shouldOpenForm = searchParams.get('openForm') === 'true';
+    
+    if (courseId && courseTitle && shouldOpenForm && activeTab === 'completed-learning') {
+      setPendingCourseEnrollment({
+        id: courseId,
+        title: courseTitle,
+        description: `Learning goal for ${courseTitle} course`
+      } as Course);
+      setShouldOpenLearningGoalForm(true);
+      
+      // Clean up URL params after processing
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('courseId');
+      newSearchParams.delete('courseTitle');
+      newSearchParams.delete('openForm');
+      setSearchParams(newSearchParams);
+    }
+  }, [searchParams, activeTab, setSearchParams]);
 
   // Optimized initial data loading - combine all API calls
   const loadAllData = useCallback(async () => {
