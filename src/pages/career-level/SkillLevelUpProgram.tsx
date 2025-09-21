@@ -76,8 +76,6 @@ const SkillLevelUpProgram: React.FC = () => {
   const [pendingCourseEnrollment, setPendingCourseEnrollment] = useState<Course | null>(null);
   const [shouldOpenLearningGoalForm, setShouldOpenLearningGoalForm] = useState(false);
 
-  // Check URL params for course enrollment from external navigation
-  
   // Internal loading state to avoid multiple loading indicators
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   
