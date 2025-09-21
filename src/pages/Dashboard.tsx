@@ -1,6 +1,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useCareerAssignments } from '@/hooks/useCareerAssignments';
+import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import { useOptimizedUserPoints } from '@/hooks/useOptimizedUserPoints';
 import { useOptimizedDashboardStats } from '@/hooks/useOptimizedDashboardStats';
 import { useOptimizedLeaderboard } from '@/hooks/useOptimizedLeaderboard';
@@ -83,8 +84,12 @@ const Dashboard = () => {
   // Learning Goals hook
   const { goals, loading: goalsLoading, getGoalStatus } = useLearningGoals();
   
-  // Recent Enrolled Courses hook
-  const { courses: recentCourses, loading: recentCoursesLoading } = useRecentEnrolledCourses();
+  // Get courses from career level program for learning goals
+  const { getCourses } = useCareerLevelProgram();
+  
+  // State for courses from learning goals
+  const [learningGoalCourses, setLearningGoalCourses] = useState([]);
+  const [learningCoursesLoading, setLearningCoursesLoading] = useState(false);
   
   // Optimized hooks for better performance
   const { totalPoints, currentWeekPoints, currentMonthPoints, loading: pointsLoading } = useOptimizedUserPoints();
@@ -223,6 +228,37 @@ const Dashboard = () => {
     }
   }, [user]);
 
+  // Fetch courses from learning goals
+  useEffect(() => {
+    const fetchLearningGoalCourses = async () => {
+      if (!user || goalsLoading) return;
+      
+      setLearningCoursesLoading(true);
+      try {
+        // Get all courses
+        const allCourses = await getCourses();
+        
+        // Get courses that are linked to learning goals
+        const goalsWithCourses = goals.filter(goal => goal.course_id);
+        const courseIds = goalsWithCourses.map(goal => goal.course_id);
+        
+        // Filter courses that are in learning goals
+        const filteredCourses = allCourses.filter(course => 
+          courseIds.includes(course.id)
+        );
+        
+        setLearningGoalCourses(filteredCourses);
+      } catch (error) {
+        console.error('Error fetching learning goal courses:', error);
+        setLearningGoalCourses([]);
+      } finally {
+        setLearningCoursesLoading(false);
+      }
+    };
+
+    fetchLearningGoalCourses();
+  }, [user, goals, goalsLoading, getCourses]);
+
   // All useEffect hooks - MUST be called unconditionally
   useEffect(() => {
     if (!githubTasks) return;
@@ -309,7 +345,7 @@ const Dashboard = () => {
   }
   
   // Check loading states IMMEDIATELY after all hooks are called - include new loading states
-  if (authLoading || profileLoading || networkLoading || githubLoading || weeklyLoading || pointsLoading || statsLoading || goalsLoading || recentCoursesLoading) {
+  if (authLoading || profileLoading || networkLoading || githubLoading || weeklyLoading || pointsLoading || statsLoading || goalsLoading || learningCoursesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -773,9 +809,9 @@ const Dashboard = () => {
                     Recent Courses
                   </CardTitle>
                   <Button
-                    variant="outline"
+                    variant="outline" 
                     size="sm"
-                    onClick={() => navigate('/dashboard/skill-level?tab=skill-programs')}
+                    onClick={() => navigate('/dashboard/skill-level?tab=completed-learning')}
                     className="border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-600 dark:text-blue-300 dark:hover:bg-blue-900/20"
                   >
                     View All
@@ -783,15 +819,13 @@ const Dashboard = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                {recentCourses && recentCourses.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {recentCourses.map((course) => (
-                      <RecentCoursesCard
-                        key={course.id}
-                        course={course}
-                        hasActiveSubscription={hasActiveSubscription()}
-                      />
-                    ))}
+                {learningGoalCourses && learningGoalCourses.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-6">
+                    <RecentCoursesCard
+                      courses={learningGoalCourses}
+                      hasActiveSubscription={hasActiveSubscription()}
+                      loading={learningCoursesLoading}
+                    />
                   </div>
                 ) : (
                   <div className="text-center py-8">
