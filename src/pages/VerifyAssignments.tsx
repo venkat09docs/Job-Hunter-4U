@@ -1402,15 +1402,12 @@ const VerifyAssignments = () => {
       </div>
 
       <Tabs defaultValue="pending" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="pending">
             Pending Assignments ({pendingAssignments.length})
           </TabsTrigger>
           <TabsTrigger value="verified">
             Verified Assignments ({verifiedTotalCount})
-          </TabsTrigger>
-          <TabsTrigger value="skills-assignments">
-            Skills Assignments
           </TabsTrigger>
           <TabsTrigger value="request-extensions">
             Request Extensions
@@ -1493,16 +1490,6 @@ const VerifyAssignments = () => {
               )}
             </>
           )}
-        </TabsContent>
-
-        <TabsContent value="skills-assignments" className="space-y-4">
-          <div className="text-center mb-6">
-            <h3 className="text-lg font-semibold mb-2">Skills Assignments</h3>
-            <p className="text-muted-foreground">
-              Review submitted skills assignments from students in your institute
-            </p>
-          </div>
-          <CLPReviewManagement />
         </TabsContent>
 
         <TabsContent value="request-extensions" className="space-y-4">
