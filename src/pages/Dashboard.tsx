@@ -495,6 +495,7 @@ const Dashboard = () => {
       const completed = tasks.filter(t => t.status === 'verified').length;
       const inProgress = tasks.filter(t => 
         t.status === 'started' ||
+        t.status === 'rejected' ||
         t.status === 'submitted' || 
         t.status === 'under_review' || 
         t.status === 'pending_verification'
