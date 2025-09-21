@@ -409,7 +409,17 @@ const Dashboard = () => {
   })();
 
   // Calculate progress percentages using career assignments data to sync with Profile Assignments page
-  const resumeProgress = getModuleProgress('RESUME');
+  const resumeProgress = (() => {
+    // Calculate Resume progress from Resume Building subcategory assignments to match Profile Assignments page
+    if (!assignments || assignments.length === 0) return 0;
+    const resumeTasks = assignments.filter(a => {
+      // Use specific Resume Building subcategory ID to match Profile Assignments calculation
+      return a.career_task_templates?.sub_category_id === 'ce552091-3a66-4aed-a165-686a524c8bca';
+    });
+    return resumeTasks.length > 0 
+      ? Math.round((resumeTasks.filter(t => t.status === 'verified').length / resumeTasks.length) * 100)
+      : 0;
+  })();
   const linkedinProgress = (() => {
     // Calculate LinkedIn progress from LinkedIn Profile subcategory assignments (synchronized with Profile Assignments page)
     if (!assignments || assignments.length === 0) return 0;
@@ -484,13 +494,9 @@ const Dashboard = () => {
       let tasks: any[] = [];
       
       if (categoryName === 'RESUME') {
-        // Get tasks that belong to resume building subcategory
+        // Get tasks that belong specifically to Resume Building subcategory (ID: ce552091-3a66-4aed-a165-686a524c8bca)
         tasks = assignments.filter(a => {
-          const title = a.career_task_templates?.title?.toLowerCase() || '';
-          const category = a.career_task_templates?.category?.toLowerCase() || '';
-          // Check if it has a sub_category_id (profile building tasks) and is resume-related
-          return a.career_task_templates?.sub_category_id && 
-                 (title.includes('resume') || category.includes('resume'));
+          return a.career_task_templates?.sub_category_id === 'ce552091-3a66-4aed-a165-686a524c8bca';
         });
       } else if (categoryName === 'LINKEDIN') {
         // Get tasks that belong specifically to LinkedIn Profile subcategory (ID: 1f6bd7f0-117c-4167-8719-f55525b362e2)
