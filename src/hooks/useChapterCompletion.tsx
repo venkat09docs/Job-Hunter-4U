@@ -140,15 +140,20 @@ export const useChapterCompletion = () => {
 
   const awardLearningGoalPoints = async (learningGoalId: string): Promise<any> => {
     try {
+      console.log('🔄 Calling award_learning_goal_completion_points for learning goal:', learningGoalId);
       const { data, error } = await supabase
         .rpc('award_learning_goal_completion_points', {
           p_learning_goal_id: learningGoalId
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('🚨 RPC error:', error);
+        throw error;
+      }
+      console.log('✅ RPC response:', data);
       return data;
     } catch (error) {
-      console.error('Error awarding learning goal points:', error);
+      console.error('🚨 Error awarding learning goal points:', error);
       throw error;
     }
   };

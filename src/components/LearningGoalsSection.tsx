@@ -128,13 +128,21 @@ export function LearningGoalsSection({
           // Check if course is completed and award points
           if (progress.progress_percentage >= 100 && !goal.reward_points_awarded) {
             try {
+              console.log('🎯 Attempting to award points for learning goal:', goalId, 'Progress:', progress.progress_percentage);
               const result = await awardLearningGoalPoints(goalId);
+              console.log('🎯 Award points result:', result);
               if (result.success) {
                 toast.success(`🎉 Course completed! You earned ${result.points_awarded} points!`);
+              } else {
+                console.warn('🎯 Points awarding failed:', result.message);
+                toast.error('Course completed but points could not be awarded: ' + result.message);
               }
             } catch (error) {
-              console.error('Error awarding points:', error);
+              console.error('🎯 Error awarding points:', error);
+              toast.error('Error awarding points: ' + error.message);
             }
+          } else {
+            console.log('🎯 Skipping points award - Progress:', progress.progress_percentage, 'Already awarded:', goal.reward_points_awarded);
           }
         }
       }
