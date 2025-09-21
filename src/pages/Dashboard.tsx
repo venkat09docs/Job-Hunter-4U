@@ -1210,14 +1210,7 @@ const Dashboard = () => {
                         </div>
                         <Progress value={resumeProgress} className="mb-2 bg-blue-200 dark:bg-blue-800" />
                         <div className="text-xs text-blue-600 dark:text-blue-400">
-                          {assignments?.filter(a => {
-                            const title = a.career_task_templates?.title?.toLowerCase() || '';
-                            return title.includes('resume') && a.status === 'verified';
-                          }).length || 0}/
-                          {assignments?.filter(a => {
-                            const title = a.career_task_templates?.title?.toLowerCase() || '';
-                            return title.includes('resume');
-                          }).length || 0} completed
+                          {resumeStats.completed}/{resumeStats.total} completed
                         </div>
                       </CardContent>
                     </Card>
@@ -1234,14 +1227,7 @@ const Dashboard = () => {
                         </div>
                         <Progress value={linkedinProgress} className="mb-2 bg-indigo-200 dark:bg-indigo-800" />
                         <div className="text-xs text-indigo-600 dark:text-indigo-400">
-                          {assignments?.filter(a => {
-                            const title = a.career_task_templates?.title?.toLowerCase() || '';
-                            return title.includes('linkedin') && a.status === 'verified';
-                          }).length || 0}/
-                          {assignments?.filter(a => {
-                            const title = a.career_task_templates?.title?.toLowerCase() || '';
-                            return title.includes('linkedin');
-                          }).length || 0} completed
+                          {linkedinStats.completed}/{linkedinStats.total} completed
                         </div>
                       </CardContent>
                     </Card>
@@ -1258,14 +1244,7 @@ const Dashboard = () => {
                         </div>
                         <Progress value={githubProgress} className="mb-2 bg-green-200 dark:bg-green-800" />
                         <div className="text-xs text-green-600 dark:text-green-400">
-                          {assignments?.filter(a => {
-                            const title = a.career_task_templates?.title?.toLowerCase() || '';
-                            return title.includes('github') && a.status === 'verified';
-                          }).length || 0}/
-                          {assignments?.filter(a => {
-                            const title = a.career_task_templates?.title?.toLowerCase() || '';
-                            return title.includes('github');
-                          }).length || 0} completed
+                          {githubStats.completed}/{githubStats.total} completed
                         </div>
                       </CardContent>
                     </Card>
