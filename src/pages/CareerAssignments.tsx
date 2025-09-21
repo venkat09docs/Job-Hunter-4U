@@ -23,6 +23,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { useUserIndustry } from '@/hooks/useUserIndustry';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useChapterCompletion } from '@/hooks/useChapterCompletion';
+import { SubscriptionUpgrade } from '@/components/SubscriptionUpgrade';
 
 interface SubCategory {
   id: string;
@@ -988,63 +989,143 @@ const CareerAssignments = () => {
                          <AccordionContent className="space-y-4 pt-4">
                            {(() => {
                              const categoryName = subCategory.name.toLowerCase();
-                              return !isEnabled ? (
-                                <div className="text-center py-8 text-muted-foreground">
-                                  {categoryName.includes('resume') && resumeCourseProgress < 100 ? (
-                                    <>
-                                      <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                                      <p className="font-medium mb-2">Complete Course First</p>
-                                      <p className="text-sm mb-4">{getDisabledMessage(subCategory)}</p>
-                                      <div className="mb-4">
-                                        <p className="text-xs mb-2">Course Progress: {Math.round(resumeCourseProgress)}%</p>
-                                        <Progress value={resumeCourseProgress} className="w-48 mx-auto h-2" />
-                                      </div>
-                       <Button 
-                         onClick={() => {
-                           console.log('🎓 Complete Course button clicked in accordion content');
-                           // Navigate to skill level program with completed learning tab and course info for goal creation
-                           navigate('/dashboard/skill-level?tab=completed-learning&courseId=3656d01b-f153-4480-8c69-28155b271077&courseTitle=Build ATS Supported Resume&openForm=true');
-                         }}
-                         className="mt-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-                         size="lg"
-                       >
-                         <BookOpen className="w-4 h-4 mr-2" />
-                         Complete Course
-                       </Button>
-                                    </>
-                                  ) : categoryName.includes('linkedin') && linkedinCourseProgress < 100 && (() => {
-                                    const resumeSubCat = subCategories.find(sc => sc.name.toLowerCase().includes('resume'));
-                                    const resumeProgress = resumeSubCat ? getSubCategoryProgress(resumeSubCat.id) : 0;
-                                    return resumeProgress >= 100;
-                                  })() ? (
-                                    <>
-                                      <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                                      <p className="font-medium mb-2">Complete Course First</p>
-                                      <p className="text-sm mb-4">{getDisabledMessage(subCategory)}</p>
-                                      <div className="mb-4">
-                                        <p className="text-xs mb-2">Course Progress: {Math.round(linkedinCourseProgress)}%</p>
-                                        <Progress value={linkedinCourseProgress} className="w-48 mx-auto h-2" />
-                                      </div>
-                       <Button 
-                         onClick={() => {
-                           console.log('🎓 LinkedIn Complete Course button clicked in accordion content');
-                           // Navigate to skill level program with completed learning tab and course info for goal creation
-                           navigate('/dashboard/skill-level?tab=completed-learning&courseId=f1f6a708-abd7-4b13-af1e-db854adf5445&courseTitle=Supercharge Your LinkedIn&openForm=true');
-                         }}
-                         className="mt-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-                         size="lg"
-                       >
-                         <BookOpen className="w-4 h-4 mr-2" />
-                         Complete Course
-                       </Button>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Lock className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                                      <p className="font-medium">{disabledMessage}</p>
-                                    </>
-                                  )}
-                               </div>
+                               return !isEnabled ? (
+                                 <div className="text-center py-8 text-muted-foreground">
+                                   {categoryName.includes('resume') && resumeCourseProgress < 100 ? (
+                                     <>
+                                       <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                       <p className="font-medium mb-2">Complete Course First</p>
+                                       <p className="text-sm mb-4">{getDisabledMessage(subCategory)}</p>
+                                       <div className="mb-4">
+                                         <p className="text-xs mb-2">Course Progress: {Math.round(resumeCourseProgress)}%</p>
+                                         <Progress value={resumeCourseProgress} className="w-48 mx-auto h-2" />
+                                       </div>
+                        <Button 
+                          onClick={() => {
+                            console.log('🎓 Complete Course button clicked in accordion content');
+                            // Navigate to skill level program with completed learning tab and course info for goal creation
+                            navigate('/dashboard/skill-level?tab=completed-learning&courseId=3656d01b-f153-4480-8c69-28155b271077&courseTitle=Build ATS Supported Resume&openForm=true');
+                          }}
+                          className="mt-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                          size="lg"
+                        >
+                          <BookOpen className="w-4 h-4 mr-2" />
+                          Complete Course
+                        </Button>
+                                     </>
+                                   ) : categoryName.includes('linkedin') && linkedinCourseProgress < 100 && (() => {
+                                     const resumeSubCat = subCategories.find(sc => sc.name.toLowerCase().includes('resume'));
+                                     const resumeProgress = resumeSubCat ? getSubCategoryProgress(resumeSubCat.id) : 0;
+                                     return resumeProgress >= 100;
+                                   })() ? (
+                                     <>
+                                       <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                       <p className="font-medium mb-2">Complete Course First</p>
+                                       <p className="text-sm mb-4">{getDisabledMessage(subCategory)}</p>
+                                       <div className="mb-4">
+                                         <p className="text-xs mb-2">Course Progress: {Math.round(linkedinCourseProgress)}%</p>
+                                         <Progress value={linkedinCourseProgress} className="w-48 mx-auto h-2" />
+                                       </div>
+                        <Button 
+                          onClick={() => {
+                            console.log('🎓 LinkedIn Complete Course button clicked in accordion content');
+                            // Navigate to skill level program with completed learning tab and course info for goal creation
+                            navigate('/dashboard/skill-level?tab=completed-learning&courseId=f1f6a708-abd7-4b13-af1e-db854adf5445&courseTitle=Supercharge Your LinkedIn&openForm=true');
+                          }}
+                          className="mt-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                          size="lg"
+                        >
+                          <BookOpen className="w-4 h-4 mr-2" />
+                          Complete Course
+                        </Button>
+                                     </>
+                                   ) : categoryName.includes('digital') && (() => {
+                                     // Check for Digital Profile specific conditions
+                                     const linkedinSubCat = subCategories.find(sc => sc.name.toLowerCase().includes('linkedin'));
+                                     const linkedinProgress = linkedinSubCat ? getSubCategoryProgress(linkedinSubCat.id) : 0;
+                                     
+                                     // Check subscription requirement
+                                     const hasValidSubscription = profile?.subscription_active && (
+                                       profile?.subscription_plan === '6-month' || 
+                                       profile?.subscription_plan === '1-year' ||
+                                       profile?.subscription_plan?.includes('6-month') ||
+                                       profile?.subscription_plan?.includes('1-year') ||
+                                       profile?.subscription_plan?.includes('6 month') ||
+                                       profile?.subscription_plan?.includes('1 year')
+                                     );
+                                     
+                                     const isThreeMonthPlan = profile?.subscription_plan === '3-month' || 
+                                                            profile?.subscription_plan?.includes('3-month') ||
+                                                            profile?.subscription_plan?.includes('3 month');
+                                     
+                                     return !hasValidSubscription || isThreeMonthPlan;
+                                   })() ? (
+                                     <>
+                                       <Lock className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                       <p className="font-medium mb-2">Subscription Required</p>
+                                       <p className="text-sm mb-4">Digital Profile requires 6 months or 1 year subscription plan</p>
+                                       <SubscriptionUpgrade 
+                                         featureName="Digital Profile" 
+                                         eligiblePlans={["6 Months Plan", "1 Year Plan"]}
+                                       >
+                                         <Button 
+                                           className="mt-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                                           size="lg"
+                                         >
+                                           <Lock className="w-4 h-4 mr-2" />
+                                           Upgrade Plan
+                                         </Button>
+                                       </SubscriptionUpgrade>
+                                     </>
+                                   ) : categoryName.includes('digital') && (() => {
+                                     const linkedinSubCat = subCategories.find(sc => sc.name.toLowerCase().includes('linkedin'));
+                                     const linkedinProgress = linkedinSubCat ? getSubCategoryProgress(linkedinSubCat.id) : 0;
+                                     return linkedinProgress < 100;
+                                   })() ? (
+                                     <>
+                                       <Lock className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                       <p className="font-medium mb-2">Complete LinkedIn Profile First</p>
+                                       <p className="text-sm mb-4">Complete all LinkedIn Profile tasks to unlock Digital Profile</p>
+                                       <Button 
+                                         onClick={() => {
+                                           // Navigate to LinkedIn subcategory
+                                           navigate('/dashboard/career-assignments?category=linkedin');
+                                         }}
+                                         className="mt-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                                         size="lg"
+                                       >
+                                         <Users className="w-4 h-4 mr-2" />
+                                         Complete LinkedIn Tasks
+                                       </Button>
+                                     </>
+                                   ) : categoryName.includes('digital') && digitalProfileCourseProgress < 100 ? (
+                                     <>
+                                       <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                       <p className="font-medium mb-2">Complete Course First</p>
+                                       <p className="text-sm mb-4">Complete the Digital Profile course to unlock these tasks</p>
+                                       <div className="mb-4">
+                                         <p className="text-xs mb-2">Course Progress: {Math.round(digitalProfileCourseProgress)}%</p>
+                                         <Progress value={digitalProfileCourseProgress} className="w-48 mx-auto h-2" />
+                                       </div>
+                                       <Button 
+                                         onClick={() => {
+                                           console.log('🎓 Digital Profile Complete Course button clicked');
+                                           navigate('/dashboard/skill-level?tab=completed-learning&courseId=' + DIGITAL_PROFILE_COURSE_ID + '&courseTitle=Build Digital Profile&openForm=true');
+                                         }}
+                                         className="mt-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                                         size="lg"
+                                       >
+                                         <BookOpen className="w-4 h-4 mr-2" />
+                                         Complete Course
+                                       </Button>
+                                     </>
+                                   ) : (
+                                     <>
+                                       <Lock className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                       <p className="font-medium">{disabledMessage}</p>
+                                     </>
+                                   )}
+                                </div>
                              ) : (
                                <>
                                  {categoryTasks.map(assignment => (
