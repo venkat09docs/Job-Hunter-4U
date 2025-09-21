@@ -442,17 +442,54 @@ const Dashboard = () => {
   const flowRemaining = Math.max(0, githubWeeklyTotal - githubWeeklyCompleted);
   const weeklyTarget = githubWeeklyTotal;
 
-  // Calculate task statistics for each category (only if getTasksByModule is available)
-  const calculateTaskStats = (module: 'RESUME' | 'LINKEDIN' | 'DIGITAL_PROFILE' | 'GITHUB') => {
-    if (!getTasksByModule || !assignments || assignments.length === 0) {
-      // Return zeros when no data is available
-      console.log(`📊 No data available for ${module} tasks, showing zeros`);
+  // Calculate task statistics for each category using subcategory-based filtering to match CareerAssignments page
+  const calculateTaskStats = (categoryName: string) => {
+    if (!assignments || assignments.length === 0) {
+      console.log(`📊 No assignments available for ${categoryName} tasks, showing zeros`);
       return { total: 0, completed: 0, inProgress: 0, pending: 0 };
     }
     
     try {
-      const tasks = getTasksByModule(module);
-      console.log(`📊 ${module} tasks:`, tasks);
+      // Filter tasks by subcategory just like CareerAssignments page does
+      let tasks: any[] = [];
+      
+      if (categoryName === 'RESUME') {
+        // Get tasks that belong to resume building subcategory
+        tasks = assignments.filter(a => {
+          const title = a.career_task_templates?.title?.toLowerCase() || '';
+          const category = a.career_task_templates?.category?.toLowerCase() || '';
+          // Check if it has a sub_category_id (profile building tasks) and is resume-related
+          return a.career_task_templates?.sub_category_id && 
+                 (title.includes('resume') || category.includes('resume'));
+        });
+      } else if (categoryName === 'LINKEDIN') {
+        // Get tasks that belong to LinkedIn profile subcategory
+        tasks = assignments.filter(a => {
+          const title = a.career_task_templates?.title?.toLowerCase() || '';
+          const category = a.career_task_templates?.category?.toLowerCase() || '';
+          return a.career_task_templates?.sub_category_id && 
+                 (title.includes('linkedin') || category.includes('linkedin'));
+        });
+      } else if (categoryName === 'GITHUB') {
+        // Get tasks that belong to GitHub profile subcategory
+        tasks = assignments.filter(a => {
+          const title = a.career_task_templates?.title?.toLowerCase() || '';
+          const category = a.career_task_templates?.category?.toLowerCase() || '';
+          return a.career_task_templates?.sub_category_id && 
+                 (title.includes('github') || category.includes('github') || 
+                  title.includes('git') || category.includes('git'));
+        });
+      } else if (categoryName === 'DIGITAL_PROFILE') {
+        // Get tasks that belong to digital profile subcategory
+        tasks = assignments.filter(a => {
+          const title = a.career_task_templates?.title?.toLowerCase() || '';
+          const category = a.career_task_templates?.category?.toLowerCase() || '';
+          return a.career_task_templates?.sub_category_id && 
+                 (title.includes('digital') || category.includes('digital'));
+        });
+      }
+      
+      console.log(`📊 ${categoryName} tasks (subcategory-based):`, tasks);
       
       const total = tasks.length;
       const completed = tasks.filter(t => t.status === 'verified').length;
@@ -467,12 +504,11 @@ const Dashboard = () => {
         !t.status
       ).length;
       
-      console.log(`📊 ${module} stats:`, { total, completed, inProgress, pending });
+      console.log(`📊 ${categoryName} stats (synchronized with CareerAssignments):`, { total, completed, inProgress, pending });
       
       return { total, completed, inProgress, pending };
     } catch (error) {
-      console.error(`Error calculating stats for ${module}:`, error);
-      // Return zeros on error instead of mock data
+      console.error(`Error calculating stats for ${categoryName}:`, error);
       return { total: 0, completed: 0, inProgress: 0, pending: 0 };
     }
   };
