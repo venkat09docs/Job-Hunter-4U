@@ -37,12 +37,12 @@ const CourseCard: React.FC<{
             <div className="w-full h-full bg-gradient-to-br from-primary via-purple to-teal" />
           )}
           <div className="absolute inset-0 bg-black/20" />
-          <div className="absolute top-4 left-4">
+          <div className="absolute bottom-4 left-4">
             <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/30">
               {course.code}
             </Badge>
           </div>
-          <div className="absolute top-4 right-4">
+          <div className="absolute bottom-4 right-16">
             <Badge className="bg-white/90 text-primary text-xs">
               {course.category}
             </Badge>
