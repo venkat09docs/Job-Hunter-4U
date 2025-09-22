@@ -387,11 +387,24 @@ export const useEnhancedStudentData = () => {
         userId,
         resumeProgress,
         linkedinProgress: `${linkedinProgress}% (${linkedinCompletedTasks}/9 tasks)`,
-        githubCompletion: `${githubCompletion}% (${githubCompletedTasks}/8 tasks)`,
+        githubCompletion: `${githubCompletion}% (${githubCompletedTasks} total, ${completedProfileTasks} profile tasks)`,
         profileCompletion,
         totalJobApps: totalJobApps || 0,
+        linkedinConnections,
+        linkedinPosts,
         batchName
       });
+
+      // DEBUG: Add detailed logging to understand why progress is zero
+      if (linkedinProgress === 0 && githubCompletion === 0 && resumeProgress === 0) {
+        console.warn(`⚠️ No progress data found for ${profile.full_name}:`, {
+          userId,
+          linkedinTasksCompleted: linkedinCompletedTasks,
+          githubTasksCompleted: githubCompletedTasks,
+          resumeDataExists: !!resumeData,
+          batchName
+        });
+      }
 
       // Get last activity from multiple sources to get the most recent activity
       const { data: recentActivities } = await supabase
