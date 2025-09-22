@@ -1330,32 +1330,109 @@ const GitHubWeekly = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {/* Sort tasks by display_order to ensure Day 1-7 ordering */}
-                  {weeklyTasks
-                    .sort((a, b) => (a.github_tasks?.display_order || 999) - (b.github_tasks?.display_order || 999))
-                    .map((task) => (
-                      <TaskCard key={task.id} task={task} />
-                    ))}
-                  {weeklyTasks.length === 0 && (
-                    <div className="text-center py-8">
-                      <GitCommit className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                      <p className="text-muted-foreground">No weekly development tasks assigned</p>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Generate your Day 1-7 GitHub activities for this week
-                      </p>
-                      <Button 
-                        onClick={() => refreshWeeklyAssignments()}
-                        disabled={!canAccessFeature("github_weekly")}
-                        className="mt-4"
-                      >
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        Refresh Week Tasks
-                        {!canAccessFeature("github_weekly") && <Lock className="h-4 w-4 ml-2" />}
-                      </Button>
+                {weeklyTasks.length === 0 ? (
+                  <div className="text-center py-8">
+                    <GitCommit className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">No weekly development tasks assigned</p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Generate your Day 1-7 GitHub activities for this week
+                    </p>
+                    <Button 
+                      onClick={() => refreshWeeklyAssignments()}
+                      disabled={!canAccessFeature("github_weekly")}
+                      className="mt-4"
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Refresh Week Tasks
+                      {!canAccessFeature("github_weekly") && <Lock className="h-4 w-4 ml-2" />}
+                    </Button>
+                  </div>
+                ) : (() => {
+                  // Filter tasks based on their status and availability - same logic as LinkedIn Growth Activities
+                  const activeTasks = weeklyTasks.filter(task => {
+                    // Exclude completed tasks
+                    if (task.status === 'VERIFIED') return false;
+                    
+                    // Check day availability - exclude future day tasks
+                    const dayAvailability = getTaskDayAvailability(task.github_tasks?.title || '');
+                    if (dayAvailability.isFutureDay) return false;
+                    
+                    return true;
+                  });
+                  
+                  const completedTasks = weeklyTasks.filter(task => task.status === 'VERIFIED');
+                  
+                  const availableLaterTasks = weeklyTasks.filter(task => {
+                    if (task.status === 'VERIFIED') return false;
+                    const dayAvailability = getTaskDayAvailability(task.github_tasks?.title || '');
+                    return dayAvailability.isFutureDay;
+                  });
+
+                  return (
+                    <div className="space-y-8">
+                      {/* Active Tasks Section */}
+                      {activeTasks.length > 0 && (
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2">
+                            <Target className="w-5 h-5 text-primary" />
+                            <h4 className="text-lg font-semibold">Active Tasks</h4>
+                            <Badge variant="outline" className="ml-2">
+                              {activeTasks.length} task{activeTasks.length !== 1 ? 's' : ''}
+                            </Badge>
+                          </div>
+                          <div className="space-y-4">
+                            {/* Sort tasks by display_order to ensure Day 1-7 ordering */}
+                            {activeTasks
+                              .sort((a, b) => (a.github_tasks?.display_order || 999) - (b.github_tasks?.display_order || 999))
+                              .map((task) => (
+                                <TaskCard key={task.id} task={task} />
+                              ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Available Later This Week Section */}
+                      {availableLaterTasks.length > 0 && (
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2">
+                            <Clock className="w-5 h-5 text-muted-foreground" />
+                            <h4 className="text-lg font-semibold text-muted-foreground">Available Later This Week</h4>
+                            <Badge variant="outline" className="ml-2">
+                              {availableLaterTasks.length} task{availableLaterTasks.length !== 1 ? 's' : ''}
+                            </Badge>
+                          </div>
+                          <div className="space-y-4">
+                            {availableLaterTasks
+                              .sort((a, b) => (a.github_tasks?.display_order || 999) - (b.github_tasks?.display_order || 999))
+                              .map((task) => (
+                                <TaskCard key={task.id} task={task} />
+                              ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Completed Tasks Section */}
+                      {completedTasks.length > 0 && (
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 className="w-5 h-5 text-green-500" />
+                            <h4 className="text-lg font-semibold">Completed</h4>
+                            <Badge variant="outline" className="ml-2 text-green-600 border-green-200">
+                              {completedTasks.length} task{completedTasks.length !== 1 ? 's' : ''}
+                            </Badge>
+                          </div>
+                          <div className="space-y-4">
+                            {completedTasks
+                              .sort((a, b) => (a.github_tasks?.display_order || 999) - (b.github_tasks?.display_order || 999))
+                              .map((task) => (
+                                <TaskCard key={task.id} task={task} />
+                              ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
+                  );
+                })()}
               </CardContent>
             </Card>
 
