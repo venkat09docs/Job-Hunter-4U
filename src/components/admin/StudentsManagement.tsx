@@ -140,7 +140,7 @@ export const StudentsManagement = () => {
       if (isInstituteAdmin && user) {
         console.log('🔍 Fetching institutes for admin:', user.id);
         
-        // Get all institutes that this admin manages (not just one)
+        // Get ONLY the primary institute that this admin manages
         const { data, error } = await supabase
           .from('institute_admin_assignments')
           .select(`
@@ -151,30 +151,32 @@ export const StudentsManagement = () => {
             )
           `)
           .eq('user_id', user.id)
-          .eq('is_active', true);
+          .eq('is_active', true)
+          .limit(1)
+          .single();
 
-        console.log('📋 Institute admin assignments:', { data, error });
+        console.log('📋 Institute admin assignment:', { data, error });
 
         if (error) {
-          console.error('❌ Error fetching institute assignments:', error);
-          throw error;
-        }
-
-        if (!data || data.length === 0) {
-          console.log('⚠️ No institute assignments found for admin');
+          console.error('❌ Error fetching institute assignment:', error);
           setStudents([]);
           setFilteredStudents([]);
           setBatches([]);
           return;
         }
 
-        // If admin manages multiple institutes, we'll use the first one for now
-        // In the future, we could add institute selection dropdown
-        const primaryInstitute = data[0];
-        console.log('🏢 Using primary institute:', primaryInstitute);
+        if (!data) {
+          console.log('⚠️ No institute assignment found for admin');
+          setStudents([]);
+          setFilteredStudents([]);
+          setBatches([]);
+          return;
+        }
+
+        console.log('🏢 Using institute:', data);
         
-        setInstituteId(primaryInstitute.institute_id);
-        await fetchData(primaryInstitute.institute_id);
+        setInstituteId(data.institute_id);
+        await fetchData(data.institute_id);
       } else if (isAdmin) {
         console.log('🔍 Fetching all data for super admin');
         // For super admins, fetch all data (no institute filtering)

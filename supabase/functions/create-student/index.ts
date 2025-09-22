@@ -183,7 +183,30 @@ serve(async (req) => {
 
     if (existingAssignments && existingAssignments.length > 0) {
       console.log('⚠️ User already has active assignments:', existingAssignments)
-      throw new Error(`Student already has an active assignment in another institute. Cannot assign to multiple institutes.`)
+      
+      // Check if user is already assigned to the same institute
+      const sameInstituteAssignment = existingAssignments.find(
+        assignment => assignment.institute_id === institute_id
+      )
+      
+      if (sameInstituteAssignment) {
+        console.log('✅ User already assigned to this institute, updating assignment instead')
+        // User is already in this institute, we'll just return success
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            user_id: authData.user.id,
+            message: 'Student already assigned to this institute'
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200,
+          }
+        )
+      } else {
+        // User assigned to different institute - this is not allowed
+        throw new Error(`Student already has an active assignment in another institute. Cannot assign to multiple institutes.`)
+      }
     }
 
     // Create user assignment - ensure single institute assignment
