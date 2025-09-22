@@ -412,7 +412,14 @@ const Dashboard = () => {
 
   // Calculate LinkedIn growth task stats to sync with CareerActivities page
   const linkedinGrowthStats = (() => {
+    console.log('🔍 LinkedIn Growth Stats Debug:', {
+      linkedinTasks,
+      linkedinTasksLength: linkedinTasks?.length,
+      linkedinTasksLoading
+    });
+    
     if (!linkedinTasks || linkedinTasks.length === 0) {
+      console.log('🔍 LinkedIn tasks empty, returning zero stats');
       return { total: 0, completed: 0, inProgress: 0, pending: 0, activeTasks: 0 };
     }
     
@@ -430,7 +437,10 @@ const Dashboard = () => {
       return true; // Include all non-completed tasks as active
     }).length;
     
-    return { total, completed, inProgress, pending, activeTasks };
+    const stats = { total, completed, inProgress, pending, activeTasks };
+    console.log('🔍 LinkedIn Growth Stats Calculated:', stats);
+    
+    return stats;
   })();
 
   // Calculate progress percentages using career assignments data to sync with Profile Assignments page
