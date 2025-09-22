@@ -126,42 +126,58 @@ serve(async (req) => {
     }
 
     // Check if user with this email already exists - more efficient approach
-    console.log('🔍 Checking if user already exists')
+    console.log('🔍 Checking if user already exists with email:', email)
     let authData: any
     let existingUser: any = null
     
     try {
       // Try to get user by email using auth admin
-      const { data: userData, error: getUserError } = await supabaseAdmin.auth.admin.getUserByEmail(email)
-      if (!getUserError && userData.user) {
-        existingUser = userData.user
+      const { data, error } = await supabaseAdmin.auth.admin.getUserByEmail(email)
+      if (!error && data.user) {
+        existingUser = data.user
         console.log('👤 User already exists:', existingUser.id)
+        
+        // Check if existing user already has assignments to the SAME institute
+        const { data: existingAssignments, error: existingError } = await supabaseAdmin
+          .from('user_assignments')
+          .select('institute_id, id')
+          .eq('user_id', existingUser.id)
+          .eq('institute_id', institute_id)
+          .eq('is_active', true)
+
+        if (existingError) {
+          console.error('❌ Error checking existing assignments:', existingError)
+          throw new Error(`Failed to check existing assignments: ${existingError.message}`)
+        }
+
+        if (existingAssignments && existingAssignments.length > 0) {
+          console.log('⚠️ User already assigned to this institute:', existingAssignments)
+          throw new Error(`Student is already assigned to this institute.`)
+        }
+
+        // Check if user has assignments to OTHER institutes
+        const { data: otherAssignments, error: otherError } = await supabaseAdmin
+          .from('user_assignments')
+          .select('institute_id, id')
+          .eq('user_id', existingUser.id)
+          .neq('institute_id', institute_id)
+          .eq('is_active', true)
+
+        if (otherError) {
+          console.error('❌ Error checking other assignments:', otherError)
+          throw new Error(`Failed to check other assignments: ${otherError.message}`)
+        }
+
+        if (otherAssignments && otherAssignments.length > 0) {
+          console.log('⚠️ User already assigned to other institutes:', otherAssignments)
+          throw new Error(`Student already has an active assignment in another institute. Cannot assign to multiple institutes.`)
+        }
+
+        authData = { user: existingUser }
       }
     } catch (error) {
-      // If user doesn't exist, getUserByEmail will throw an error, which is expected
       console.log('👤 User does not exist, will create new user')
-    }
-    
-    if (existingUser) {
-      // Check if existing user already has assignments to prevent multiple institute assignments
-      const { data: existingAssignments, error: existingError } = await supabaseAdmin
-        .from('user_assignments')
-        .select('institute_id, id')
-        .eq('user_id', existingUser.id)
-        .eq('is_active', true)
-
-      if (existingError) {
-        console.error('❌ Error checking existing assignments:', existingError)
-        throw new Error(`Failed to check existing assignments: ${existingError.message}`)
-      }
-
-      if (existingAssignments && existingAssignments.length > 0) {
-        console.log('⚠️ User already has active assignments:', existingAssignments)
-        throw new Error(`Student already has an active assignment in another institute. Cannot assign to multiple institutes.`)
-      }
-
-      authData = { user: existingUser }
-    } else {
+      
       // Create new user account using admin client (won't affect current session)
       console.log('👥 Creating new user account')
       const { data: newAuthData, error: authError } = await supabaseAdmin.auth.admin.createUser({
