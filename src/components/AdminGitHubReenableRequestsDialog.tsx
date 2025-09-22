@@ -48,9 +48,14 @@ export const AdminGitHubReenableRequestsDialog: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [adminNotes, setAdminNotes] = useState<{ [key: string]: string }>({});
-  const { isAdmin, isRecruiter, isInstituteAdmin } = useRole();
+  const { isAdmin, isRecruiter, isInstituteAdmin, loading: roleLoading } = useRole();
 
   const fetchRequests = async () => {
+    // SECURITY FIX: Don't fetch if roles are still loading
+    if (roleLoading) {
+      console.log('🔒 Roles still loading, skipping request fetch');
+      return;
+    }
     setLoading(true);
     try {
       // Get role-based user filtering (same logic as VerifyAssignments.tsx)
@@ -151,11 +156,12 @@ export const AdminGitHubReenableRequestsDialog: React.FC = () => {
     }
   };
 
+  // SECURITY FIX: Added role dependencies to prevent fetching before roles load  
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !roleLoading) {
       fetchRequests();
     }
-  }, [isOpen]);
+  }, [isOpen, isAdmin, isRecruiter, isInstituteAdmin, roleLoading]);
 
   const handleApproveRequest = async (requestId: string, userTaskId: string, dueAt: string) => {
     if (!canAdminExtendTask(dueAt)) {
