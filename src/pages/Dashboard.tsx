@@ -916,8 +916,79 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
+            {/* Skill Level Up Status - Full Width */}
+            <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border-green-200 dark:border-green-800">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-green-900 dark:text-green-100">
+                    <Clipboard className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    Skill Level Up Status
+                  </CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate('/assignments')}
+                  >
+                    View All
+                  </Button>
+                </div>
+              </CardHeader>
+                <CardContent>
+                 {/* Two Boards - Courses and Skill Assignments */}
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   {/* Courses - First Board */}
+                   <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/20 dark:to-indigo-900/20 border-indigo-200 dark:border-indigo-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/dashboard/skill-level?tab=skill-programs')}>
+                     <CardContent className="p-4">
+                       <div className="flex items-center justify-between mb-3">
+                         <div>
+                           <p className="text-xs font-medium text-indigo-700 dark:text-indigo-300">Courses</p>
+                           <p className="text-lg font-bold text-indigo-900 dark:text-indigo-100">{courseStats.total}</p>
+                         </div>
+                         <BookOpen className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                       </div>
+                       <div className="grid grid-cols-3 gap-2 text-xs">
+                         <div className="text-center">
+                           <div className="text-orange-700 dark:text-orange-300 font-medium">{courseStats.inProgress}</div>
+                           <div className="text-orange-600 dark:text-orange-400">In Progress</div>
+                         </div>
+                         <div className="text-center">
+                           <div className="text-green-700 dark:text-green-300 font-medium">{courseStats.completed}</div>
+                           <div className="text-green-600 dark:text-green-400">Completed</div>
+                         </div>
+                         <div className="text-center">
+                           <div className="text-gray-700 dark:text-gray-300 font-medium">{courseStats.pending}</div>
+                           <div className="text-gray-600 dark:text-gray-400">Pending</div>
+                         </div>
+                       </div>
+                     </CardContent>
+                   </Card>
 
-            {/* Status Tracker - Only for Free, 1-month plan users */}
+                   {/* Skill Assignments - Second Board */}
+                   <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/20 dark:to-amber-900/20 border-amber-200 dark:border-amber-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/dashboard/skill-level?tab=my-assignments')}>
+                     <CardContent className="p-4">
+                       <div className="flex items-center justify-between mb-3">
+                         <div>
+                           <p className="text-xs font-medium text-amber-700 dark:text-amber-300">Skill Assignments</p>
+                           <p className="text-lg font-bold text-amber-900 dark:text-amber-100">{assignmentStats.total}</p>
+                         </div>
+                         <FileText className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                       </div>
+                       <div className="grid grid-cols-2 gap-2 text-xs">
+                         <div className="text-center">
+                           <div className="text-blue-700 dark:text-blue-300 font-medium">{assignmentStats.available}</div>
+                           <div className="text-blue-600 dark:text-blue-400">Available</div>
+                         </div>
+                         <div className="text-center">
+                           <div className="text-green-700 dark:text-green-300 font-medium">{assignmentStats.completed}</div>
+                           <div className="text-green-600 dark:text-green-400">Completed</div>
+                         </div>
+                       </div>
+                     </CardContent>
+                   </Card>
+                 </div>
+               </CardContent>
+            </Card>
+
             {canAccessStatusTracker() && (
               <Card>
                 <CardHeader>
@@ -1278,79 +1349,6 @@ const Dashboard = () => {
                   </div>
                 )}
               </CardContent>
-            </Card>
-
-            {/* Assignments Status - Full Width */}
-            <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border-green-200 dark:border-green-800">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-green-900 dark:text-green-100">
-                    <Clipboard className="h-5 w-5 text-green-600 dark:text-green-400" />
-                    Skill Level Up Status
-                  </CardTitle>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate('/assignments')}
-                  >
-                    View All
-                  </Button>
-                </div>
-              </CardHeader>
-                <CardContent>
-                 {/* Two Boards - Courses and Skill Assignments */}
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                   {/* Courses - First Board */}
-                   <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/20 dark:to-indigo-900/20 border-indigo-200 dark:border-indigo-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/dashboard/skill-level?tab=skill-programs')}>
-                     <CardContent className="p-4">
-                       <div className="flex items-center justify-between mb-3">
-                         <div>
-                           <p className="text-xs font-medium text-indigo-700 dark:text-indigo-300">Courses</p>
-                           <p className="text-lg font-bold text-indigo-900 dark:text-indigo-100">{courseStats.total}</p>
-                         </div>
-                         <BookOpen className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                       </div>
-                       <div className="grid grid-cols-3 gap-2 text-xs">
-                         <div className="text-center">
-                           <div className="text-orange-700 dark:text-orange-300 font-medium">{courseStats.inProgress}</div>
-                           <div className="text-orange-600 dark:text-orange-400">In Progress</div>
-                         </div>
-                         <div className="text-center">
-                           <div className="text-green-700 dark:text-green-300 font-medium">{courseStats.completed}</div>
-                           <div className="text-green-600 dark:text-green-400">Completed</div>
-                         </div>
-                         <div className="text-center">
-                           <div className="text-gray-700 dark:text-gray-300 font-medium">{courseStats.pending}</div>
-                           <div className="text-gray-600 dark:text-gray-400">Pending</div>
-                         </div>
-                       </div>
-                     </CardContent>
-                   </Card>
-
-                   {/* Skill Assignments - Second Board */}
-                   <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/20 dark:to-amber-900/20 border-amber-200 dark:border-amber-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/dashboard/skill-level?tab=my-assignments')}>
-                     <CardContent className="p-4">
-                       <div className="flex items-center justify-between mb-3">
-                         <div>
-                           <p className="text-xs font-medium text-amber-700 dark:text-amber-300">Skill Assignments</p>
-                           <p className="text-lg font-bold text-amber-900 dark:text-amber-100">{assignmentStats.total}</p>
-                         </div>
-                         <FileText className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-                       </div>
-                       <div className="grid grid-cols-2 gap-2 text-xs">
-                         <div className="text-center">
-                           <div className="text-blue-700 dark:text-blue-300 font-medium">{assignmentStats.available}</div>
-                           <div className="text-blue-600 dark:text-blue-400">Available</div>
-                         </div>
-                         <div className="text-center">
-                           <div className="text-green-700 dark:text-green-300 font-medium">{assignmentStats.completed}</div>
-                           <div className="text-green-600 dark:text-green-400">Completed</div>
-                         </div>
-                       </div>
-                     </CardContent>
-                   </Card>
-                 </div>
-               </CardContent>
             </Card>
 
             {/* Learning Goals Section - Full Width */}
