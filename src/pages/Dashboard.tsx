@@ -39,6 +39,7 @@ import { formatDistanceToNow, startOfWeek, endOfWeek, addDays, format } from 'da
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, Legend } from 'recharts';
 import PricingDialog from '@/components/PricingDialog';
 import { TestSocialProof } from '@/components/TestSocialProof';
+import { getTaskDayAvailability } from '@/utils/dayBasedTaskValidation';
 
 interface JobEntry {
   id: string;
@@ -426,15 +427,20 @@ const Dashboard = () => {
     const total = linkedinTasks.length;
     const completed = linkedinTasks.filter(task => task.status === 'VERIFIED').length;
     const inProgress = linkedinTasks.filter(task => 
-      task.status === 'SUBMITTED' || task.status === 'PARTIALLY_VERIFIED' || task.status === 'STARTED'
+      task.status === 'SUBMITTED' || task.status === 'PARTIALLY_VERIFIED'
     ).length;
     const pending = linkedinTasks.filter(task => task.status === 'NOT_STARTED').length;
     
-    // Calculate active tasks (excluding completed and future day tasks)
+    // Calculate active tasks using the EXACT same logic as CareerActivities page
     const activeTasks = linkedinTasks.filter(task => {
       // Exclude completed tasks
       if (task.status === 'VERIFIED') return false;
-      return true; // Include all non-completed tasks as active
+      
+      // Check day availability - exclude future day tasks (same logic as CareerActivities)
+      const dayAvailability = getTaskDayAvailability(task.linkedin_tasks?.title || '');
+      if (dayAvailability.isFutureDay) return false;
+      
+      return true;
     }).length;
     
     const stats = { total, completed, inProgress, pending, activeTasks };
@@ -1094,16 +1100,16 @@ const Dashboard = () => {
                         </div>
                         <div className="grid grid-cols-3 gap-2 text-xs">
                           <div className="text-center">
-                            <div className="font-semibold text-blue-600 dark:text-blue-400">{linkedinGrowthStats.activeTasks}</div>
-                            <div className="text-purple-600 dark:text-purple-400">Active</div>
-                          </div>
-                          <div className="text-center">
                             <div className="font-semibold text-green-600 dark:text-green-400">{linkedinGrowthStats.completed}</div>
                             <div className="text-purple-600 dark:text-purple-400">Completed</div>
                           </div>
                           <div className="text-center">
                             <div className="font-semibold text-yellow-600 dark:text-yellow-400">{linkedinGrowthStats.inProgress}</div>
                             <div className="text-purple-600 dark:text-purple-400">In Progress</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="font-semibold text-gray-600 dark:text-gray-400">{linkedinGrowthStats.pending}</div>
+                            <div className="text-purple-600 dark:text-purple-400">Pending</div>
                           </div>
                         </div>
                       </CardContent>
