@@ -90,7 +90,9 @@ const renderLeaderboardCard = (title: string, entries: LeaderboardEntry[], icon:
         </div>
       ) : (
         <div className="text-center py-8 text-muted-foreground">
-          <p>No data available for this period</p>
+          <Users className="h-8 w-8 mx-auto mb-2 text-muted-foreground/60" />
+          <p className="text-sm font-medium mb-1">No student activity found</p>
+          <p className="text-xs">Students need to complete activities to appear in the leaderboard</p>
         </div>
       )}
     </CardContent>

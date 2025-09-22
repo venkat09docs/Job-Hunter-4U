@@ -111,12 +111,11 @@ export const useInstituteLeaderboard = () => {
 
       console.log(`DEBUG: Date range for ${periodType}: ${startDate.toISOString()} to ${endDate.toISOString()}`);
 
-      // Get users assigned to this institute (all students)
+      // Get users assigned to this institute (all students - both batch and institute assignments)
       const { data: instituteUsers, error: usersError } = await supabase
         .from('user_assignments')
         .select('user_id')
         .eq('institute_id', instituteId)
-        .eq('assignment_type', 'batch')
         .eq('is_active', true);
 
       if (usersError) {
@@ -127,6 +126,7 @@ export const useInstituteLeaderboard = () => {
       console.log('DEBUG: Institute users found:', instituteUsers?.length || 0, instituteUsers);
 
       if (!instituteUsers || instituteUsers.length === 0) {
+        console.log(`DEBUG: No students found in institute ${instituteId} for period ${periodType}`);
         return [];
       }
 
