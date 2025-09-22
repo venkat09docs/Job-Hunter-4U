@@ -320,7 +320,7 @@ export const useEnhancedStudentData = () => {
         .from('activity_point_settings')
         .select('points')
         .eq('activity_id', 'linkedin_total_tasks')
-        .single();
+        .maybeSingle();
       
       const totalLinkedInTasks = linkedinTotalTasks?.points || 9; // fallback to 9
       const linkedinProgress = Math.min(100, Math.round((linkedinCompletedTasks || 0) * 100 / totalLinkedInTasks));
