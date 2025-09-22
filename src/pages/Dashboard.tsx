@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ResizableLayout } from '@/components/ResizableLayout';
+import { useCourseStatistics } from '@/hooks/useCourseStatistics';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
@@ -106,6 +107,7 @@ const Dashboard = () => {
     recentJobs, 
     loading: statsLoading 
   } = useOptimizedDashboardStats();
+  const { statistics: courseStats, loading: courseStatsLoading } = useCourseStatistics();
   const { leaderboard: optimizedLeaderboard, loading: leaderboardLoading } = useOptimizedLeaderboard();
   
   // Define eligible subscription plans for Badge Leaders and Leaderboard
@@ -348,7 +350,7 @@ const Dashboard = () => {
   }
   
   // Check loading states IMMEDIATELY after all hooks are called - include new loading states
-  if (authLoading || profileLoading || networkLoading || githubLoading || weeklyLoading || linkedinTasksLoading || pointsLoading || statsLoading || goalsLoading || learningCoursesLoading) {
+  if (authLoading || profileLoading || networkLoading || githubLoading || weeklyLoading || linkedinTasksLoading || pointsLoading || statsLoading || goalsLoading || learningCoursesLoading || courseStatsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -1293,47 +1295,74 @@ const Dashboard = () => {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent>
-                {/* Skill Assignments - Single Board */}
-                <div className="max-w-md mx-auto">
-                  {/* Skill Assignments */}
-                  <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/20 dark:to-amber-900/20 border-amber-200 dark:border-amber-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/dashboard/skill-level?tab=my-assignments')}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <div>
-                          <p className="text-xs font-medium text-amber-700 dark:text-amber-300">Skill Assignments</p>
-                          <p className="text-lg font-bold text-amber-900 dark:text-amber-100">{skillAssignmentsProgress}%</p>
-                        </div>
-                        <BookOpen className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-                      </div>
-                      <Progress value={skillAssignmentsProgress} className="mb-2 bg-amber-200 dark:bg-amber-800" />
-                      <div className="text-xs text-amber-600 dark:text-amber-400">
-                        {assignments?.filter(a => {
-                          const templateCategory = a.career_task_templates?.category?.toLowerCase() || '';
-                          const templateTitle = a.career_task_templates?.title?.toLowerCase() || '';
-                          return !templateTitle.includes('resume') && 
-                                 !templateTitle.includes('linkedin') && 
-                                 !templateTitle.includes('github') &&
-                                 !templateCategory.includes('resume') &&
-                                 !templateCategory.includes('linkedin') &&
-                                 !templateCategory.includes('github') &&
-                                 a.status === 'verified';
-                        }).length || 0}/
-                        {assignments?.filter(a => {
-                          const templateCategory = a.career_task_templates?.category?.toLowerCase() || '';
-                          const templateTitle = a.career_task_templates?.title?.toLowerCase() || '';
-                          return !templateTitle.includes('resume') && 
-                                 !templateTitle.includes('linkedin') && 
-                                 !templateTitle.includes('github') &&
-                                 !templateCategory.includes('resume') &&
-                                 !templateCategory.includes('linkedin') &&
-                                 !templateCategory.includes('github');
-                        }).length || 0} completed
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </CardContent>
+               <CardContent>
+                 {/* Two Boards - Skill Assignments and Courses */}
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   {/* Skill Assignments */}
+                   <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/20 dark:to-amber-900/20 border-amber-200 dark:border-amber-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/dashboard/skill-level?tab=my-assignments')}>
+                     <CardContent className="p-4">
+                       <div className="flex items-center justify-between mb-3">
+                         <div>
+                           <p className="text-xs font-medium text-amber-700 dark:text-amber-300">Skill Assignments</p>
+                           <p className="text-lg font-bold text-amber-900 dark:text-amber-100">{skillAssignmentsProgress}%</p>
+                         </div>
+                         <BookOpen className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                       </div>
+                       <Progress value={skillAssignmentsProgress} className="mb-2 bg-amber-200 dark:bg-amber-800" />
+                       <div className="text-xs text-amber-600 dark:text-amber-400">
+                         {assignments?.filter(a => {
+                           const templateCategory = a.career_task_templates?.category?.toLowerCase() || '';
+                           const templateTitle = a.career_task_templates?.title?.toLowerCase() || '';
+                           return !templateTitle.includes('resume') && 
+                                  !templateTitle.includes('linkedin') && 
+                                  !templateTitle.includes('github') &&
+                                  !templateCategory.includes('resume') &&
+                                  !templateCategory.includes('linkedin') &&
+                                  !templateCategory.includes('github') &&
+                                  a.status === 'verified';
+                         }).length || 0}/
+                         {assignments?.filter(a => {
+                           const templateCategory = a.career_task_templates?.category?.toLowerCase() || '';
+                           const templateTitle = a.career_task_templates?.title?.toLowerCase() || '';
+                           return !templateTitle.includes('resume') && 
+                                  !templateTitle.includes('linkedin') && 
+                                  !templateTitle.includes('github') &&
+                                  !templateCategory.includes('resume') &&
+                                  !templateCategory.includes('linkedin') &&
+                                  !templateCategory.includes('github');
+                         }).length || 0} completed
+                       </div>
+                     </CardContent>
+                   </Card>
+
+                   {/* Course Statistics */}
+                   <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/20 dark:to-indigo-900/20 border-indigo-200 dark:border-indigo-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/dashboard/skill-level?tab=skill-developer-programs')}>
+                     <CardContent className="p-4">
+                       <div className="flex items-center justify-between mb-3">
+                         <div>
+                           <p className="text-xs font-medium text-indigo-700 dark:text-indigo-300">Courses</p>
+                           <p className="text-lg font-bold text-indigo-900 dark:text-indigo-100">{courseStats.total}</p>
+                         </div>
+                         <BookOpen className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                       </div>
+                       <div className="grid grid-cols-3 gap-2 text-xs">
+                         <div className="text-center">
+                           <div className="text-orange-700 dark:text-orange-300 font-medium">{courseStats.inProgress}</div>
+                           <div className="text-orange-600 dark:text-orange-400">In Progress</div>
+                         </div>
+                         <div className="text-center">
+                           <div className="text-green-700 dark:text-green-300 font-medium">{courseStats.completed}</div>
+                           <div className="text-green-600 dark:text-green-400">Completed</div>
+                         </div>
+                         <div className="text-center">
+                           <div className="text-gray-700 dark:text-gray-300 font-medium">{courseStats.pending}</div>
+                           <div className="text-gray-600 dark:text-gray-400">Pending</div>
+                         </div>
+                       </div>
+                     </CardContent>
+                   </Card>
+                 </div>
+               </CardContent>
             </Card>
 
             {/* Learning Goals Section - Full Width */}
