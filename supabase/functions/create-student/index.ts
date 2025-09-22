@@ -125,21 +125,24 @@ serve(async (req) => {
       console.log('✅ Institute admin permissions and batch ownership verified')
     }
 
-    // First check if user with this email already exists
+    // Check if user with this email already exists - more efficient approach
     console.log('🔍 Checking if user already exists')
-    const { data: existingUsers, error: userLookupError } = await supabaseAdmin.auth.admin.listUsers()
-    
-    if (userLookupError) {
-      console.error('❌ Error looking up existing users:', userLookupError)
-      throw new Error(`Failed to check existing users: ${userLookupError.message}`)
-    }
-
-    const existingUser = existingUsers.users.find(user => user.email === email)
     let authData: any
+    let existingUser: any = null
+    
+    try {
+      // Try to get user by email using auth admin
+      const { data: userData, error: getUserError } = await supabaseAdmin.auth.admin.getUserByEmail(email)
+      if (!getUserError && userData.user) {
+        existingUser = userData.user
+        console.log('👤 User already exists:', existingUser.id)
+      }
+    } catch (error) {
+      // If user doesn't exist, getUserByEmail will throw an error, which is expected
+      console.log('👤 User does not exist, will create new user')
+    }
     
     if (existingUser) {
-      console.log('👤 User already exists:', existingUser.id)
-      
       // Check if existing user already has assignments to prevent multiple institute assignments
       const { data: existingAssignments, error: existingError } = await supabaseAdmin
         .from('user_assignments')
