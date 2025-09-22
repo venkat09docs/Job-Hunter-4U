@@ -125,30 +125,48 @@ serve(async (req) => {
       console.log('✅ Institute admin permissions and batch ownership verified')
     }
 
-    // Create user account using admin client (won't affect current session)
-    console.log('👥 Creating user account')
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password,
-      user_metadata: {
-        full_name,
-        username,
-        phone_number: phone_number || '',
-        industry: industry || 'IT',
-      },
-      email_confirm: true, // Auto-confirm email
-    })
-
-    if (authError) {
-      console.error('❌ User creation error:', authError)
-      throw new Error(`Failed to create user account: ${authError.message}`)
+    // Check if user already exists first
+    console.log('🔍 Checking if user already exists with email:', email)
+    const { data: existingUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers()
+    
+    if (listError) {
+      console.error('❌ Error checking existing users:', listError)
+      throw new Error(`Failed to check existing users: ${listError.message}`)
     }
 
-    if (!authData.user) {
-      throw new Error('Failed to create user account - no user data returned')
-    }
+    let authData
+    const existingUser = existingUsers.users.find(user => user.email === email)
+    
+    if (existingUser) {
+      console.log('👤 User already exists with ID:', existingUser.id)
+      authData = { user: existingUser }
+    } else {
+      // Create user account using admin client (won't affect current session)
+      console.log('👥 Creating new user account')
+      const { data: newUserData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        user_metadata: {
+          full_name,
+          username,
+          phone_number: phone_number || '',
+          industry: industry || 'IT',
+        },
+        email_confirm: true, // Auto-confirm email
+      })
 
-    console.log('✅ User created successfully:', authData.user.id)
+      if (authError) {
+        console.error('❌ User creation error:', authError)
+        throw new Error(`Failed to create user account: ${authError.message}`)
+      }
+
+      if (!newUserData.user) {
+        throw new Error('Failed to create user account - no user data returned')
+      }
+
+      console.log('✅ User created successfully:', newUserData.user.id)
+      authData = newUserData
+    }
 
     // Check if user already has any active assignments (prevent multiple institute assignments)
     console.log('🔍 Checking for existing user assignments')
