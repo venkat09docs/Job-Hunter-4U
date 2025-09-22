@@ -262,12 +262,14 @@ export default function StudentsReport() {
   const batchChartData = batches.map(batch => ({
     name: batch.batch_name,
     students: batch.student_count,
-    avgCompletion: batch.avg_completion,
-    avgResume: batch.avg_resume_progress,
-    avgLinkedIn: batch.avg_linkedin_progress,
-    avgGitHub: batch.avg_github_progress,
-    avgJobApps: batch.avg_job_applications
+    avgCompletion: batch.avg_completion || 0,
+    avgResume: batch.avg_resume_progress || 0,
+    avgLinkedIn: batch.avg_linkedin_progress || 0,
+    avgGitHub: batch.avg_github_progress || 0,
+    avgJobApps: batch.avg_job_applications || 0
   }));
+
+  console.log('StudentsReport - Batch Chart Data:', batchChartData);
 
   const progressDistribution = batches.flatMap(batch => 
     batch.students.map(student => ({
@@ -288,6 +290,9 @@ export default function StudentsReport() {
     value: count,
     percentage: Math.round((count / totalStudents) * 100)
   }));
+
+  console.log('StudentsReport - Progress Chart Data:', progressChartData);
+  console.log('StudentsReport - Total Students:', totalStudents);
 
   const getStatusColor = (value: number, type: 'profile' | 'github') => {
     if (value >= 80) return 'bg-green-500';
@@ -530,21 +535,31 @@ export default function StudentsReport() {
                 <CardDescription>Average completion rates across batches</CardDescription>
               </CardHeader>
               <CardContent>
-                 <ChartContainer className="h-[250px] sm:h-[300px]" config={{}}>
-                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={batchChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis domain={[0, 100]} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Legend />
-                       <Bar dataKey="avgCompletion" name="Profile %" fill={CHART_COLORS[0]} />
-                       <Bar dataKey="avgResume" name="Resume %" fill={CHART_COLORS[3]} />
-                       <Bar dataKey="avgLinkedIn" name="LinkedIn %" fill={CHART_COLORS[1]} />
-                       <Bar dataKey="avgGitHub" name="GitHub %" fill={CHART_COLORS[2]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
+                {batchChartData.length > 0 ? (
+                  <ChartContainer className="h-[250px] sm:h-[300px]" config={{}}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={batchChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis domain={[0, 100]} />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Legend />
+                        <Bar dataKey="avgCompletion" name="Profile %" fill={CHART_COLORS[0]} />
+                        <Bar dataKey="avgResume" name="Resume %" fill={CHART_COLORS[3]} />
+                        <Bar dataKey="avgLinkedIn" name="LinkedIn %" fill={CHART_COLORS[1]} />
+                        <Bar dataKey="avgGitHub" name="GitHub %" fill={CHART_COLORS[2]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
+                ) : (
+                  <div className="h-[250px] sm:h-[300px] flex items-center justify-center text-muted-foreground">
+                    <div className="text-center">
+                      <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p className="text-lg font-medium">No Batch Data Available</p>
+                      <p className="text-sm">No students found in any batches for this institute.</p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -557,27 +572,37 @@ export default function StudentsReport() {
                 <CardDescription>Student progress distribution</CardDescription>
               </CardHeader>
               <CardContent>
-                 <ChartContainer className="h-[250px] sm:h-[300px]" config={{}}>
-                   <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={progressChartData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percentage }) => `${name}: ${percentage}%`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {progressChartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
+                {progressChartData.length > 0 && totalStudents > 0 ? (
+                  <ChartContainer className="h-[250px] sm:h-[300px]" config={{}}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={progressChartData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={({ name, percentage }) => `${name}: ${percentage}%`}
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          {progressChartData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
+                ) : (
+                  <div className="h-[250px] sm:h-[300px] flex items-center justify-center text-muted-foreground">
+                    <div className="text-center">
+                      <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p className="text-lg font-medium">No Progress Data Available</p>
+                      <p className="text-sm">No student progress data found for this institute.</p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
