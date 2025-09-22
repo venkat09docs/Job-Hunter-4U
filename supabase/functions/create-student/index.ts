@@ -130,13 +130,16 @@ serve(async (req) => {
     let authData: any
     
     try {
-      // Try to get user by email using auth admin
-      const { data: existingUserData, error: getUserError } = await supabaseAdmin.auth.admin.getUserByEmail(email)
-      console.log('🔍 getUserByEmail result:', { hasUser: !!existingUserData?.user, error: getUserError?.message })
+      // Search for user by email using listUsers (getUserByEmail doesn't exist in API)
+      const { data: listUsersData, error: listUsersError } = await supabaseAdmin.auth.admin.listUsers()
+      console.log('🔍 listUsers result:', { userCount: listUsersData?.users?.length || 0, error: listUsersError?.message })
       
-      if (existingUserData?.user && !getUserError) {
+      // Find user with matching email
+      const existingUser = listUsersData?.users?.find(user => user.email === email)
+      console.log('🔍 Found matching user:', { found: !!existingUser, userId: existingUser?.id })
+      
+      if (existingUser && !listUsersError) {
         // User exists, check their assignments
-        const existingUser = existingUserData.user
         console.log('👤 User already exists:', existingUser.id)
         
         // Check if existing user already has assignments to the SAME institute
