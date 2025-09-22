@@ -514,14 +514,41 @@ const Dashboard = () => {
     githubLoading
   });
 
-  // GitHub Weekly progress calculation
-  const githubWeeklyCompleted = weeklyTasks.filter(task => 
-    task.status === 'VERIFIED' || task.status === 'PARTIALLY_VERIFIED'
-  ).length;
-  const githubWeeklyTotal = weeklyTasks.length || 7; // Default to 7 if no tasks
-  const flowCompleted = githubWeeklyCompleted;
-  const flowRemaining = Math.max(0, githubWeeklyTotal - githubWeeklyCompleted);
-  const weeklyTarget = githubWeeklyTotal;
+  // GitHub Weekly progress calculation - synchronized with GitHubWeekly page task categorization
+  const githubWeeklyStats = (() => {
+    if (!weeklyTasks || weeklyTasks.length === 0) {
+      return { total: 0, completed: 0, inProgress: 0, pending: 0, activeTasks: 0 };
+    }
+    
+    const total = weeklyTasks.length;
+    const completed = weeklyTasks.filter(task => task.status === 'VERIFIED').length;
+    
+    // Calculate active tasks - same logic as GitHubWeekly.tsx
+    const activeTasks = weeklyTasks.filter(task => {
+      // Exclude completed tasks
+      if (task.status === 'VERIFIED') return false;
+      
+      // Check day availability - exclude future day tasks
+      const dayAvailability = getTaskDayAvailability(task.github_tasks?.title || '');
+      if (dayAvailability.isFutureDay) return false;
+      
+      return true;
+    }).length;
+    
+    // In-progress tasks are those that have been started but not completed
+    const inProgress = weeklyTasks.filter(task => 
+      task.status === 'STARTED' || task.status === 'SUBMITTED' || task.status === 'PARTIALLY_VERIFIED'
+    ).length;
+    
+    // Pending includes active tasks that haven't been started yet
+    const pending = weeklyTasks.filter(task => task.status === 'NOT_STARTED' && !getTaskDayAvailability(task.github_tasks?.title || '').isFutureDay).length;
+    
+    return { total, completed, inProgress, pending, activeTasks };
+  })();
+  
+  const flowCompleted = githubWeeklyStats.completed;
+  const flowRemaining = Math.max(0, githubWeeklyStats.total - githubWeeklyStats.completed);
+  const weeklyTarget = githubWeeklyStats.total;
 
   // Calculate task statistics for each category using subcategory-based filtering to match CareerAssignments page
   const calculateTaskStats = (categoryName: string) => {
@@ -610,13 +637,6 @@ const Dashboard = () => {
     hasGetTasksByModule: !!getTasksByModule
   });
   
-  // GitHub Weekly stats
-  const githubWeeklyStats = {
-    total: githubWeeklyTotal,
-    completed: githubWeeklyCompleted,
-    inProgress: 0, // GitHub weekly tasks don't have in-progress state
-    pending: githubWeeklyTotal - githubWeeklyCompleted
-  };
 
   const handleSignOut = async () => {
     try {
@@ -1117,7 +1137,7 @@ const Dashboard = () => {
                         <div className="flex items-center justify-between mb-3">
                           <div>
                             <p className="text-xs font-medium text-teal-700 dark:text-teal-300">GitHub Weekly</p>
-                            <p className="text-lg font-bold text-teal-900 dark:text-teal-100">{githubWeeklyStats.total} Total</p>
+                            <p className="text-lg font-bold text-teal-900 dark:text-teal-100">{githubWeeklyStats.activeTasks} Active</p>
                           </div>
                           <Github className="h-6 w-6 text-teal-600 dark:text-teal-400" />
                         </div>
@@ -1363,18 +1383,27 @@ const Dashboard = () => {
                           <div>
                             <p className="text-xs font-medium text-teal-700 dark:text-teal-300">GitHub Weekly</p>
                             <p className="text-lg font-bold text-teal-900 dark:text-teal-100">
-                              {weeklyTasks?.filter(t => t.status === 'VERIFIED' || t.status === 'PARTIALLY_VERIFIED').length || 0}/
-                              {weeklyTasks?.length || 7}
+                              {githubWeeklyStats.activeTasks} Active
                             </p>
                           </div>
                           <Github className="h-6 w-6 text-teal-600 dark:text-teal-400" />
                         </div>
                         <Progress 
-                          value={((weeklyTasks?.filter(t => t.status === 'VERIFIED' || t.status === 'PARTIALLY_VERIFIED').length || 0) / Math.max(1, weeklyTasks?.length || 7)) * 100} 
+                          value={(githubWeeklyStats.completed / Math.max(1, githubWeeklyStats.total)) * 100} 
                           className="mb-2 bg-teal-200 dark:bg-teal-800" 
                         />
                         <div className="text-xs text-teal-600 dark:text-teal-400">
-                          {(weeklyTasks?.length || 0) - (weeklyTasks?.filter(t => t.status === 'VERIFIED' || t.status === 'PARTIALLY_VERIFIED').length || 0)} remaining this week
+                          {githubWeeklyStats.total - githubWeeklyStats.completed} remaining this week
+                        </div>
+                        <div className="flex justify-between mt-2 text-xs">
+                          <div className="flex flex-col items-center">
+                            <div className="font-semibold text-green-600 dark:text-green-400">{githubWeeklyStats.completed}</div>
+                            <div className="text-green-600 dark:text-green-400">Completed</div>
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <div className="font-semibold text-yellow-600 dark:text-yellow-400">{githubWeeklyStats.inProgress}</div>
+                            <div className="text-yellow-600 dark:text-yellow-400">In Progress</div>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
