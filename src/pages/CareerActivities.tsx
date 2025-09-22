@@ -39,6 +39,7 @@ import { LinkedInHistoryTab } from '@/components/LinkedInHistoryTab';
 import { AdminReenableRequestsDialog } from '@/components/AdminReenableRequestsDialog';
 import { useRole } from '@/hooks/useRole';
 import { format } from 'date-fns';
+import { getTaskDayAvailability } from '@/utils/dayBasedTaskValidation';
 
 const CareerActivities = () => {
   const { canAccessFeature } = usePremiumFeatures();
@@ -309,21 +310,109 @@ const CareerActivities = () => {
                   </Card>
                 )}
 
-                {!tasksLoading && userTasks.length > 0 && (
-                  <div className="space-y-4">
-                     {userTasks.map((task) => (
-                       <LinkedInTaskCard
-                         key={task.id}
-                         task={task}
-                         evidence={evidence.filter(e => e.user_task_id === task.id)}
-                         onSubmitEvidence={canAccessFeature("linkedin_growth_activities") ? submitEvidence : () => {}}
-                         onUpdateStatus={canAccessFeature("linkedin_growth_activities") ? updateTaskStatus : () => {}}
-                         onRefreshTasks={refetchTasks}
-                         isSubmitting={isSubmittingEvidence}
-                       />
-                     ))}
-                  </div>
-                )}
+                {!tasksLoading && userTasks.length > 0 && (() => {
+                  // Filter tasks based on their status and availability
+                  const activeTasks = userTasks.filter(task => {
+                    // Exclude completed tasks
+                    if (task.status === 'VERIFIED') return false;
+                    
+                    // Check day availability - exclude future day tasks
+                    const dayAvailability = getTaskDayAvailability(task.linkedin_tasks?.title || '');
+                    if (dayAvailability.isFutureDay) return false;
+                    
+                    return true;
+                  });
+                  
+                  const completedTasks = userTasks.filter(task => task.status === 'VERIFIED');
+                  
+                  const upcomingTasks = userTasks.filter(task => {
+                    if (task.status === 'VERIFIED') return false;
+                    const dayAvailability = getTaskDayAvailability(task.linkedin_tasks?.title || '');
+                    return dayAvailability.isFutureDay;
+                  });
+
+                  return (
+                    <div className="space-y-8">
+                      {/* Active Tasks Section */}
+                      {activeTasks.length > 0 && (
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2">
+                            <Target className="w-5 h-5 text-primary" />
+                            <h4 className="text-lg font-semibold">Active Tasks</h4>
+                            <Badge variant="outline" className="ml-2">
+                              {activeTasks.length} task{activeTasks.length !== 1 ? 's' : ''}
+                            </Badge>
+                          </div>
+                          <div className="space-y-4">
+                            {activeTasks.map((task) => (
+                              <LinkedInTaskCard
+                                key={task.id}
+                                task={task}
+                                evidence={evidence.filter(e => e.user_task_id === task.id)}
+                                onSubmitEvidence={canAccessFeature("linkedin_growth_activities") ? submitEvidence : () => {}}
+                                onUpdateStatus={canAccessFeature("linkedin_growth_activities") ? updateTaskStatus : () => {}}
+                                onRefreshTasks={refetchTasks}
+                                isSubmitting={isSubmittingEvidence}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Upcoming Tasks Section */}
+                      {upcomingTasks.length > 0 && (
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2">
+                            <Clock className="w-5 h-5 text-muted-foreground" />
+                            <h4 className="text-lg font-semibold text-muted-foreground">Available Later This Week</h4>
+                            <Badge variant="outline" className="ml-2">
+                              {upcomingTasks.length} task{upcomingTasks.length !== 1 ? 's' : ''}
+                            </Badge>
+                          </div>
+                          <div className="space-y-4">
+                            {upcomingTasks.map((task) => (
+                              <LinkedInTaskCard
+                                key={task.id}
+                                task={task}
+                                evidence={evidence.filter(e => e.user_task_id === task.id)}
+                                onSubmitEvidence={canAccessFeature("linkedin_growth_activities") ? submitEvidence : () => {}}
+                                onUpdateStatus={canAccessFeature("linkedin_growth_activities") ? updateTaskStatus : () => {}}
+                                onRefreshTasks={refetchTasks}
+                                isSubmitting={isSubmittingEvidence}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Completed Tasks Section */}
+                      {completedTasks.length > 0 && (
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="w-5 h-5 text-green-500" />
+                            <h4 className="text-lg font-semibold">Completed</h4>
+                            <Badge variant="outline" className="ml-2 text-green-600 border-green-200">
+                              {completedTasks.length} task{completedTasks.length !== 1 ? 's' : ''}
+                            </Badge>
+                          </div>
+                          <div className="space-y-4">
+                            {completedTasks.map((task) => (
+                              <LinkedInTaskCard
+                                key={task.id}
+                                task={task}
+                                evidence={evidence.filter(e => e.user_task_id === task.id)}
+                                onSubmitEvidence={canAccessFeature("linkedin_growth_activities") ? submitEvidence : () => {}}
+                                onUpdateStatus={canAccessFeature("linkedin_growth_activities") ? updateTaskStatus : () => {}}
+                                onRefreshTasks={refetchTasks}
+                                isSubmitting={isSubmittingEvidence}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Sidebar */}
