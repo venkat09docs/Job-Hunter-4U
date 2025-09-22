@@ -23,6 +23,9 @@ export const useCourseStatistics = () => {
   });
   const [loading, setLoading] = useState(true);
 
+  // Stable subscription status values for dependencies
+  const subscriptionActive = hasActiveSubscription();
+
   // Subscription plan hierarchy mapping (same as SkillDeveloperProgramsTab)
   const subscriptionHierarchy = {
     'free': 0,
@@ -33,8 +36,8 @@ export const useCourseStatistics = () => {
   };
 
   // Get user's subscription tier level
-  const getUserSubscriptionTier = () => {
-    if (!hasActiveSubscription()) return 0; // No active subscription = free tier
+  const getUserSubscriptionTier = useCallback(() => {
+    if (!subscriptionActive) return 0; // No active subscription = free tier
     
     // Map subscription plan names to tiers
     const planNameMapping: Record<string, number> = {
@@ -52,7 +55,7 @@ export const useCourseStatistics = () => {
     };
     
     return planNameMapping[subscriptionPlan || ''] || 1; // Default to one month if unknown
-  };
+  }, [subscriptionActive, subscriptionPlan]);
 
   // Helper function to determine course subscription plan
   const getCourseSubscriptionPlan = (course: any) => {
@@ -82,7 +85,7 @@ export const useCourseStatistics = () => {
   };
 
   // Check if user can access a specific course
-  const canAccessCourse = (course: any) => {
+  const canAccessCourse = useCallback((course: any) => {
     // Free courses are always accessible
     if (course.is_free) return true;
     
@@ -92,12 +95,12 @@ export const useCourseStatistics = () => {
     
     // User can access course if their tier is equal or higher than course requirement
     return userTier >= courseTier;
-  };
+  }, [getUserSubscriptionTier]);
 
   // Check if user is enrolled in a course
-  const isUserEnrolled = (courseId: string) => {
+  const isUserEnrolled = useCallback((courseId: string) => {
     return goals.some(goal => goal.course_id === courseId);
-  };
+  }, [goals]);
 
   const fetchCourseStatistics = useCallback(async () => {
     if (!user) {
@@ -106,6 +109,7 @@ export const useCourseStatistics = () => {
       return;
     }
 
+    console.log('🔍 Fetching course statistics...');
     setLoading(true);
     try {
       // Get all active courses with subscription plan info
@@ -206,12 +210,13 @@ export const useCourseStatistics = () => {
         pending
       });
     } catch (error) {
-      console.error('Error fetching course statistics:', error);
+      console.error('❌ Error fetching course statistics:', error);
       setStatistics({ total: 0, inProgress: 0, completed: 0, pending: 0 });
     } finally {
+      console.log('✅ Course statistics fetch completed');
       setLoading(false);
     }
-  }, [user, hasActiveSubscription, subscriptionPlan, goals]);
+  }, [user, canAccessCourse, isUserEnrolled]);
 
   useEffect(() => {
     fetchCourseStatistics();
