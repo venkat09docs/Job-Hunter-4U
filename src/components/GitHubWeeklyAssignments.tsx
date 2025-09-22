@@ -139,16 +139,35 @@ export const GitHubWeeklyAssignments = () => {
     const hasDay = (task.github_tasks?.title || '').match(/Day (\d+)/i);
     const canInteract = hasDay ? canInteractDayBased : true; // Fallback for older tasks
     
-    // Only show extension request for incomplete tasks that are past due
+    // FIXED: Enhanced logic to prevent completed tasks from showing extension requests
+    // This matches the working LinkedIn implementation
     const isTaskCompleteOrSubmitted = ['VERIFIED', 'SUBMITTED', 'PARTIALLY_VERIFIED'].includes(task.status);
-    const showExtensionRequest = !isTaskCompleteOrSubmitted && (hasDay ? dayAvailability.canRequestExtension : false);
+    
+    // Debug logging to track the issue
+    console.log(`🔍 GitHub Task Extension Check: ${task.github_tasks?.title}`, {
+      taskId: task.id,
+      status: task.status,
+      isTaskCompleteOrSubmitted,
+      hasDay: !!hasDay,
+      dayAvailability,
+      adminExtended: task.admin_extended
+    });
+    
+    // Only show extension request for incomplete tasks that are past due
+    // Same logic as LinkedIn but with better validation
+    const showExtensionRequest = !isTaskCompleteOrSubmitted && 
+      task.status !== 'VERIFIED' && // Extra safety check
+      task.status !== 'SUBMITTED' && // Extra safety check  
+      task.status !== 'PARTIALLY_VERIFIED' && // Extra safety check
+      (hasDay ? dayAvailability.canRequestExtension : false);
     
     console.log(`🔍 GitHub Task: ${task.github_tasks?.title}`, {
       dueDate: task.due_at,
       assignmentDay,
       adminExtended: task.admin_extended,
-      hasDay,
+      hasDay: !!hasDay,
       canInteract,
+      showExtensionRequest,
       dayAvailability,
       period: task.period,
       currentTime: new Date().toISOString(),
@@ -303,15 +322,18 @@ export const GitHubWeeklyAssignments = () => {
             </Dialog>
            )}
             
-            {/* Show extension request if needed */}
-            {showExtensionRequest && (
-              <div className="mt-3">
-                <GitHubRequestReenableDialog
-                  taskId={task.id}
-                  taskTitle={task.github_tasks?.title || 'GitHub Task'}
-                />
-              </div>
-            )}
+            {/* Show extension request if needed - FIXED: Added extra safety checks */}
+            {showExtensionRequest && 
+             task.status !== 'VERIFIED' && 
+             task.status !== 'SUBMITTED' && 
+             task.status !== 'PARTIALLY_VERIFIED' && (
+               <div className="mt-3">
+                 <GitHubRequestReenableDialog
+                   taskId={task.id}
+                   taskTitle={task.github_tasks?.title || 'GitHub Task'}
+                 />
+               </div>
+             )}
           </>
         )}
          
