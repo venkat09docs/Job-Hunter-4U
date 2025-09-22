@@ -48,14 +48,9 @@ export const AdminReenableRequestsDialog: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [adminNotes, setAdminNotes] = useState<{ [key: string]: string }>({});
-  const { isAdmin, isRecruiter, isInstituteAdmin, loading: roleLoading } = useRole();
+  const { isAdmin, isRecruiter, isInstituteAdmin } = useRole();
 
   const fetchRequests = async () => {
-    // SECURITY FIX: Don't fetch if roles are still loading
-    if (roleLoading) {
-      console.log('🔒 Roles still loading, skipping request fetch');
-      return;
-    }
     setLoading(true);
     try {
       // Get role-based user filtering (same logic as VerifyAssignments.tsx)
@@ -156,12 +151,11 @@ export const AdminReenableRequestsDialog: React.FC = () => {
     }
   };
 
-  // SECURITY FIX: Added role dependencies to prevent fetching before roles load
   useEffect(() => {
-    if (isOpen && !roleLoading) {
+    if (isOpen) {
       fetchRequests();
     }
-  }, [isOpen, isAdmin, isRecruiter, isInstituteAdmin, roleLoading]);
+  }, [isOpen]);
 
   const handleApproveRequest = async (requestId: string, userTaskId: string, dueAt: string) => {
     if (!canAdminExtendTask(dueAt)) {
