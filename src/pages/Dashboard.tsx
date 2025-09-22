@@ -540,8 +540,11 @@ const Dashboard = () => {
       task.status === 'STARTED' || task.status === 'SUBMITTED' || task.status === 'PARTIALLY_VERIFIED'
     ).length;
     
-    // Pending includes active tasks that haven't been started yet
-    const pending = weeklyTasks.filter(task => task.status === 'NOT_STARTED' && !getTaskDayAvailability(task.github_tasks?.title || '').isFutureDay).length;
+    // Pending includes tasks that show "Start Assignment" (NOT_STARTED) and submitted tasks awaiting verification (SUBMITTED)
+    const pending = weeklyTasks.filter(task => 
+      (task.status === 'NOT_STARTED' && !getTaskDayAvailability(task.github_tasks?.title || '').isFutureDay) ||
+      task.status === 'SUBMITTED'
+    ).length;
     
     return { total, completed, inProgress, pending, activeTasks };
   })();
