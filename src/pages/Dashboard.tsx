@@ -1282,7 +1282,7 @@ const Dashboard = () => {
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2 text-green-900 dark:text-green-100">
                     <Clipboard className="h-5 w-5 text-green-600 dark:text-green-400" />
-                    Assignments Status
+                    Skill Assignments Status
                   </CardTitle>
                   <Button
                     variant="outline"
@@ -1294,160 +1294,44 @@ const Dashboard = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                {/* 6 Assignment Boards - 2 rows of 3 */}
-                <div className="space-y-4">
-                  {/* First Row: Resume, LinkedIn Profile, GitHub Profile */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {/* Resume Tasks */}
-                    <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleResumeClick}>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div>
-                            <p className="text-xs font-medium text-blue-700 dark:text-blue-300">Resume Tasks</p>
-                            <p className="text-lg font-bold text-blue-900 dark:text-blue-100">{resumeProgress}%</p>
-                          </div>
-                          <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                {/* Skill Assignments - Single Board */}
+                <div className="max-w-md mx-auto">
+                  {/* Skill Assignments */}
+                  <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/20 dark:to-amber-900/20 border-amber-200 dark:border-amber-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/dashboard/skill-level?tab=my-assignments')}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <p className="text-xs font-medium text-amber-700 dark:text-amber-300">Skill Assignments</p>
+                          <p className="text-lg font-bold text-amber-900 dark:text-amber-100">{skillAssignmentsProgress}%</p>
                         </div>
-                        <Progress value={resumeProgress} className="mb-2 bg-blue-200 dark:bg-blue-800" />
-                        <div className="text-xs text-blue-600 dark:text-blue-400">
-                          {resumeStats.completed}/{resumeStats.total} completed
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* LinkedIn Profile Tasks */}
-                    <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/20 dark:to-indigo-900/20 border-indigo-200 dark:border-indigo-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleLinkedInProfileClick}>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div>
-                            <p className="text-xs font-medium text-indigo-700 dark:text-indigo-300">LinkedIn Profile</p>
-                            <p className="text-lg font-bold text-indigo-900 dark:text-indigo-100">{linkedinProgress}%</p>
-                          </div>
-                          <Users className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                        </div>
-                        <Progress value={linkedinProgress} className="mb-2 bg-indigo-200 dark:bg-indigo-800" />
-                        <div className="text-xs text-indigo-600 dark:text-indigo-400">
-                          {linkedinStats.completed}/{linkedinStats.total} completed
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* GitHub Profile Tasks */}
-                    <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border-green-200 dark:border-green-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleGitHubProfileClick}>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div>
-                            <p className="text-xs font-medium text-green-700 dark:text-green-300">GitHub Profile</p>
-                            <p className="text-lg font-bold text-green-900 dark:text-green-100">{githubProgress}%</p>
-                          </div>
-                          <Github className="h-6 w-6 text-green-600 dark:text-green-400" />
-                        </div>
-                        <Progress value={githubProgress} className="mb-2 bg-green-200 dark:bg-green-800" />
-                        <div className="text-xs text-green-600 dark:text-green-400">
-                          {githubStats.completed}/{githubStats.total} completed
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* Second Row: LinkedIn Growth, GitHub Weekly, Skill Assignments */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {/* LinkedIn Growth Activities */}
-                    <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 border-purple-200 dark:border-purple-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/linkedin-automation')}>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div>
-                            <p className="text-xs font-medium text-purple-700 dark:text-purple-300">LinkedIn Growth</p>
-                            <p className="text-lg font-bold text-purple-900 dark:text-purple-100">{linkedinGrowthStats.total} Total</p>
-                          </div>
-                          <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                        </div>
-                        <div className="grid grid-cols-3 gap-2 text-xs">
-                          <div className="text-center">
-                            <div className="font-semibold text-green-600 dark:text-green-400">{linkedinGrowthStats.completed}</div>
-                            <div className="text-purple-600 dark:text-purple-400">Complete</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="font-semibold text-yellow-600 dark:text-yellow-400">{linkedinGrowthStats.inProgress}</div>
-                            <div className="text-purple-600 dark:text-purple-400">In Progress</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="font-semibold text-gray-600 dark:text-gray-400">{linkedinGrowthStats.pending}</div>
-                            <div className="text-purple-600 dark:text-purple-400">Pending</div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* GitHub Weekly Tasks */}
-                    <Card className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950/20 dark:to-teal-900/20 border-teal-200 dark:border-teal-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/github-weekly')}>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div>
-                            <p className="text-xs font-medium text-teal-700 dark:text-teal-300">GitHub Weekly</p>
-                            <p className="text-lg font-bold text-teal-900 dark:text-teal-100">
-                              {githubWeeklyStats.activeTasks} Active
-                            </p>
-                          </div>
-                          <Github className="h-6 w-6 text-teal-600 dark:text-teal-400" />
-                        </div>
-                        <Progress 
-                          value={(githubWeeklyStats.completed / Math.max(1, githubWeeklyStats.total)) * 100} 
-                          className="mb-2 bg-teal-200 dark:bg-teal-800" 
-                        />
-                        <div className="text-xs text-teal-600 dark:text-teal-400">
-                          {githubWeeklyStats.total - githubWeeklyStats.completed} remaining this week
-                        </div>
-                        <div className="flex justify-between mt-2 text-xs">
-                          <div className="flex flex-col items-center">
-                            <div className="font-semibold text-green-600 dark:text-green-400">{githubWeeklyStats.completed}</div>
-                            <div className="text-green-600 dark:text-green-400">Completed</div>
-                          </div>
-                          <div className="flex flex-col items-center">
-                            <div className="font-semibold text-yellow-600 dark:text-yellow-400">{githubWeeklyStats.inProgress}</div>
-                            <div className="text-yellow-600 dark:text-yellow-400">In Progress</div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Skill Assignments */}
-                    <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/20 dark:to-amber-900/20 border-amber-200 dark:border-amber-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/dashboard/skill-level?tab=my-assignments')}>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div>
-                            <p className="text-xs font-medium text-amber-700 dark:text-amber-300">Skill Assignments</p>
-                            <p className="text-lg font-bold text-amber-900 dark:text-amber-100">{skillAssignmentsProgress}%</p>
-                          </div>
-                          <BookOpen className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-                        </div>
-                        <Progress value={skillAssignmentsProgress} className="mb-2 bg-amber-200 dark:bg-amber-800" />
-                        <div className="text-xs text-amber-600 dark:text-amber-400">
-                          {assignments?.filter(a => {
-                            const templateCategory = a.career_task_templates?.category?.toLowerCase() || '';
-                            const templateTitle = a.career_task_templates?.title?.toLowerCase() || '';
-                            return !templateTitle.includes('resume') && 
-                                   !templateTitle.includes('linkedin') && 
-                                   !templateTitle.includes('github') &&
-                                   !templateCategory.includes('resume') &&
-                                   !templateCategory.includes('linkedin') &&
-                                   !templateCategory.includes('github') &&
-                                   a.status === 'verified';
-                          }).length || 0}/
-                          {assignments?.filter(a => {
-                            const templateCategory = a.career_task_templates?.category?.toLowerCase() || '';
-                            const templateTitle = a.career_task_templates?.title?.toLowerCase() || '';
-                            return !templateTitle.includes('resume') && 
-                                   !templateTitle.includes('linkedin') && 
-                                   !templateTitle.includes('github') &&
-                                   !templateCategory.includes('resume') &&
-                                   !templateCategory.includes('linkedin') &&
-                                   !templateCategory.includes('github');
-                          }).length || 0} completed
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
+                        <BookOpen className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                      </div>
+                      <Progress value={skillAssignmentsProgress} className="mb-2 bg-amber-200 dark:bg-amber-800" />
+                      <div className="text-xs text-amber-600 dark:text-amber-400">
+                        {assignments?.filter(a => {
+                          const templateCategory = a.career_task_templates?.category?.toLowerCase() || '';
+                          const templateTitle = a.career_task_templates?.title?.toLowerCase() || '';
+                          return !templateTitle.includes('resume') && 
+                                 !templateTitle.includes('linkedin') && 
+                                 !templateTitle.includes('github') &&
+                                 !templateCategory.includes('resume') &&
+                                 !templateCategory.includes('linkedin') &&
+                                 !templateCategory.includes('github') &&
+                                 a.status === 'verified';
+                        }).length || 0}/
+                        {assignments?.filter(a => {
+                          const templateCategory = a.career_task_templates?.category?.toLowerCase() || '';
+                          const templateTitle = a.career_task_templates?.title?.toLowerCase() || '';
+                          return !templateTitle.includes('resume') && 
+                                 !templateTitle.includes('linkedin') && 
+                                 !templateTitle.includes('github') &&
+                                 !templateCategory.includes('resume') &&
+                                 !templateCategory.includes('linkedin') &&
+                                 !templateCategory.includes('github');
+                        }).length || 0} completed
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               </CardContent>
             </Card>
