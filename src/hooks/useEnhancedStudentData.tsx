@@ -280,12 +280,19 @@ export const useEnhancedStudentData = () => {
 
       if (!profile) return null;
 
-      // Get resume progress
+      // Get resume progress - check both resume_data table and career task completions
       const { data: resumeData } = await supabase
         .from('resume_data')
         .select('*')
         .eq('user_id', userId)
         .maybeSingle();
+
+      // Also check for career task completions that might indicate profile progress
+      const { count: careerTaskCompletions } = await supabase
+        .from('user_activity_points')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('activity_type', 'career_task_completion');
 
       let resumeProgress = 0;
       if (resumeData) {
@@ -300,9 +307,13 @@ export const useEnhancedStudentData = () => {
           section && (Array.isArray(section) ? section.length > 0 : Object.keys(section).length > 0)
         ).length;
         resumeProgress = Math.round((completedSections / sections.length) * 100);
+      } else if (careerTaskCompletions && careerTaskCompletions > 0) {
+        // If no direct resume data but has career task completions, estimate progress
+        // Assume each career task completion represents ~5% progress, cap at 100%
+        resumeProgress = Math.min(100, Math.round(careerTaskCompletions * 5));
       }
 
-      // Get LinkedIn progress
+      // Get LinkedIn progress - check both progress table and activity points
       const { data: linkedinData, count: linkedinCompletedTasks, error: linkedinError } = await supabase
         .from('linkedin_progress')
         .select('*', { count: 'exact', head: true })
@@ -313,7 +324,20 @@ export const useEnhancedStudentData = () => {
         console.error('Error fetching LinkedIn progress for user', userId, ':', linkedinError);
       }
 
-      console.log(`LinkedIn count for ${userId}:`, linkedinCompletedTasks);
+      // Also check user_activity_points for LinkedIn task completion
+      const { count: linkedinActivityPoints, error: linkedinActivityError } = await supabase
+        .from('user_activity_points')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('activity_type', 'linkedin_task_completion');
+
+      if (linkedinActivityError) {
+        console.error('Error fetching LinkedIn activity points for user', userId, ':', linkedinActivityError);
+      }
+
+      // Use the higher count between progress table and activity points
+      const maxLinkedInCompleted = Math.max(linkedinCompletedTasks || 0, linkedinActivityPoints || 0);
+      console.log(`LinkedIn count for ${userId}: progress table: ${linkedinCompletedTasks}, activity points: ${linkedinActivityPoints}, using: ${maxLinkedInCompleted}`);
 
       // Get total LinkedIn task count dynamically
       const { data: linkedinTotalTasks } = await supabase
@@ -323,9 +347,9 @@ export const useEnhancedStudentData = () => {
         .maybeSingle();
       
       const totalLinkedInTasks = linkedinTotalTasks?.points || 9; // fallback to 9
-      const linkedinProgress = Math.min(100, Math.round((linkedinCompletedTasks || 0) * 100 / totalLinkedInTasks));
+      const linkedinProgress = Math.min(100, Math.round((maxLinkedInCompleted || 0) * 100 / totalLinkedInTasks));
 
-      // Get GitHub progress using the same logic as useGitHubProgress hook
+      // Get GitHub progress - check both progress table and activity points
       const { data: githubData, count: githubCompletedTasks, error: githubError } = await supabase
         .from('github_progress')
         .select('*', { count: 'exact', head: true })
@@ -336,9 +360,20 @@ export const useEnhancedStudentData = () => {
         console.error('Error fetching GitHub progress for user', userId, ':', githubError);
       }
 
-      console.log(`GitHub count for ${userId}:`, githubCompletedTasks);
+      // Also check user_activity_points for GitHub task completion
+      const { count: githubActivityPoints, error: githubActivityError } = await supabase
+        .from('user_activity_points')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('activity_type', 'github_task_completion');
 
-      // Use same logic as useGitHubProgress - only count profile setup tasks
+      if (githubActivityError) {
+        console.error('Error fetching GitHub activity points for user', userId, ':', githubActivityError);
+      }
+
+      console.log(`GitHub count for ${userId}: progress table: ${githubCompletedTasks}, activity points: ${githubActivityPoints}`);
+
+      // Use same logic as useGitHubProgress - only count profile setup tasks for progress table
       const profileTaskIds = ['readme_generated','special_repo_created','readme_added','repo_public'];
       const { data: profileTasks } = await supabase
         .from('github_progress')
@@ -349,7 +384,15 @@ export const useEnhancedStudentData = () => {
       
       const completedProfileTasks = profileTasks?.length || 0;
       const totalProfileTasks = profileTaskIds.length; // 4 profile setup tasks
-      const githubCompletion = Math.min(100, Math.round((completedProfileTasks * 100) / totalProfileTasks));
+      
+      // For GitHub, use activity points if available, otherwise use profile task completion
+      let githubCompletion = 0;
+      if (githubActivityPoints && githubActivityPoints > 0) {
+        // If there are activity points, assume some meaningful progress
+        githubCompletion = Math.min(100, Math.round((githubActivityPoints * 25))); // 25% per task assuming 4 total tasks
+      } else {
+        githubCompletion = Math.min(100, Math.round((completedProfileTasks * 100) / totalProfileTasks));
+      }
 
       // Get job application stats
       const { count: totalJobApps } = await supabase
@@ -385,9 +428,9 @@ export const useEnhancedStudentData = () => {
       
       console.log(`Student ${profile.full_name} progress:`, {
         userId,
-        resumeProgress,
-        linkedinProgress: `${linkedinProgress}% (${linkedinCompletedTasks}/9 tasks)`,
-        githubCompletion: `${githubCompletion}% (${githubCompletedTasks} total, ${completedProfileTasks} profile tasks)`,
+        resumeProgress: `${resumeProgress}% (${resumeData ? 'has resume data' : 'no resume data'}, ${careerTaskCompletions || 0} career tasks)`,
+        linkedinProgress: `${linkedinProgress}% (progress: ${linkedinCompletedTasks || 0}, activity: ${linkedinActivityPoints || 0}/${totalLinkedInTasks} tasks)`,
+        githubCompletion: `${githubCompletion}% (progress: ${githubCompletedTasks || 0}, activity: ${githubActivityPoints || 0}, profile tasks: ${completedProfileTasks}/${totalProfileTasks})`,
         profileCompletion,
         totalJobApps: totalJobApps || 0,
         linkedinConnections,
@@ -400,10 +443,15 @@ export const useEnhancedStudentData = () => {
         console.warn(`⚠️ No progress data found for ${profile.full_name}:`, {
           userId,
           linkedinTasksCompleted: linkedinCompletedTasks,
+          linkedinActivityPoints: linkedinActivityPoints,
           githubTasksCompleted: githubCompletedTasks,
-          resumeDataExists: !!resumeData,
-          batchName
+          githubActivityPoints: githubActivityPoints,
+          careerTaskCompletions: careerTaskCompletions,
+          hasResumeData: !!resumeData,
+          resumeDataSections: resumeData ? Object.keys(resumeData).filter(key => resumeData[key] && key !== 'user_id' && key !== 'id') : []
         });
+      } else {
+        console.log(`✅ Found progress data for ${profile.full_name}: Profile ${profileCompletion}%, LinkedIn ${linkedinProgress}%, GitHub ${githubCompletion}%, Resume ${resumeProgress}%`);
       }
 
       // Get last activity from multiple sources to get the most recent activity
