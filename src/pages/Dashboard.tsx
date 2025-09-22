@@ -871,51 +871,6 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Recent Courses Section */}
-            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-800">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
-                    <BookOpen className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                    Recent Courses
-                  </CardTitle>
-                  <Button
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => navigate('/dashboard/skill-level?tab=completed-learning')}
-                    className="border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-600 dark:text-blue-300 dark:hover:bg-blue-900/20"
-                  >
-                    View All
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {learningGoalCourses && learningGoalCourses.length > 0 ? (
-                  <RecentCoursesCard
-                    courses={learningGoalCourses}
-                    hasActiveSubscription={hasActiveSubscription()}
-                    loading={learningCoursesLoading}
-                  />
-                ) : (
-                  <div className="text-center py-8">
-                    <BookOpen className="h-12 w-12 mx-auto text-blue-400 mb-3" />
-                    <p className="text-blue-700 dark:text-blue-300 mb-2">No enrolled courses yet</p>
-                    <p className="text-sm text-blue-600 dark:text-blue-400 mb-4">
-                      Start learning by enrolling in your first course
-                    </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-600 dark:text-blue-300 dark:hover:bg-blue-900/20"
-                      onClick={() => navigate('/dashboard/skill-level?tab=skill-programs')}
-                    >
-                      Browse Courses
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
             {/* Skill Level Up Status - Full Width */}
             <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border-green-200 dark:border-green-800">
               <CardHeader>
@@ -924,13 +879,6 @@ const Dashboard = () => {
                     <Clipboard className="h-5 w-5 text-green-600 dark:text-green-400" />
                     Skill Level Up Status
                   </CardTitle>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate('/assignments')}
-                  >
-                    View All
-                  </Button>
                 </div>
               </CardHeader>
                 <CardContent>
@@ -1345,6 +1293,51 @@ const Dashboard = () => {
                       onClick={handleStartJobSearch}
                     >
                       Start Job Search
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Recent Courses Section */}
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-800">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
+                    <BookOpen className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    Recent Courses
+                  </CardTitle>
+                  <Button
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate('/dashboard/skill-level?tab=completed-learning')}
+                    className="border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-600 dark:text-blue-300 dark:hover:bg-blue-900/20"
+                  >
+                    View All
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {learningGoalCourses && learningGoalCourses.length > 0 ? (
+                  <RecentCoursesCard
+                    courses={learningGoalCourses}
+                    hasActiveSubscription={hasActiveSubscription()}
+                    loading={learningCoursesLoading}
+                  />
+                ) : (
+                  <div className="text-center py-8">
+                    <BookOpen className="h-12 w-12 mx-auto text-blue-400 mb-3" />
+                    <p className="text-blue-700 dark:text-blue-300 mb-2">No enrolled courses yet</p>
+                    <p className="text-sm text-blue-600 dark:text-blue-400 mb-4">
+                      Start learning by enrolling in your first course
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-600 dark:text-blue-300 dark:hover:bg-blue-900/20"
+                      onClick={() => navigate('/dashboard/skill-level?tab=skill-programs')}
+                    >
+                      Browse Courses
                     </Button>
                   </div>
                 )}
