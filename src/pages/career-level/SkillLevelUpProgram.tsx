@@ -666,8 +666,8 @@ const SkillLevelUpProgram: React.FC = () => {
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="skill-programs" className="flex items-center gap-2">
               <BookOpen className="w-4 h-4" />
-              <span className="hidden sm:inline">Skill Developer Programs</span>
-              <span className="sm:hidden">Programs</span>
+              <span className="hidden sm:inline">Courses</span>
+              <span className="sm:hidden">Courses</span>
             </TabsTrigger>
             <TabsTrigger value="my-assignments" className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
@@ -676,8 +676,8 @@ const SkillLevelUpProgram: React.FC = () => {
             </TabsTrigger>
             <TabsTrigger value="completed-learning" className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4" />
-              <span className="hidden sm:inline">Completed Learning</span>
-              <span className="sm:hidden">Learning</span>
+              <span className="hidden sm:inline">Learning Goals</span>
+              <span className="sm:hidden">Goals</span>
             </TabsTrigger>
             <TabsTrigger value="leaderboard" className="flex items-center gap-2">
               <Trophy className="w-4 h-4" />
