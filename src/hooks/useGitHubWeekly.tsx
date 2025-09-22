@@ -553,6 +553,29 @@ export const useGitHubWeekly = () => {
     },
   });
 
+  // Update task status mutation
+  const updateTaskStatusMutation = useMutation({
+    mutationFn: async ({ taskId, newStatus }: { taskId: string; newStatus: string }) => {
+      const { data, error } = await supabase
+        .from('github_user_tasks')
+        .update({ 
+          status: newStatus as 'NOT_STARTED' | 'STARTED' | 'SUBMITTED' | 'PARTIALLY_VERIFIED' | 'VERIFIED',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', taskId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['github-weekly-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['github-repo-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['github-historical-assignments'] });
+    },
+  });
+
   // Verify tasks mutation
   const verifyTasksMutation = useMutation({
     mutationFn: async (period?: string) => {
@@ -637,6 +660,10 @@ export const useGitHubWeekly = () => {
     }
   }, [submitEvidenceMutation]);
 
+  const updateTaskStatus = useCallback(async (taskId: string, newStatus: string) => {
+    return retryWithBackoff(() => updateTaskStatusMutation.mutateAsync({ taskId, newStatus }));
+  }, [updateTaskStatusMutation]);
+
   const verifyTasks = useCallback(async (period?: string) => {
     return retryWithBackoff(() => verifyTasksMutation.mutateAsync(period));
   }, [verifyTasksMutation]);
@@ -659,12 +686,14 @@ export const useGitHubWeekly = () => {
     // Actions
     addRepo,
     submitEvidence,
+    updateTaskStatus,
     verifyTasks,
     refreshWeeklyAssignments,
 
     // Mutations (for additional control)
     addRepoMutation,
     submitEvidenceMutation,
+    updateTaskStatusMutation,
     verifyTasksMutation,
   };
 };

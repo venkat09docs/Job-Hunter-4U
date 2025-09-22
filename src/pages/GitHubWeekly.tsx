@@ -84,6 +84,7 @@ const GitHubWeekly = () => {
     isLoading,
     addRepo,
     submitEvidence,
+    updateTaskStatus,
     verifyTasks,
     refreshWeeklyAssignments,
     isSubmittingEvidence
@@ -145,23 +146,12 @@ const GitHubWeekly = () => {
 
   const handleStartAssignment = async (taskId: string) => {
     try {
-      const { error } = await supabase
-        .from('github_user_tasks')
-        .update({ 
-          status: 'STARTED',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', taskId);
-
-      if (error) throw error;
-
+      await updateTaskStatus(taskId, 'STARTED');
+      
       toast({
         title: "Assignment started",
         description: "You can now submit evidence for this assignment.",
       });
-      
-      // Refresh data after status update using navigate to current path
-      navigate(0); // This forces a refresh without full page reload
     } catch (error) {
       toast({
         title: "Error starting assignment",
