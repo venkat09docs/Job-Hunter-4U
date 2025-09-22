@@ -131,83 +131,29 @@ export const useCourseStatistics = () => {
         return;
       }
 
-      // Get user's attempts on assignments for these courses
-      const { data: attemptData, error: attemptError } = await supabase
-        .from('clp_attempts')
-        .select(`
-          assignment_id,
-          status,
-          review_status,
-          assignment:clp_assignments!inner(
-            section_id,
-            section:course_sections!inner(
-              course_id,
-              course:clp_courses!inner(
-                id,
-                title,
-                is_active
-              )
-            )
-          )
-        `)
-        .eq('user_id', user.id);
+      // Get learning goals that are linked to courses (from Completed Learning tab logic)
+      const learningGoalsCourses = goals.filter(goal => goal.course_id);
+      
+      // Count learning goals by status
+      const completedGoals = learningGoalsCourses.filter(goal => goal.status === 'completed').length;
+      const inProgressGoals = learningGoalsCourses.filter(goal => goal.status === 'in_progress').length;
+      
+      // Pending = total accessible courses - (completed + in progress)
+      const pending = totalCourses - (completedGoals + inProgressGoals);
 
-      if (attemptError) throw attemptError;
-
-      // Create a map to track course progress for accessible courses only
-      const courseProgress = new Map<string, {
-        courseId: string,
-        hasAttempts: boolean,
-        hasStarted: boolean,
-        hasCompleted: boolean,
-        isEnrolled: boolean
-      }>();
-
-      // Initialize all accessible courses
-      accessibleCourses.forEach(course => {
-        courseProgress.set(course.id, {
-          courseId: course.id,
-          hasAttempts: false,
-          hasStarted: false,
-          hasCompleted: false,
-          isEnrolled: isUserEnrolled(course.id)
-        });
+      console.log('📊 Course statistics calculated:', {
+        total: totalCourses,
+        completed: completedGoals,
+        inProgress: inProgressGoals,
+        pending: Math.max(0, pending), // Ensure non-negative
+        learningGoalsCount: learningGoalsCourses.length
       });
-
-      // Update progress based on attempts
-      (attemptData || []).forEach((attempt: any) => {
-        const course = attempt.assignment?.section?.course;
-        if (!course || !course.is_active) return;
-
-        const courseId = course.id;
-        const progress = courseProgress.get(courseId);
-        if (!progress) return; // Skip if course is not accessible
-
-        progress.hasAttempts = true;
-
-        // Check if user has started working (any attempt status other than just created)
-        if (attempt.status === 'started' || attempt.status === 'submitted' || attempt.status === 'auto_submitted') {
-          progress.hasStarted = true;
-        }
-
-        // Check if user has completed the course (published review indicates completion)
-        if (attempt.review_status === 'published') {
-          progress.hasCompleted = true;
-        }
-      });
-
-      // Calculate statistics
-      const courses = Array.from(courseProgress.values());
-      const total = courses.length;
-      const inProgress = courses.filter(c => (c.hasStarted || c.isEnrolled) && !c.hasCompleted).length;
-      const completed = courses.filter(c => c.hasCompleted).length;
-      const pending = courses.filter(c => !c.hasStarted && !c.isEnrolled).length;
 
       setStatistics({
-        total,
-        inProgress,
-        completed,
-        pending
+        total: totalCourses,
+        inProgress: inProgressGoals,
+        completed: completedGoals,
+        pending: Math.max(0, pending)
       });
     } catch (error) {
       console.error('❌ Error fetching course statistics:', error);
