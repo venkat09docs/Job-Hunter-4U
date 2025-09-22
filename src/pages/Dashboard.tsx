@@ -6,6 +6,7 @@ import { useOptimizedUserPoints } from '@/hooks/useOptimizedUserPoints';
 import { useOptimizedDashboardStats } from '@/hooks/useOptimizedDashboardStats';
 import { useOptimizedLeaderboard } from '@/hooks/useOptimizedLeaderboard';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
+import { useLinkedInTasks } from '@/hooks/useLinkedInTasks';
 import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
 import { useGitHubProgress } from '@/hooks/useGitHubProgress';
 import { useGitHubWeekly } from '@/hooks/useGitHubWeekly';
@@ -75,6 +76,7 @@ const Dashboard = () => {
   const { loading: networkLoading } = useLinkedInNetworkProgress();
   const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading, refreshProgress: refreshGitHubProgress } = useGitHubProgress();
   const { weeklyTasks, isLoading: weeklyLoading } = useGitHubWeekly();
+  const { userTasks: linkedinTasks, tasksLoading: linkedinTasksLoading } = useLinkedInTasks();
   const { isIT } = useUserIndustry();
   const { metrics: networkMetrics, loading: networkGrowthLoading, refreshMetrics: refreshNetworkMetrics } = useNetworkGrowthMetrics();
   
@@ -345,7 +347,7 @@ const Dashboard = () => {
   }
   
   // Check loading states IMMEDIATELY after all hooks are called - include new loading states
-  if (authLoading || profileLoading || networkLoading || githubLoading || weeklyLoading || pointsLoading || statsLoading || goalsLoading || learningCoursesLoading) {
+  if (authLoading || profileLoading || networkLoading || githubLoading || weeklyLoading || linkedinTasksLoading || pointsLoading || statsLoading || goalsLoading || learningCoursesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -406,6 +408,29 @@ const Dashboard = () => {
     return skillTasks.length > 0 
       ? Math.round((skillTasks.filter(t => t.status === 'verified').length / skillTasks.length) * 100)
       : 0;
+  })();
+
+  // Calculate LinkedIn growth task stats to sync with CareerActivities page
+  const linkedinGrowthStats = (() => {
+    if (!linkedinTasks || linkedinTasks.length === 0) {
+      return { total: 0, completed: 0, inProgress: 0, pending: 0, activeTasks: 0 };
+    }
+    
+    const total = linkedinTasks.length;
+    const completed = linkedinTasks.filter(task => task.status === 'VERIFIED').length;
+    const inProgress = linkedinTasks.filter(task => 
+      task.status === 'SUBMITTED' || task.status === 'PARTIALLY_VERIFIED' || task.status === 'STARTED'
+    ).length;
+    const pending = linkedinTasks.filter(task => task.status === 'NOT_STARTED').length;
+    
+    // Calculate active tasks (excluding completed and future day tasks)
+    const activeTasks = linkedinTasks.filter(task => {
+      // Exclude completed tasks
+      if (task.status === 'VERIFIED') return false;
+      return true; // Include all non-completed tasks as active
+    }).length;
+    
+    return { total, completed, inProgress, pending, activeTasks };
   })();
 
   // Calculate progress percentages using career assignments data to sync with Profile Assignments page
@@ -1289,23 +1314,23 @@ const Dashboard = () => {
                         <div className="flex items-center justify-between mb-3">
                           <div>
                             <p className="text-xs font-medium text-purple-700 dark:text-purple-300">LinkedIn Growth</p>
-                            <p className="text-lg font-bold text-purple-900 dark:text-purple-100">{networkMetrics?.totalConnections || 0}</p>
+                            <p className="text-lg font-bold text-purple-900 dark:text-purple-100">{linkedinGrowthStats.total} Total</p>
                           </div>
                           <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                         </div>
-                        <div className="mb-2">
-                          <div className="text-xs text-purple-600 dark:text-purple-400 mb-1">Network Growth</div>
-                          <div className="h-2 bg-purple-200 dark:bg-purple-800 rounded">
-                            <div 
-                              className="h-2 bg-purple-600 dark:bg-purple-400 rounded transition-all" 
-                              style={{
-                                width: `${Math.min(100, Math.max(0, ((networkMetrics?.totalConnections || 0) / 500) * 100))}%`
-                              }}
-                            />
+                        <div className="grid grid-cols-3 gap-2 text-xs">
+                          <div className="text-center">
+                            <div className="font-semibold text-green-600 dark:text-green-400">{linkedinGrowthStats.completed}</div>
+                            <div className="text-purple-600 dark:text-purple-400">Complete</div>
                           </div>
-                        </div>
-                        <div className="text-xs text-purple-600 dark:text-purple-400">
-                          Target: 500+ connections
+                          <div className="text-center">
+                            <div className="font-semibold text-yellow-600 dark:text-yellow-400">{linkedinGrowthStats.inProgress}</div>
+                            <div className="text-purple-600 dark:text-purple-400">In Progress</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="font-semibold text-gray-600 dark:text-gray-400">{linkedinGrowthStats.pending}</div>
+                            <div className="text-purple-600 dark:text-purple-400">Pending</div>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
