@@ -917,172 +917,98 @@ const Dashboard = () => {
               </Card>
             )}
 
-            {/* Level Up Status - Full Width */}
+            {/* Profile Build Status - Full Width */}
             {canAccessLevelUpStatus() ? (
               <Card className="border-gradient-primary">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <TrendingUp className="h-5 w-5 text-primary" />
-                    Level Up Status
+                    Profile Build Status
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {/* Responsive Grid: 2 rows of 3 cards each */}
-                  <div className="space-y-4">
-                    {/* First Row: Resume, LinkedIn, GitHub */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
-                      {/* Resume Status */}
-                      <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleResumeClick}>
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between mb-3">
-                            <div>
-                              <p className="text-xs font-medium text-blue-700 dark:text-blue-300">Resume Tasks</p>
-                              <p className="text-lg font-bold text-blue-900 dark:text-blue-100">{resumeStats.total} Total</p>
-                            </div>
-                            <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  {/* First Row: Resume, LinkedIn, GitHub */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
+                    {/* Resume Status */}
+                    <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleResumeClick}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <p className="text-xs font-medium text-blue-700 dark:text-blue-300">Resume Tasks</p>
+                            <p className="text-lg font-bold text-blue-900 dark:text-blue-100">{resumeStats.total} Total</p>
                           </div>
-                          <div className="grid grid-cols-3 gap-2 text-xs">
-                            <div className="text-center">
-                              <div className="font-semibold text-green-600 dark:text-green-400">{resumeStats.completed}</div>
-                              <div className="text-blue-600 dark:text-blue-400">Complete</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="font-semibold text-yellow-600 dark:text-yellow-400">{resumeStats.inProgress}</div>
-                              <div className="text-blue-600 dark:text-blue-400">In Progress</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="font-semibold text-gray-600 dark:text-gray-400">{resumeStats.pending}</div>
-                              <div className="text-blue-600 dark:text-blue-400">Pending</div>
-                            </div>
+                          <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 text-xs">
+                          <div className="text-center">
+                            <div className="font-semibold text-green-600 dark:text-green-400">{resumeStats.completed}</div>
+                            <div className="text-blue-600 dark:text-blue-400">Complete</div>
                           </div>
-                        </CardContent>
-                      </Card>
+                          <div className="text-center">
+                            <div className="font-semibold text-yellow-600 dark:text-yellow-400">{resumeStats.inProgress}</div>
+                            <div className="text-blue-600 dark:text-blue-400">In Progress</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="font-semibold text-gray-600 dark:text-gray-400">{resumeStats.pending}</div>
+                            <div className="text-blue-600 dark:text-blue-400">Pending</div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
 
-                      {/* LinkedIn Profile Tasks */}
-                      <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/20 dark:to-indigo-900/20 border-indigo-200 dark:border-indigo-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleLinkedInProfileClick}>
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between mb-3">
-                            <div>
-                              <p className="text-xs font-medium text-indigo-700 dark:text-indigo-300">LinkedIn Profile</p>
-                              <p className="text-lg font-bold text-indigo-900 dark:text-indigo-100">{linkedinStats.total} Total</p>
-                            </div>
-                            <Users className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                    {/* LinkedIn Profile Tasks */}
+                    <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/20 dark:to-indigo-900/20 border-indigo-200 dark:border-indigo-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleLinkedInProfileClick}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <p className="text-xs font-medium text-indigo-700 dark:text-indigo-300">LinkedIn Profile</p>
+                            <p className="text-lg font-bold text-indigo-900 dark:text-indigo-100">{linkedinStats.total} Total</p>
                           </div>
-                          <div className="grid grid-cols-3 gap-2 text-xs">
-                            <div className="text-center">
-                              <div className="font-semibold text-green-600 dark:text-green-400">{linkedinStats.completed}</div>
-                              <div className="text-indigo-600 dark:text-indigo-400">Complete</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="font-semibold text-yellow-600 dark:text-yellow-400">{linkedinStats.inProgress}</div>
-                              <div className="text-indigo-600 dark:text-indigo-400">In Progress</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="font-semibold text-gray-600 dark:text-gray-400">{linkedinStats.pending}</div>
-                              <div className="text-indigo-600 dark:text-indigo-400">Pending</div>
-                            </div>
+                          <Users className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 text-xs">
+                          <div className="text-center">
+                            <div className="font-semibold text-green-600 dark:text-green-400">{linkedinStats.completed}</div>
+                            <div className="text-indigo-600 dark:text-indigo-400">Complete</div>
                           </div>
-                        </CardContent>
-                      </Card>
+                          <div className="text-center">
+                            <div className="font-semibold text-yellow-600 dark:text-yellow-400">{linkedinStats.inProgress}</div>
+                            <div className="text-indigo-600 dark:text-indigo-400">In Progress</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="font-semibold text-gray-600 dark:text-gray-400">{linkedinStats.pending}</div>
+                            <div className="text-indigo-600 dark:text-indigo-400">Pending</div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
 
-                      {/* GitHub Profile Tasks */}
-                      <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border-green-200 dark:border-green-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleGitHubProfileClick}>
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between mb-3">
-                            <div>
-                              <p className="text-xs font-medium text-green-700 dark:text-green-300">GitHub Profile</p>
-                              <p className="text-lg font-bold text-green-900 dark:text-green-100">{githubStats.total} Total</p>
-                            </div>
-                            <Github className="h-6 w-6 text-green-600 dark:text-green-400" />
+                    {/* GitHub Profile Tasks */}
+                    <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border-green-200 dark:border-green-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleGitHubProfileClick}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <p className="text-xs font-medium text-green-700 dark:text-green-300">GitHub Profile</p>
+                            <p className="text-lg font-bold text-green-900 dark:text-green-100">{githubStats.total} Total</p>
                           </div>
-                          <div className="grid grid-cols-3 gap-2 text-xs">
-                            <div className="text-center">
-                              <div className="font-semibold text-green-600 dark:text-green-400">{githubStats.completed}</div>
-                              <div className="text-green-600 dark:text-green-400">Complete</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="font-semibold text-yellow-600 dark:text-yellow-400">{githubStats.inProgress}</div>
-                              <div className="text-green-600 dark:text-green-400">In Progress</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="font-semibold text-gray-600 dark:text-gray-400">{githubStats.pending}</div>
-                              <div className="text-green-600 dark:text-green-400">Pending</div>
-                            </div>
+                          <Github className="h-6 w-6 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 text-xs">
+                          <div className="text-center">
+                            <div className="font-semibold text-green-600 dark:text-green-400">{githubStats.completed}</div>
+                            <div className="text-green-600 dark:text-green-400">Complete</div>
                           </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-
-                    {/* Second Row: LinkedIn Growth, GitHub Weekly, Skill Assignments */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
-                      {/* LinkedIn Growth Activities */}
-                      <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 border-purple-200 dark:border-purple-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleLinkedInGrowthClick}>
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between mb-3">
-                            <div>
-                              <p className="text-xs font-medium text-purple-700 dark:text-purple-300">LinkedIn Growth</p>
-                              <p className="text-lg font-bold text-purple-900 dark:text-purple-100">{networkMetrics?.totalConnections || 0} Connections</p>
-                            </div>
-                            <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                          <div className="text-center">
+                            <div className="font-semibold text-yellow-600 dark:text-yellow-400">{githubStats.inProgress}</div>
+                            <div className="text-green-600 dark:text-green-400">In Progress</div>
                           </div>
-                          <div className="text-xs text-purple-600 dark:text-purple-400">
-                            {(networkMetrics?.totalConnections || 0) < 100 ? 'Build network' : 
-                             (networkMetrics?.totalConnections || 0) < 500 ? 'Growing well!' : 
-                             'Strong network!'}
+                          <div className="text-center">
+                            <div className="font-semibold text-gray-600 dark:text-gray-400">{githubStats.pending}</div>
+                            <div className="text-green-600 dark:text-green-400">Pending</div>
                           </div>
-                        </CardContent>
-                      </Card>
-
-                      {/* GitHub Weekly Tasks */}
-                      <Card className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950/20 dark:to-teal-900/20 border-teal-200 dark:border-teal-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleGitHubWeeklyClick}>
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between mb-3">
-                            <div>
-                              <p className="text-xs font-medium text-teal-700 dark:text-teal-300">GitHub Weekly</p>
-                              <p className="text-lg font-bold text-teal-900 dark:text-teal-100">{githubWeeklyStats.total} Total</p>
-                            </div>
-                            <Github className="h-6 w-6 text-teal-600 dark:text-teal-400" />
-                          </div>
-                          <div className="grid grid-cols-2 gap-2 text-xs">
-                            <div className="text-center">
-                              <div className="font-semibold text-green-600 dark:text-green-400">{githubWeeklyStats.completed}</div>
-                              <div className="text-teal-600 dark:text-teal-400">Complete</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="font-semibold text-gray-600 dark:text-gray-400">{githubWeeklyStats.pending}</div>
-                              <div className="text-teal-600 dark:text-teal-400">Pending</div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      {/* Skill Assignments */}
-                      <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/20 dark:to-amber-900/20 border-amber-200 dark:border-amber-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/dashboard/skill-level?tab=my-assignments')}>
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between mb-3">
-                            <div>
-                              <p className="text-xs font-medium text-amber-700 dark:text-amber-300">Skill Assignments</p>
-                              <p className="text-lg font-bold text-amber-900 dark:text-amber-100">{digitalProfileStats.total} Total</p>
-                            </div>
-                            <BookOpen className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-                          </div>
-                          <div className="grid grid-cols-3 gap-2 text-xs">
-                            <div className="text-center">
-                              <div className="font-semibold text-green-600 dark:text-green-400">{digitalProfileStats.completed}</div>
-                              <div className="text-amber-600 dark:text-amber-400">Complete</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="font-semibold text-yellow-600 dark:text-yellow-400">{digitalProfileStats.inProgress}</div>
-                              <div className="text-amber-600 dark:text-amber-400">In Progress</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="font-semibold text-gray-600 dark:text-gray-400">{digitalProfileStats.pending}</div>
-                              <div className="text-amber-600 dark:text-amber-400">Pending</div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 </CardContent>
               </Card>
@@ -1091,17 +1017,122 @@ const Dashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <TrendingUp className="h-5 w-5" />
-                    Level Up Status
+                    Profile Build Status
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-center py-12">
                     <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold mb-2">Level Up Status</h3>
+                    <h3 className="text-lg font-semibold mb-2">Profile Build Status</h3>
                     <p className="text-muted-foreground mb-4">
                       Advanced tracking available with premium subscription plans
                     </p>
-                    <SubscriptionUpgrade featureName="Level Up Status" eligiblePlans={eligiblePlans}>
+                    <SubscriptionUpgrade featureName="Profile Build Status" eligiblePlans={eligiblePlans}>
+                      <Button>Upgrade Plan</Button>
+                    </SubscriptionUpgrade>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Weekly Status - Full Width */}
+            {canAccessLevelUpStatus() ? (
+              <Card className="border-gradient-primary">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                    Weekly Status
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {/* Second Row: LinkedIn Growth, GitHub Weekly, Skill Assignments */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
+                    {/* LinkedIn Growth Activities */}
+                    <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 border-purple-200 dark:border-purple-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleLinkedInGrowthClick}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <p className="text-xs font-medium text-purple-700 dark:text-purple-300">LinkedIn Growth</p>
+                            <p className="text-lg font-bold text-purple-900 dark:text-purple-100">{networkMetrics?.totalConnections || 0} Connections</p>
+                          </div>
+                          <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <div className="text-xs text-purple-600 dark:text-purple-400">
+                          {(networkMetrics?.totalConnections || 0) < 100 ? 'Build network' : 
+                           (networkMetrics?.totalConnections || 0) < 500 ? 'Growing well!' : 
+                           'Strong network!'}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* GitHub Weekly Tasks */}
+                    <Card className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950/20 dark:to-teal-900/20 border-teal-200 dark:border-teal-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleGitHubWeeklyClick}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <p className="text-xs font-medium text-teal-700 dark:text-teal-300">GitHub Weekly</p>
+                            <p className="text-lg font-bold text-teal-900 dark:text-teal-100">{githubWeeklyStats.total} Total</p>
+                          </div>
+                          <Github className="h-6 w-6 text-teal-600 dark:text-teal-400" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div className="text-center">
+                            <div className="font-semibold text-green-600 dark:text-green-400">{githubWeeklyStats.completed}</div>
+                            <div className="text-teal-600 dark:text-teal-400">Complete</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="font-semibold text-gray-600 dark:text-gray-400">{githubWeeklyStats.pending}</div>
+                            <div className="text-teal-600 dark:text-teal-400">Pending</div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Skill Assignments */}
+                    <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/20 dark:to-amber-900/20 border-amber-200 dark:border-amber-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/dashboard/skill-level?tab=my-assignments')}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <p className="text-xs font-medium text-amber-700 dark:text-amber-300">Skill Assignments</p>
+                            <p className="text-lg font-bold text-amber-900 dark:text-amber-100">{digitalProfileStats.total} Total</p>
+                          </div>
+                          <BookOpen className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 text-xs">
+                          <div className="text-center">
+                            <div className="font-semibold text-green-600 dark:text-green-400">{digitalProfileStats.completed}</div>
+                            <div className="text-amber-600 dark:text-amber-400">Complete</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="font-semibold text-yellow-600 dark:text-yellow-400">{digitalProfileStats.inProgress}</div>
+                            <div className="text-amber-600 dark:text-amber-400">In Progress</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="font-semibold text-gray-600 dark:text-gray-400">{digitalProfileStats.pending}</div>
+                            <div className="text-amber-600 dark:text-amber-400">Pending</div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5" />
+                    Weekly Status
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-12">
+                    <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold mb-2">Weekly Status</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Advanced tracking available with premium subscription plans
+                    </p>
+                    <SubscriptionUpgrade featureName="Weekly Status" eligiblePlans={eligiblePlans}>
                       <Button>Upgrade Plan</Button>
                     </SubscriptionUpgrade>
                   </div>
