@@ -276,64 +276,46 @@ export const InstituteDashboard = () => {
             </CardTitle>
             <CardDescription>Number of students in each batch with visual breakdown</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Debug info - will be visible if needed */}
-            <div className="text-xs text-muted-foreground mb-4">
-              Debug: {batchDistribution.length} batches found, Total students: {totalStudentsCount}
-            </div>
-            
+          <CardContent className="space-y-6">            
             {batchDistribution.length > 0 ? (
               <>
                 {/* Pie Chart */}
-                <div className="relative">
-                  <ResponsiveContainer width="100%" height={320}>
+                <div className="w-full h-[400px] flex items-center justify-center">
+                  <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={batchDistribution}
                         cx="50%"
                         cy="50%"
-                        innerRadius={70}
-                        outerRadius={120}
-                        paddingAngle={3}
+                        labelLine={false}
+                        label={({ name, percentage }) => `${name}: ${percentage}%`}
+                        outerRadius={140}
+                        fill="#8884d8"
                         dataKey="value"
                       >
                         {batchDistribution.map((entry, index) => (
                           <Cell 
                             key={`cell-${index}`} 
-                            fill={COLORS[index % COLORS.length]} 
-                            stroke="hsl(var(--background))"
-                            strokeWidth={3}
+                            fill={COLORS[index % COLORS.length]}
                           />
                         ))}
                       </Pie>
                       <Tooltip 
+                        formatter={(value, name) => [`${value} students`, name]}
+                        labelStyle={{ color: 'hsl(var(--foreground))' }}
                         contentStyle={{
                           backgroundColor: 'hsl(var(--card))',
                           border: '1px solid hsl(var(--border))',
                           borderRadius: '8px',
-                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                          color: 'hsl(var(--card-foreground))'
                         }}
-                        formatter={(value, name) => [
-                          `${value} students (${batchDistribution.find(b => b.name === name)?.percentage}%)`,
-                          name
-                        ]}
                       />
                       <Legend 
-                        verticalAlign="bottom" 
+                        verticalAlign="bottom"
                         height={36}
-                        formatter={(value, entry) => (
-                          <span style={{ color: entry.color }}>
-                            {value} ({batchDistribution.find(b => b.name === value)?.percentage}%)
-                          </span>
-                        )}
                       />
                     </PieChart>
                   </ResponsiveContainer>
-                  {/* Center label */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <div className="text-3xl font-bold text-primary">{totalStudentsCount}</div>
-                    <div className="text-sm text-muted-foreground">Total Students</div>
-                  </div>
                 </div>
                 
                 {/* Batch Summary Cards */}
@@ -367,11 +349,6 @@ export const InstituteDashboard = () => {
                 <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                 <p className="text-lg font-medium text-muted-foreground mb-2">No students found</p>
                 <p className="text-sm text-muted-foreground">Add students to batches to see the distribution</p>
-                <div className="mt-4 p-4 bg-muted/20 rounded-lg">
-                  <p className="text-xs text-muted-foreground">
-                    Raw data: {JSON.stringify(batches.slice(0, 2), null, 2)}
-                  </p>
-                </div>
               </div>
             )}
           </CardContent>
