@@ -125,48 +125,66 @@ serve(async (req) => {
       console.log('✅ Institute admin permissions and batch ownership verified')
     }
 
-    // Create user account using admin client (won't affect current session)
-    console.log('👥 Creating user account')
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password,
-      user_metadata: {
-        full_name,
-        username,
-        phone_number: phone_number || '',
-        industry: industry || 'IT',
-        created_by_institute_admin: 'true', // Flag to skip RNS Tech auto-assignment
-      },
-      email_confirm: true, // Auto-confirm email
-    })
-
-    if (authError) {
-      console.error('❌ User creation error:', authError)
-      throw new Error(`Failed to create user account: ${authError.message}`)
+    // First check if user with this email already exists
+    console.log('🔍 Checking if user already exists')
+    const { data: existingUsers, error: userLookupError } = await supabaseAdmin.auth.admin.listUsers()
+    
+    if (userLookupError) {
+      console.error('❌ Error looking up existing users:', userLookupError)
+      throw new Error(`Failed to check existing users: ${userLookupError.message}`)
     }
 
-    if (!authData.user) {
-      throw new Error('Failed to create user account - no user data returned')
-    }
+    const existingUser = existingUsers.users.find(user => user.email === email)
+    let authData: any
+    
+    if (existingUser) {
+      console.log('👤 User already exists:', existingUser.id)
+      
+      // Check if existing user already has assignments to prevent multiple institute assignments
+      const { data: existingAssignments, error: existingError } = await supabaseAdmin
+        .from('user_assignments')
+        .select('institute_id, id')
+        .eq('user_id', existingUser.id)
+        .eq('is_active', true)
 
-    console.log('✅ User created successfully:', authData.user.id)
+      if (existingError) {
+        console.error('❌ Error checking existing assignments:', existingError)
+        throw new Error(`Failed to check existing assignments: ${existingError.message}`)
+      }
 
-    // Check if user already has any active assignments (prevent multiple institute assignments)
-    console.log('🔍 Checking for existing user assignments')
-    const { data: existingAssignments, error: existingError } = await supabaseAdmin
-      .from('user_assignments')
-      .select('institute_id, id')
-      .eq('user_id', authData.user.id)
-      .eq('is_active', true)
+      if (existingAssignments && existingAssignments.length > 0) {
+        console.log('⚠️ User already has active assignments:', existingAssignments)
+        throw new Error(`Student already has an active assignment in another institute. Cannot assign to multiple institutes.`)
+      }
 
-    if (existingError) {
-      console.error('❌ Error checking existing assignments:', existingError)
-      throw new Error(`Failed to check existing assignments: ${existingError.message}`)
-    }
+      authData = { user: existingUser }
+    } else {
+      // Create new user account using admin client (won't affect current session)
+      console.log('👥 Creating new user account')
+      const { data: newAuthData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        user_metadata: {
+          full_name,
+          username,
+          phone_number: phone_number || '',
+          industry: industry || 'IT',
+          created_by_institute_admin: 'true', // Flag to skip RNS Tech auto-assignment
+        },
+        email_confirm: true, // Auto-confirm email
+      })
 
-    if (existingAssignments && existingAssignments.length > 0) {
-      console.log('⚠️ User already has active assignments:', existingAssignments)
-      throw new Error(`Student already has an active assignment in another institute. Cannot assign to multiple institutes.`)
+      if (authError) {
+        console.error('❌ User creation error:', authError)
+        throw new Error(`Failed to create user account: ${authError.message}`)
+      }
+
+      if (!newAuthData.user) {
+        throw new Error('Failed to create user account - no user data returned')
+      }
+
+      console.log('✅ User created successfully:', newAuthData.user.id)
+      authData = newAuthData
     }
 
     // Create user assignment - ensure single institute assignment
