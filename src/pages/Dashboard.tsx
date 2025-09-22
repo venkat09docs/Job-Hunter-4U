@@ -1088,14 +1088,23 @@ const Dashboard = () => {
                         <div className="flex items-center justify-between mb-3">
                           <div>
                             <p className="text-xs font-medium text-purple-700 dark:text-purple-300">LinkedIn Growth</p>
-                            <p className="text-lg font-bold text-purple-900 dark:text-purple-100">{networkMetrics?.totalConnections || 0} Connections</p>
+                            <p className="text-lg font-bold text-purple-900 dark:text-purple-100">{linkedinGrowthStats.total} Total</p>
                           </div>
                           <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                         </div>
-                        <div className="text-xs text-purple-600 dark:text-purple-400">
-                          {(networkMetrics?.totalConnections || 0) < 100 ? 'Build network' : 
-                           (networkMetrics?.totalConnections || 0) < 500 ? 'Growing well!' : 
-                           'Strong network!'}
+                        <div className="grid grid-cols-3 gap-2 text-xs">
+                          <div className="text-center">
+                            <div className="font-semibold text-green-600 dark:text-green-400">{linkedinGrowthStats.completed}</div>
+                            <div className="text-purple-600 dark:text-purple-400">Complete</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="font-semibold text-yellow-600 dark:text-yellow-400">{linkedinGrowthStats.inProgress}</div>
+                            <div className="text-purple-600 dark:text-purple-400">In Progress</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="font-semibold text-gray-600 dark:text-gray-400">{linkedinGrowthStats.pending}</div>
+                            <div className="text-purple-600 dark:text-purple-400">Pending</div>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
