@@ -276,22 +276,29 @@ export const InstituteDashboard = () => {
             </CardTitle>
             <CardDescription>Number of students in each batch with visual breakdown</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">            
+          <CardContent className="space-y-6">
+            {/* Debug info to check data */}
+            <div className="text-xs text-muted-foreground p-2 bg-muted/20 rounded">
+              Batch data: {JSON.stringify(batchDistribution)} | Total batches: {batchDistribution.length}
+            </div>
+            
             {batchDistribution.length > 0 ? (
               <>
                 {/* Pie Chart */}
-                <div className="w-full h-[400px] flex items-center justify-center">
+                <div className="w-full h-[500px] bg-background border rounded-lg p-4">
                   <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
+                    <PieChart width={400} height={400}>
                       <Pie
                         data={batchDistribution}
                         cx="50%"
                         cy="50%"
                         labelLine={false}
                         label={({ name, percentage }) => `${name}: ${percentage}%`}
-                        outerRadius={140}
+                        outerRadius={150}
                         fill="#8884d8"
                         dataKey="value"
+                        stroke="hsl(var(--border))"
+                        strokeWidth={2}
                       >
                         {batchDistribution.map((entry, index) => (
                           <Cell 
@@ -312,7 +319,8 @@ export const InstituteDashboard = () => {
                       />
                       <Legend 
                         verticalAlign="bottom"
-                        height={36}
+                        height={50}
+                        iconType="circle"
                       />
                     </PieChart>
                   </ResponsiveContainer>
