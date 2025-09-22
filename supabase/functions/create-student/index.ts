@@ -132,7 +132,7 @@ serve(async (req) => {
     // Try to get user by email using auth admin
     const { data: existingUserData, error: getUserError } = await supabaseAdmin.auth.admin.getUserByEmail(email)
     
-    if (!getUserError && existingUserData.user) {
+    if (existingUserData?.user && !getUserError) {
       // User exists, check their assignments
       const existingUser = existingUserData.user
       console.log('👤 User already exists:', existingUser.id)
@@ -178,6 +178,7 @@ serve(async (req) => {
     } else {
       // User doesn't exist, create new user
       console.log('👤 User does not exist, will create new user')
+      console.log('🔍 getUserByEmail result:', { data: existingUserData, error: getUserError })
       
       // Create new user account using admin client (won't affect current session)
       console.log('👥 Creating new user account')
@@ -196,15 +197,27 @@ serve(async (req) => {
 
       if (authError) {
         console.error('❌ User creation error:', authError)
-        throw new Error(`Failed to create user account: ${authError.message}`)
+        // If user creation fails because email exists, try to get the user again
+        if (authError.message?.includes('already been registered')) {
+          console.log('🔄 User creation failed because email exists, attempting to get existing user')
+          const { data: retryUserData, error: retryError } = await supabaseAdmin.auth.admin.getUserByEmail(email)
+          
+          if (retryUserData?.user && !retryError) {
+            console.log('✅ Found existing user on retry:', retryUserData.user.id)
+            authData = { user: retryUserData.user }
+          } else {
+            throw new Error(`Failed to create or find user: ${authError.message}`)
+          }
+        } else {
+          throw new Error(`Failed to create user account: ${authError.message}`)
+        }
+      } else {
+        if (!newAuthData.user) {
+          throw new Error('Failed to create user account - no user data returned')
+        }
+        console.log('✅ User created successfully:', newAuthData.user.id)
+        authData = newAuthData
       }
-
-      if (!newAuthData.user) {
-        throw new Error('Failed to create user account - no user data returned')
-      }
-
-      console.log('✅ User created successfully:', newAuthData.user.id)
-      authData = newAuthData
     }
 
     // Create user assignment - ensure single institute assignment
