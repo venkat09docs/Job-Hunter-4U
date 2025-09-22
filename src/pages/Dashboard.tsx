@@ -1105,7 +1105,7 @@ const Dashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <TrendingUp className="h-5 w-5 text-primary" />
-                    Weekly Status
+                    Weekly Activities Status
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -1157,28 +1157,28 @@ const Dashboard = () => {
                       </CardContent>
                     </Card>
 
-                    {/* Skill Assignments */}
-                    <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/20 dark:to-amber-900/20 border-amber-200 dark:border-amber-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/dashboard/skill-level?tab=my-assignments')}>
+                    {/* JobHunter Status */}
+                    <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/20 dark:to-amber-900/20 border-amber-200 dark:border-amber-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/job-tracker')}>
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-3">
                           <div>
-                            <p className="text-xs font-medium text-amber-700 dark:text-amber-300">Skill Assignments</p>
-                            <p className="text-lg font-bold text-amber-900 dark:text-amber-100">{digitalProfileStats.total} Total</p>
+                            <p className="text-xs font-medium text-amber-700 dark:text-amber-300">JobHunter</p>
+                            <p className="text-lg font-bold text-amber-900 dark:text-amber-100">{totalJobApplications} Total</p>
                           </div>
-                          <BookOpen className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                          <Briefcase className="h-6 w-6 text-amber-600 dark:text-amber-400" />
                         </div>
                         <div className="grid grid-cols-3 gap-2 text-xs">
                           <div className="text-center">
-                            <div className="font-semibold text-green-600 dark:text-green-400">{digitalProfileStats.completed}</div>
-                            <div className="text-amber-600 dark:text-amber-400">Complete</div>
+                            <div className="font-semibold text-green-600 dark:text-green-400">{jobStatusCounts.applied}</div>
+                            <div className="text-amber-600 dark:text-amber-400">Applied</div>
                           </div>
                           <div className="text-center">
-                            <div className="font-semibold text-yellow-600 dark:text-yellow-400">{digitalProfileStats.inProgress}</div>
-                            <div className="text-amber-600 dark:text-amber-400">In Progress</div>
+                            <div className="font-semibold text-blue-600 dark:text-blue-400">{jobStatusCounts.interviewing}</div>
+                            <div className="text-amber-600 dark:text-amber-400">Interview</div>
                           </div>
                           <div className="text-center">
-                            <div className="font-semibold text-gray-600 dark:text-gray-400">{digitalProfileStats.pending}</div>
-                            <div className="text-amber-600 dark:text-amber-400">Pending</div>
+                            <div className="font-semibold text-purple-600 dark:text-purple-400">{jobStatusCounts.accepted}</div>
+                            <div className="text-amber-600 dark:text-amber-400">Accepted</div>
                           </div>
                         </div>
                       </CardContent>
@@ -1191,17 +1191,17 @@ const Dashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <TrendingUp className="h-5 w-5" />
-                    Weekly Status
+                    Weekly Activities Status
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-center py-12">
                     <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold mb-2">Weekly Status</h3>
+                    <h3 className="text-lg font-semibold mb-2">Weekly Activities Status</h3>
                     <p className="text-muted-foreground mb-4">
                       Advanced tracking available with premium subscription plans
                     </p>
-                    <SubscriptionUpgrade featureName="Weekly Status" eligiblePlans={eligiblePlans}>
+                    <SubscriptionUpgrade featureName="Weekly Activities Status" eligiblePlans={eligiblePlans}>
                       <Button>Upgrade Plan</Button>
                     </SubscriptionUpgrade>
                   </div>
