@@ -135,6 +135,7 @@ serve(async (req) => {
         username,
         phone_number: phone_number || '',
         industry: industry || 'IT',
+        created_by_institute_admin: 'true', // Flag to skip RNS Tech auto-assignment
       },
       email_confirm: true, // Auto-confirm email
     })
@@ -176,7 +177,7 @@ serve(async (req) => {
         user_id: authData.user.id,
         batch_id,
         institute_id,
-        assignment_type: 'batch',
+        assignment_type: 'student',
         assigned_by: currentUser.id,
       })
 
