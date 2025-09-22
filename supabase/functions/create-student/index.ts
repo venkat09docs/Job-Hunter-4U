@@ -102,8 +102,27 @@ serve(async (req) => {
       if (!adminAssignment) {
         throw new Error('You are not authorized to manage students in this institute.')
       }
+
+      // Additional validation: Verify batch belongs to the same institute
+      console.log('🔍 Verifying batch belongs to institute:', batch_id, 'for institute:', institute_id)
+      const { data: batchCheck, error: batchError } = await supabaseAdmin
+        .from('batches')
+        .select('institute_id')
+        .eq('id', batch_id)
+        .eq('institute_id', institute_id)
+        .eq('is_active', true)
+        .maybeSingle()
+
+      if (batchError) {
+        console.error('❌ Batch verification error:', batchError)
+        throw new Error(`Failed to verify batch permissions: ${batchError.message}`)
+      }
+
+      if (!batchCheck) {
+        throw new Error('Selected batch does not belong to your institute.')
+      }
       
-      console.log('✅ Institute admin permissions verified')
+      console.log('✅ Institute admin permissions and batch ownership verified')
     }
 
     // Create user account using admin client (won't affect current session)
@@ -131,8 +150,26 @@ serve(async (req) => {
 
     console.log('✅ User created successfully:', authData.user.id)
 
-    // Create user assignment
-    console.log('📋 Creating user assignment')
+    // Check if user already has any active assignments (prevent multiple institute assignments)
+    console.log('🔍 Checking for existing user assignments')
+    const { data: existingAssignments, error: existingError } = await supabaseAdmin
+      .from('user_assignments')
+      .select('institute_id, id')
+      .eq('user_id', authData.user.id)
+      .eq('is_active', true)
+
+    if (existingError) {
+      console.error('❌ Error checking existing assignments:', existingError)
+      throw new Error(`Failed to check existing assignments: ${existingError.message}`)
+    }
+
+    if (existingAssignments && existingAssignments.length > 0) {
+      console.log('⚠️ User already has active assignments:', existingAssignments)
+      throw new Error(`Student already has an active assignment in another institute. Cannot assign to multiple institutes.`)
+    }
+
+    // Create user assignment - ensure single institute assignment
+    console.log('📋 Creating user assignment for institute:', institute_id)
     const { error: assignmentError } = await supabaseAdmin
       .from('user_assignments')
       .insert({
@@ -148,7 +185,7 @@ serve(async (req) => {
       throw new Error(`Failed to create user assignment: ${assignmentError.message}`)
     }
 
-    console.log('✅ User assignment created successfully')
+    console.log('✅ User assignment created successfully - student assigned only to institute:', institute_id)
 
     // Insert or update the profile with email, full_name and username (since we need it for management)
     console.log('👤 Upserting profile for user:', authData.user.id, 'with data:', { full_name, username, email })

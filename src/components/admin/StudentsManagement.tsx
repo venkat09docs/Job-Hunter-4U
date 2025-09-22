@@ -303,6 +303,29 @@ export const StudentsManagement = () => {
     e.preventDefault();
     if (!user) return;
 
+    // Validate institute admin has proper institute assignment
+    if (!instituteId && isInstituteAdmin) {
+      toast({
+        title: 'Error',
+        description: 'Cannot add student: No institute assignment found for your account',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate selected batch belongs to the admin's institute
+    if (formData.batch_id && isInstituteAdmin) {
+      const selectedBatch = batches.find(b => b.id === formData.batch_id);
+      if (!selectedBatch || selectedBatch.institute_id !== instituteId) {
+        toast({
+          title: 'Error',
+          description: 'Selected batch does not belong to your institute',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
     try {
       if (editingStudent) {
         // Update existing assignment
@@ -344,7 +367,7 @@ export const StudentsManagement = () => {
             username: formData.username,
             phone_number: formData.phone_number,
             batch_id: formData.batch_id,
-            institute_id: instituteId,
+            institute_id: instituteId, // This ensures student is assigned only to admin's institute
             industry: formData.industry,
           },
         });
@@ -356,7 +379,7 @@ export const StudentsManagement = () => {
 
         toast({
           title: 'Success',
-          description: 'Student account created and assigned successfully',
+          description: `Student account created and assigned to your institute successfully`,
         });
       }
 
