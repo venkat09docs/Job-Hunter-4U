@@ -266,34 +266,138 @@ export const InstituteDashboard = () => {
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 gap-4 sm:gap-6">
-        {/* Student Distribution by Batch - Pie Chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        {/* Student Distribution by Batch - Enhanced Charts */}
         <Card className="shadow-elegant">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <GraduationCap className="h-5 w-5" />
               Student Distribution by Batch
             </CardTitle>
-            <CardDescription>Number of students in each batch</CardDescription>
+            <CardDescription>Number of students in each batch with visual breakdown</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Pie Chart */}
+            <div className="relative">
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Pie
+                    data={batchDistribution}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={110}
+                    paddingAngle={2}
+                    dataKey="value"
+                  >
+                    {batchDistribution.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={COLORS[index % COLORS.length]} 
+                        stroke="hsl(var(--background))"
+                        strokeWidth={2}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
+                    formatter={(value, name) => [
+                      `${value} students (${batchDistribution.find(b => b.name === name)?.percentage}%)`,
+                      name
+                    ]}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              {/* Center label */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <div className="text-2xl font-bold text-primary">{totalStudentsCount}</div>
+                <div className="text-sm text-muted-foreground">Total Students</div>
+              </div>
+            </div>
+            
+            {/* Batch Legend with Student Counts */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {batchDistribution.map((batch, index) => (
+                <div 
+                  key={batch.name} 
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-4 h-4 rounded-full border-2 border-background"
+                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                    />
+                    <span className="font-medium text-sm">{batch.name}</span>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-primary">{batch.value}</div>
+                    <div className="text-xs text-muted-foreground">{batch.percentage}%</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Empty state */}
+            {batchDistribution.length === 0 && (
+              <div className="text-center py-8">
+                <Users className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">No students found in batches</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Student Distribution Bar Chart */}
+        <Card className="shadow-elegant">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Batch Student Count Comparison
+            </CardTitle>
+            <CardDescription>Visual comparison of student numbers across batches</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={batchDistribution}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({name, percentage}) => `${name}: ${percentage}%`}
-                >
-                  {batchDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart 
+                data={batchDistribution} 
+                margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                layout="horizontal"
+              >
+                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                <XAxis 
+                  type="number"
+                  className="text-xs"
+                  stroke="hsl(var(--muted-foreground))"
+                />
+                <YAxis 
+                  type="category"
+                  dataKey="name" 
+                  className="text-xs"
+                  stroke="hsl(var(--muted-foreground))"
+                  width={80}
+                />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  }}
+                  formatter={(value, name) => [`${value} students`, 'Student Count']}
+                  labelFormatter={(label) => `Batch: ${label}`}
+                />
+                <Bar 
+                  dataKey="value" 
+                  fill="hsl(var(--primary))"
+                  radius={[0, 4, 4, 0]}
+                  className="drop-shadow-sm"
+                />
+              </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
