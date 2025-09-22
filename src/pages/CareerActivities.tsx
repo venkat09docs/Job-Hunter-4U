@@ -77,11 +77,32 @@ const CareerActivities = () => {
     const completed = userTasks.filter(task => task.status === 'VERIFIED').length;
     const submitted = userTasks.filter(task => task.status === 'SUBMITTED' || task.status === 'PARTIALLY_VERIFIED').length;
     const total = userTasks.length;
+    
+    // Calculate actual active tasks (excluding completed and future day tasks)
+    const activeTasks = userTasks.filter(task => {
+      // Exclude completed tasks
+      if (task.status === 'VERIFIED') return false;
+      
+      // Check day availability - exclude future day tasks
+      const dayAvailability = getTaskDayAvailability(task.linkedin_tasks?.title || '');
+      if (dayAvailability.isFutureDay) return false;
+      
+      return true;
+    });
+    
     const progress = total > 0 ? (completed / total) * 100 : 0;
     const totalPoints = userTasks.reduce((sum, task) => sum + task.score_awarded, 0);
     const maxPoints = userTasks.reduce((sum, task) => sum + task.linkedin_tasks.points_base, 0);
     
-    return { completed, submitted, total, progress, totalPoints, maxPoints };
+    return { 
+      completed, 
+      submitted, 
+      total, 
+      activeTasks: activeTasks.length, // Add filtered active tasks count
+      progress, 
+      totalPoints, 
+      maxPoints 
+    };
   };
 
   // Use network metrics for LinkedIn growth stats
@@ -154,10 +175,10 @@ const CareerActivities = () => {
                 <div className="p-3 bg-blue-100 rounded-lg">
                   <Target className="h-6 w-6 text-blue-600" />
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Active Tasks</p>
-                  <p className="text-2xl font-bold">{stats.total}</p>
-                </div>
+                 <div>
+                   <p className="text-sm text-muted-foreground">Active Tasks</p>
+                   <p className="text-2xl font-bold">{stats.activeTasks}</p>
+                 </div>
               </div>
             </CardContent>
           </Card>
