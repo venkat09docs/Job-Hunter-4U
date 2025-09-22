@@ -39,7 +39,7 @@ import { LinkedInHistoryTab } from '@/components/LinkedInHistoryTab';
 import { AdminReenableRequestsDialog } from '@/components/AdminReenableRequestsDialog';
 import { useRole } from '@/hooks/useRole';
 import { format } from 'date-fns';
-import { getTaskDayAvailability } from '@/utils/dayBasedTaskValidation';
+import { getTaskDayAvailability, type TaskDayAvailability } from '@/utils/dayBasedTaskValidation';
 
 const CareerActivities = () => {
   const { canAccessFeature } = usePremiumFeatures();
