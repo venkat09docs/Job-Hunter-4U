@@ -1284,7 +1284,7 @@ const Dashboard = () => {
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2 text-green-900 dark:text-green-100">
                     <Clipboard className="h-5 w-5 text-green-600 dark:text-green-400" />
-                    Skill Assignments Status
+                    Skill Level Up Status
                   </CardTitle>
                   <Button
                     variant="outline"
