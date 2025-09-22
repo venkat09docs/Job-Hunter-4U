@@ -1088,22 +1088,22 @@ const Dashboard = () => {
                         <div className="flex items-center justify-between mb-3">
                           <div>
                             <p className="text-xs font-medium text-purple-700 dark:text-purple-300">LinkedIn Growth</p>
-                            <p className="text-lg font-bold text-purple-900 dark:text-purple-100">{linkedinGrowthStats.total} Total</p>
+                            <p className="text-lg font-bold text-purple-900 dark:text-purple-100">{linkedinGrowthStats.activeTasks} Active</p>
                           </div>
                           <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                         </div>
                         <div className="grid grid-cols-3 gap-2 text-xs">
                           <div className="text-center">
+                            <div className="font-semibold text-blue-600 dark:text-blue-400">{linkedinGrowthStats.activeTasks}</div>
+                            <div className="text-purple-600 dark:text-purple-400">Active</div>
+                          </div>
+                          <div className="text-center">
                             <div className="font-semibold text-green-600 dark:text-green-400">{linkedinGrowthStats.completed}</div>
-                            <div className="text-purple-600 dark:text-purple-400">Complete</div>
+                            <div className="text-purple-600 dark:text-purple-400">Completed</div>
                           </div>
                           <div className="text-center">
                             <div className="font-semibold text-yellow-600 dark:text-yellow-400">{linkedinGrowthStats.inProgress}</div>
                             <div className="text-purple-600 dark:text-purple-400">In Progress</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="font-semibold text-gray-600 dark:text-gray-400">{linkedinGrowthStats.pending}</div>
-                            <div className="text-purple-600 dark:text-purple-400">Pending</div>
                           </div>
                         </div>
                       </CardContent>
