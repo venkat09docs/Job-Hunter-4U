@@ -267,7 +267,7 @@ export default function AICareerLevelUp() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
+      <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
         {/* Hero Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
@@ -313,7 +313,7 @@ export default function AICareerLevelUp() {
                 <Button 
                   size="lg" 
                   className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold px-10 py-4 text-lg shadow-2xl transform hover:scale-105 transition-all duration-300"
-                  onClick={() => scrollToSection('investment-plans')}
+                  onClick={() => scrollToSection('pricing')}
                 >
                   Start Your AI Career Today
                   <ArrowRight className="ml-3 h-6 w-6" />
@@ -322,7 +322,7 @@ export default function AICareerLevelUp() {
                   size="lg" 
                   variant="outline" 
                   className="border-2 border-white/80 text-white bg-white/10 hover:bg-white/20 backdrop-blur-sm px-8 py-4 text-lg font-semibold shadow-lg"
-                  onClick={() => scrollToSection('four-levels')}
+                  onClick={() => scrollToSection('features')}
                 >
                   Explore Curriculum
                 </Button>
@@ -501,7 +501,7 @@ export default function AICareerLevelUp() {
       </section>
 
       {/* Four Levels Overview */}
-      <section id="four-levels" className="py-20 px-4 bg-white">
+      <section id="features" className="py-20 px-4 bg-white">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-16 animate-fade-in">
             <Badge className="mb-6 bg-gradient-to-r from-orange-500 to-pink-600 text-white border-0">
@@ -2036,7 +2036,7 @@ export default function AICareerLevelUp() {
       </section>
 
       {/* Investment in Your Future */}
-      <section id="investment-plans" className="py-20 px-4 bg-gradient-to-br from-gray-50 to-blue-50">
+      <section id="pricing" className="py-20 px-4 bg-gradient-to-br from-gray-50 to-blue-50">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-16 animate-fade-in">
             <Badge className="mb-6 bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-0">
