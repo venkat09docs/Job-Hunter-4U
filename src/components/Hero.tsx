@@ -77,6 +77,11 @@ const Hero = () => {
               />
               <div className="absolute inset-0 bg-gradient-primary/10" />
               
+              {/* AI Cloud Bootcamp label */}
+              <div className="absolute top-4 left-4 bg-gradient-primary rounded-lg px-3 py-2 shadow-glow">
+                <span className="text-sm font-semibold text-primary-foreground">AI Cloud Bootcamp</span>
+              </div>
+              
               {/* Floating cards */}
               <div className="absolute -top-4 -left-4 bg-card rounded-lg p-4 shadow-elegant border">
                 <div className="flex items-center gap-2">
