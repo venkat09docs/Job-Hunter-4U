@@ -28,9 +28,13 @@ const Navigation = () => {
   console.log('Navigation component loaded with updated handleHomeClick function');
 
   const scrollToSection = (sectionId: string) => {
+    console.log(`🎯 Scrolling to section: ${sectionId}`);
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
+      console.log(`✅ Successfully scrolled to: ${sectionId}`);
+    } else {
+      console.log(`❌ Element not found: ${sectionId}`);
     }
     setIsOpen(false);
   };
@@ -41,14 +45,14 @@ const Navigation = () => {
   };
 
   const handleHomeClick = () => {
-    console.log('Home clicked, current path:', window.location.pathname);
+    console.log('🏠 Home clicked, current path:', window.location.pathname);
     // If already on home page, scroll to hero section  
     if (window.location.pathname === '/') {
-      console.log('Scrolling to hero section');
+      console.log('📍 Already on home page - scrolling to hero section');
       scrollToSection('hero');
     } else {
       // Navigate to home page
-      console.log('Navigating to home page');
+      console.log('🔄 Navigating to home page');
       handleNavigate('/');
     }
   };
@@ -84,25 +88,31 @@ const Navigation = () => {
             <NavigationMenuItem>
               <NavigationMenuLink
                 className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
-                onClick={handleHomeClick}
+                asChild
               >
-                Home
+                <button onClick={handleHomeClick}>
+                  Home
+                </button>
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuLink
                 className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
-                onClick={() => scrollToSection('features')}
+                asChild
               >
-                Features
+                <button onClick={() => scrollToSection('features')}>
+                  Features
+                </button>
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuLink
                 className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
-                onClick={() => scrollToSection('pricing')}
+                asChild
               >
-                Pricing
+                <button onClick={() => scrollToSection('pricing')}>
+                  Pricing
+                </button>
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
