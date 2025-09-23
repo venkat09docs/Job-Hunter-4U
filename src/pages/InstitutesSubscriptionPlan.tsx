@@ -30,6 +30,8 @@ export default function InstitutesSubscriptionPlan() {
   const { plans, loading, refreshPlans } = useSubscriptionPlans();
   const { isAdmin } = useRole();
   const { toast } = useToast();
+  
+  console.log('InstitutesSubscriptionPlan component loaded', { isAdmin, plansCount: plans.length });
   const [editingPlan, setEditingPlan] = useState<string | null>(null);
   const [newPlan, setNewPlan] = useState<Partial<SubscriptionPlan>>({});
   const [isCreating, setIsCreating] = useState(false);
