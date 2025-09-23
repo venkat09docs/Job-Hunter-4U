@@ -24,6 +24,8 @@ import { useState } from "react";
 const Navigation = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  
+  console.log('Navigation component loaded with updated handleHomeClick function');
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -39,11 +41,14 @@ const Navigation = () => {
   };
 
   const handleHomeClick = () => {
-    // If already on home page, scroll to hero section
+    console.log('Home clicked, current path:', window.location.pathname);
+    // If already on home page, scroll to hero section  
     if (window.location.pathname === '/') {
+      console.log('Scrolling to hero section');
       scrollToSection('hero');
     } else {
       // Navigate to home page
+      console.log('Navigating to home page');
       handleNavigate('/');
     }
   };
