@@ -93,6 +93,7 @@ import NotificationPreferences from "./pages/NotificationPreferences";
 import AllNotifications from "./pages/AllNotifications";
 import AICareerLevelUp from "./pages/AICareerLevelUp";
 import Student from "./pages/Student";
+import InstitutesSubscriptionPlan from "./pages/InstitutesSubscriptionPlan";
 
 const queryClient = new QueryClient();
 
@@ -497,6 +498,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <SocialProofManagement />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/institutes-subscription-plan"
+            element={
+              <ProtectedRoute>
+                <InstitutesSubscriptionPlan />
               </ProtectedRoute>
             } 
           />
