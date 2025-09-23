@@ -38,6 +38,16 @@ const Navigation = () => {
     setIsOpen(false);
   };
 
+  const handleHomeClick = () => {
+    // If already on home page, scroll to hero section
+    if (window.location.pathname === '/') {
+      scrollToSection('hero');
+    } else {
+      // Navigate to home page
+      handleNavigate('/');
+    }
+  };
+
   const handleExternalLink = (url: string) => {
     window.open(url, '_blank');
     setIsOpen(false);
@@ -69,7 +79,7 @@ const Navigation = () => {
             <NavigationMenuItem>
               <NavigationMenuLink
                 className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
-                onClick={() => handleNavigate('/')}
+                onClick={handleHomeClick}
               >
                 Home
               </NavigationMenuLink>
@@ -201,7 +211,7 @@ const Navigation = () => {
                 <Button
                   variant="ghost"
                   className="justify-start"
-                  onClick={() => handleNavigate('/')}
+                  onClick={handleHomeClick}
                 >
                   Home
                 </Button>
