@@ -69,7 +69,7 @@ const Navigation = () => {
             <NavigationMenuItem>
               <NavigationMenuLink
                 className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
-                onClick={() => scrollToSection('hero')}
+                onClick={() => handleNavigate('/')}
               >
                 Home
               </NavigationMenuLink>
@@ -201,7 +201,7 @@ const Navigation = () => {
                 <Button
                   variant="ghost"
                   className="justify-start"
-                  onClick={() => scrollToSection('hero')}
+                  onClick={() => handleNavigate('/')}
                 >
                   Home
                 </Button>

@@ -7,7 +7,7 @@ import heroImage from "@/assets/hero-job-hunters.jpg";
 const Hero = () => {
   const navigate = useNavigate();
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-hero" />
       
