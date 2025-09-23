@@ -114,6 +114,7 @@ const adminItems = [
   { title: "Students Management", url: "/admin/students-management", icon: Users },
   { title: "Students Report", url: "/admin/students-report", icon: BarChart3 },
   { title: "Institute Membership Plans", url: "/dashboard/institute-membership-plans", icon: CreditCard },
+  { title: "Institutes Subscription Plan", url: "/admin/institutes-subscription-plan", icon: CreditCard },
   { title: "Institute Management", url: "/admin/institute-management", icon: Building },
   { title: "User Management", url: "/admin/users", icon: Users },
   { title: "Leader Board Points", url: "/leaderboard-points", icon: Target },
