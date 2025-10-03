@@ -179,7 +179,51 @@ Which AWS certification are you interested in, or what would you like to learn t
                         : 'bg-muted'
                     }`}
                   >
-                    <p className="whitespace-pre-wrap">{message.content}</p>
+                    <div className="prose prose-sm max-w-none dark:prose-invert">
+                      {message.content.split('\n').map((line, idx) => {
+                        // Main headings (##)
+                        if (line.startsWith('## ')) {
+                          return <h2 key={idx} className="text-lg font-bold mt-4 mb-2 text-primary">{line.replace('## ', '')}</h2>;
+                        }
+                        // Sub headings (###)
+                        if (line.startsWith('### ')) {
+                          return <h3 key={idx} className="text-base font-semibold mt-3 mb-2 text-foreground">{line.replace('### ', '')}</h3>;
+                        }
+                        // Bold text (**text**)
+                        if (line.includes('**')) {
+                          const parts = line.split(/(\*\*.*?\*\*)/g);
+                          return (
+                            <p key={idx} className="my-2">
+                              {parts.map((part, i) => 
+                                part.startsWith('**') && part.endsWith('**') ? (
+                                  <strong key={i} className="font-semibold text-primary">{part.slice(2, -2)}</strong>
+                                ) : (
+                                  <span key={i}>{part}</span>
+                                )
+                              )}
+                            </p>
+                          );
+                        }
+                        // Bullet points
+                        if (line.trim().match(/^[•\-\*]\s/)) {
+                          return <li key={idx} className="ml-4 my-1">{line.replace(/^[•\-\*]\s/, '')}</li>;
+                        }
+                        // Numbered lists
+                        if (line.trim().match(/^\d+\.\s/)) {
+                          return <li key={idx} className="ml-4 my-1 list-decimal">{line.replace(/^\d+\.\s/, '')}</li>;
+                        }
+                        // Emoji headings (📚, 🎯, etc.)
+                        if (line.match(/^[📚🎯💡📝🗓️✅❌⚠️🔍📌]/)) {
+                          return <p key={idx} className="font-semibold my-2 text-primary">{line}</p>;
+                        }
+                        // Empty lines
+                        if (line.trim() === '') {
+                          return <br key={idx} />;
+                        }
+                        // Regular text
+                        return <p key={idx} className="my-1">{line}</p>;
+                      })}
+                    </div>
                     <p className="text-xs mt-2 opacity-70">
                       {message.timestamp.toLocaleTimeString()}
                     </p>
