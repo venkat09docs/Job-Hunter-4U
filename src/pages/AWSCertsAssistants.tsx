@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Send, Bot, User } from "lucide-react";
+import { Loader2, Send, Bot, User, Volume2, Mic, Square } from "lucide-react";
 import { toast } from "sonner";
+import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -17,6 +18,16 @@ const AWSCertsAssistants = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [threadId, setThreadId] = useState<string | null>(null);
+  const [playingIndex, setPlayingIndex] = useState<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const handleTranscription = (text: string) => {
+    setInput(text);
+  };
+
+  const { isRecording, isProcessing, startRecording, stopRecording } = useVoiceRecorder({
+    onTranscriptionComplete: handleTranscription,
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,7 +83,66 @@ const AWSCertsAssistants = () => {
   const clearConversation = () => {
     setMessages([]);
     setThreadId(null);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    setPlayingIndex(null);
     toast.success("Conversation cleared");
+  };
+
+  const handlePlayAudio = async (text: string, index: number) => {
+    try {
+      // Stop current audio if playing
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+
+      if (playingIndex === index) {
+        setPlayingIndex(null);
+        return;
+      }
+
+      setPlayingIndex(index);
+
+      const { data, error } = await supabase.functions.invoke('text-to-speech', {
+        body: { text, voice: 'alloy' },
+      });
+
+      if (error) throw error;
+
+      // Convert base64 to audio blob
+      const binaryString = atob(data.audioContent);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const blob = new Blob([bytes], { type: 'audio/mpeg' });
+      const audioUrl = URL.createObjectURL(blob);
+
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+
+      audio.onended = () => {
+        setPlayingIndex(null);
+        URL.revokeObjectURL(audioUrl);
+      };
+
+      await audio.play();
+    } catch (error) {
+      console.error('Error playing audio:', error);
+      toast.error("Failed to play audio");
+      setPlayingIndex(null);
+    }
+  };
+
+  const handleMicToggle = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
   };
 
   return (
@@ -118,13 +188,14 @@ const AWSCertsAssistants = () => {
                     </div>
                   )}
                   
-                  <div
-                    className={`max-w-[80%] rounded-lg p-4 ${
-                      message.role === 'user'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted'
-                    }`}
-                  >
+                  <div className="flex-1 max-w-[80%]">
+                    <div
+                      className={`rounded-lg p-4 ${
+                        message.role === 'user'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted'
+                      }`}
+                    >
                     <div className="prose prose-sm max-w-none dark:prose-invert">
                       {message.content.split('\n').map((line, idx) => {
                         // Main headings (##)
@@ -173,6 +244,23 @@ const AWSCertsAssistants = () => {
                     <p className="text-xs mt-2 opacity-70">
                       {message.timestamp.toLocaleTimeString()}
                     </p>
+                    </div>
+                    
+                    {message.role === 'assistant' && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 flex-shrink-0"
+                        onClick={() => handlePlayAudio(message.content, index)}
+                        disabled={playingIndex !== null && playingIndex !== index}
+                      >
+                        {playingIndex === index ? (
+                          <Square className="w-4 h-4" />
+                        ) : (
+                          <Volume2 className="w-4 h-4" />
+                        )}
+                      </Button>
+                    )}
                   </div>
 
                   {message.role === 'user' && (
@@ -210,13 +298,31 @@ const AWSCertsAssistants = () => {
                     handleSubmit(e);
                   }
                 }}
-                disabled={isLoading}
+                disabled={isLoading || isRecording}
               />
+              <div className="flex flex-col gap-2">
+                <Button
+                  type="button"
+                  size="icon"
+                  variant={isRecording ? "destructive" : "outline"}
+                  className="h-[60px] w-[60px]"
+                  onClick={handleMicToggle}
+                  disabled={isLoading || isProcessing}
+                >
+                  {isRecording ? (
+                    <Square className="w-5 h-5" />
+                  ) : isProcessing ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Mic className="w-5 h-5" />
+                  )}
+                </Button>
+              </div>
               <Button
                 type="submit"
                 size="icon"
                 className="h-[60px] w-[60px]"
-                disabled={!input.trim() || isLoading}
+                disabled={!input.trim() || isLoading || isRecording}
               >
                 {isLoading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
