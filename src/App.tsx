@@ -95,6 +95,7 @@ import AICareerLevelUp from "./pages/AICareerLevelUp";
 import Student from "./pages/Student";
 import InstitutesSubscriptionPlan from "./pages/InstitutesSubscriptionPlan";
 import AWSCerts from "./pages/AWSCerts";
+import AWSCertsAssistants from "./pages/AWSCertsAssistants";
 
 const queryClient = new QueryClient();
 
@@ -646,6 +647,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <AWSCerts />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/aws-certs-assistants" 
+            element={
+              <ProtectedRoute>
+                <AWSCertsAssistants />
               </ProtectedRoute>
             } 
           />
