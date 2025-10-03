@@ -94,6 +94,7 @@ import AllNotifications from "./pages/AllNotifications";
 import AICareerLevelUp from "./pages/AICareerLevelUp";
 import Student from "./pages/Student";
 import InstitutesSubscriptionPlan from "./pages/InstitutesSubscriptionPlan";
+import AWSCerts from "./pages/AWSCerts";
 
 const queryClient = new QueryClient();
 
@@ -640,6 +641,14 @@ const AppContent = () => {
            <Route path="/careerlevelup" element={<CareerLevelUp />} />
             <Route path="/ai-career-level-up" element={<AICareerLevelUp />} />
             <Route path="/student" element={<Student />} />
+          <Route 
+            path="/dashboard/aws-certs" 
+            element={
+              <ProtectedRoute>
+                <AWSCerts />
+              </ProtectedRoute>
+            } 
+          />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/cookie-policy" element={<CookiePolicy />} />
