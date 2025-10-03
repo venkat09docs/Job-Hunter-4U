@@ -305,7 +305,7 @@ const AWSCertsAssistants = () => {
                   type="button"
                   size="icon"
                   variant={isRecording ? "destructive" : "outline"}
-                  className="h-[60px] w-[60px]"
+                  className={`h-[60px] w-[60px] ${isRecording ? 'animate-pulse' : ''}`}
                   onClick={handleMicToggle}
                   disabled={isLoading || isProcessing}
                 >
@@ -317,6 +317,11 @@ const AWSCertsAssistants = () => {
                     <Mic className="w-5 h-5" />
                   )}
                 </Button>
+                {isRecording && (
+                  <span className="text-xs text-destructive font-medium text-center">
+                    Recording...
+                  </span>
+                )}
               </div>
               <Button
                 type="submit"

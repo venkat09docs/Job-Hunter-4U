@@ -11,6 +11,7 @@ export const useVoiceRecorder = ({ onTranscriptionComplete }: UseVoiceRecorderPr
   const [isProcessing, setIsProcessing] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const recordingStartTimeRef = useRef<number>(0);
   const { toast } = useToast();
 
   const startRecording = useCallback(async () => {
@@ -49,9 +50,13 @@ export const useVoiceRecorder = ({ onTranscriptionComplete }: UseVoiceRecorderPr
 
       mediaRecorder.start(100); // Collect data every 100ms
       mediaRecorderRef.current = mediaRecorder;
+      recordingStartTimeRef.current = Date.now();
       setIsRecording(true);
 
-      // Recording started - no toast notification needed
+      toast({
+        title: "Recording started",
+        description: "Speak clearly. Recording for at least 1 second recommended.",
+      });
 
     } catch (error) {
       console.error('Error starting recording:', error);
@@ -65,11 +70,24 @@ export const useVoiceRecorder = ({ onTranscriptionComplete }: UseVoiceRecorderPr
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
+      const recordingDuration = Date.now() - recordingStartTimeRef.current;
+      
+      if (recordingDuration < 500) {
+        toast({
+          title: "Recording too short",
+          description: "Please record for at least 0.5 seconds for better transcription.",
+          variant: "destructive",
+        });
+        mediaRecorderRef.current.stop();
+        setIsRecording(false);
+        return;
+      }
+      
       console.log('🛑 Stopping recording...');
       mediaRecorderRef.current.stop();
       setIsRecording(false);
     }
-  }, [isRecording]);
+  }, [isRecording, toast]);
 
   const processAudio = async (audioBlob: Blob) => {
     setIsProcessing(true);
@@ -106,7 +124,10 @@ export const useVoiceRecorder = ({ onTranscriptionComplete }: UseVoiceRecorderPr
         console.log('✅ Transcription received:', data.text);
         onTranscriptionComplete(data.text);
         
-        // Voice converted successfully - no toast notification needed
+        toast({
+          title: "Transcription complete",
+          description: `"${data.text}"`,
+        });
       } else {
         throw new Error('No transcription received');
       }
