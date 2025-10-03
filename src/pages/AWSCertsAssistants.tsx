@@ -308,6 +308,7 @@ const AWSCertsAssistants = () => {
                   className={`h-[60px] w-[60px] ${isRecording ? 'animate-pulse' : ''}`}
                   onClick={handleMicToggle}
                   disabled={isLoading || isProcessing}
+                  title={isRecording ? "Click to stop recording" : "Click and hold to record (min 2 seconds)"}
                 >
                   {isRecording ? (
                     <Square className="w-5 h-5" />
@@ -318,8 +319,13 @@ const AWSCertsAssistants = () => {
                   )}
                 </Button>
                 {isRecording && (
-                  <span className="text-xs text-destructive font-medium text-center">
-                    Recording...
+                  <span className="text-xs text-destructive font-medium text-center animate-pulse">
+                    🔴 Recording
+                  </span>
+                )}
+                {isProcessing && (
+                  <span className="text-xs text-muted-foreground font-medium text-center">
+                    Processing...
                   </span>
                 )}
               </div>

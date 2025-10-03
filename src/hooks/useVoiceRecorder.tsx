@@ -20,7 +20,7 @@ export const useVoiceRecorder = ({ onTranscriptionComplete }: UseVoiceRecorderPr
       
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
-          sampleRate: 44100,
+          sampleRate: 48000,
           channelCount: 1,
           echoCancellation: true,
           noiseSuppression: true,
@@ -28,8 +28,18 @@ export const useVoiceRecorder = ({ onTranscriptionComplete }: UseVoiceRecorderPr
         } 
       });
 
+      // Try to get the best supported mime type
+      let mimeType = 'audio/webm;codecs=opus';
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = 'audio/webm';
+      }
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = 'audio/ogg;codecs=opus';
+      }
+
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus'
+        mimeType,
+        audioBitsPerSecond: 128000
       });
 
       audioChunksRef.current = [];
@@ -54,8 +64,8 @@ export const useVoiceRecorder = ({ onTranscriptionComplete }: UseVoiceRecorderPr
       setIsRecording(true);
 
       toast({
-        title: "Recording started",
-        description: "Speak clearly. Recording for at least 1 second recommended.",
+        title: "🎤 Recording...",
+        description: "Speak clearly and record for at least 2 seconds for best results.",
       });
 
     } catch (error) {
@@ -72,20 +82,27 @@ export const useVoiceRecorder = ({ onTranscriptionComplete }: UseVoiceRecorderPr
     if (mediaRecorderRef.current && isRecording) {
       const recordingDuration = Date.now() - recordingStartTimeRef.current;
       
-      if (recordingDuration < 500) {
+      if (recordingDuration < 1500) {
         toast({
-          title: "Recording too short",
-          description: "Please record for at least 0.5 seconds for better transcription.",
+          title: "⚠️ Recording too short",
+          description: "Please record for at least 2 seconds for accurate transcription.",
           variant: "destructive",
         });
-        mediaRecorderRef.current.stop();
+        // Still stop the recording and clean up
+        const stream = mediaRecorderRef.current.stream;
+        stream.getTracks().forEach(track => track.stop());
         setIsRecording(false);
         return;
       }
       
-      console.log('🛑 Stopping recording...');
+      console.log(`🛑 Stopping recording after ${recordingDuration}ms...`);
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      
+      toast({
+        title: "Processing...",
+        description: "Converting your speech to text...",
+      });
     }
   }, [isRecording, toast]);
 
@@ -122,12 +139,21 @@ export const useVoiceRecorder = ({ onTranscriptionComplete }: UseVoiceRecorderPr
 
       if (data?.text) {
         console.log('✅ Transcription received:', data.text);
-        onTranscriptionComplete(data.text);
         
-        toast({
-          title: "Transcription complete",
-          description: `"${data.text}"`,
-        });
+        // Only show success if we got meaningful text (not just "you")
+        if (data.text.trim().toLowerCase() === 'you') {
+          toast({
+            title: "⚠️ Poor audio quality",
+            description: "Try speaking louder and closer to the microphone for at least 2-3 seconds.",
+            variant: "destructive",
+          });
+        } else {
+          onTranscriptionComplete(data.text);
+          toast({
+            title: "✅ Transcription complete",
+            description: `"${data.text.substring(0, 50)}${data.text.length > 50 ? '...' : ''}"`,
+          });
+        }
       } else {
         throw new Error('No transcription received');
       }
