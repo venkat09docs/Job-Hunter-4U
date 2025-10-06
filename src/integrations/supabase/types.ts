@@ -4266,6 +4266,7 @@ export type Database = {
           subscription_end_date: string | null
           subscription_plan: string | null
           subscription_start_date: string | null
+          telegram_chat_id: string | null
           total_ai_queries: number | null
           total_job_searches: number | null
           total_resume_opens: number | null
@@ -4291,6 +4292,7 @@ export type Database = {
           subscription_end_date?: string | null
           subscription_plan?: string | null
           subscription_start_date?: string | null
+          telegram_chat_id?: string | null
           total_ai_queries?: number | null
           total_job_searches?: number | null
           total_resume_opens?: number | null
@@ -4316,6 +4318,7 @@ export type Database = {
           subscription_end_date?: string | null
           subscription_plan?: string | null
           subscription_start_date?: string | null
+          telegram_chat_id?: string | null
           total_ai_queries?: number | null
           total_job_searches?: number | null
           total_resume_opens?: number | null
