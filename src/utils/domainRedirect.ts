@@ -10,7 +10,7 @@ export const ensureConsistentDomain = () => {
     const currentUrl = window.location.href;
     
     // Define the preferred domain (without www)
-    const preferredDomain = 'jobhunter4u.com';
+    const preferredDomain = 'aicareerlevelup.com';
     
     console.log('🔍 Domain Check:', { currentHost, preferredDomain });
     
