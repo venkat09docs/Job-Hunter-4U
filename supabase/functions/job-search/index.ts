@@ -112,8 +112,23 @@ Deno.serve(async (req) => {
         throw new Error(`n8n webhook failed: ${n8nResponse.status} ${n8nResponse.statusText} - ${errorText}`);
       }
 
-      n8nResult = await n8nResponse.json();
-      console.log('n8n job search result:', n8nResult);
+      // Read response as text first to handle empty responses
+      const responseText = await n8nResponse.text();
+      console.log('n8n response body length:', responseText.length);
+
+      if (!responseText || responseText.trim() === '') {
+        console.log('Empty response from n8n webhook, returning empty result');
+        n8nResult = { jobs: [] };
+      } else {
+        try {
+          n8nResult = JSON.parse(responseText);
+          console.log('n8n job search result:', JSON.stringify(n8nResult).substring(0, 500) + '...');
+        } catch (parseError) {
+          console.error('Error parsing n8n response:', parseError);
+          console.log('Response text:', responseText.substring(0, 200));
+          n8nResult = { jobs: [] };
+        }
+      }
     } catch (fetchError) {
       console.error('Error calling n8n webhook:', fetchError);
       
