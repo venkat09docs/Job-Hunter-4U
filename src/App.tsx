@@ -8,6 +8,8 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { useAuth } from "@/hooks/useAuth";
 import { ensureConsistentDomain } from "@/utils/domainRedirect";
 import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -100,10 +102,66 @@ import AWSCertsAssistants from "./pages/AWSCertsAssistants";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
+  const { toast } = useToast();
+
   // Ensure consistent domain usage on app load
   useEffect(() => {
     ensureConsistentDomain();
   }, []);
+
+  // Global effect to capture and process telegram_chat_id from URL on any page
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const telegramChatId = urlParams.get('telegram_chat_id');
+    
+    if (telegramChatId) {
+      console.log('Telegram chat ID detected in URL (global App.tsx):', telegramChatId);
+      sessionStorage.setItem('pending_telegram_chat_id', telegramChatId);
+      
+      // Check if user is already authenticated
+      supabase.auth.getUser().then(({ data: { user }, error }) => {
+        if (error) {
+          console.error('Error getting user:', error);
+          return;
+        }
+
+        if (user && user.email) {
+          console.log('User authenticated, calling edge function to update Telegram chat ID');
+          
+          // Call edge function to update telegram_chat_id
+          supabase.functions.invoke('update-telegram-chat-id', {
+            body: {
+              email: user.email,
+              telegram_chat_id: telegramChatId,
+            },
+          }).then(({ data, error: functionError }) => {
+            if (functionError) {
+              console.error('Error updating Telegram chat ID:', functionError);
+              toast({
+                variant: "destructive",
+                title: "Warning",
+                description: "Failed to link Telegram account. Please try again.",
+              });
+            } else {
+              console.log('Telegram chat ID updated successfully:', data);
+              toast({
+                title: "Success",
+                description: "Your Telegram account has been linked successfully!",
+              });
+              // Clear from sessionStorage after successful update
+              sessionStorage.removeItem('pending_telegram_chat_id');
+            }
+          }).catch((err) => {
+            console.error('Exception calling edge function:', err);
+          });
+        } else {
+          console.log('User not authenticated yet, telegram_chat_id stored in session');
+        }
+      }).catch((err) => {
+        console.error('Exception getting user:', err);
+      });
+    }
+  }, [toast]);
 
   return (
     <>
