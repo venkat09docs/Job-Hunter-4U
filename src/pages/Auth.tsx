@@ -37,14 +37,47 @@ const Auth = () => {
 
   // Redirect authenticated and verified users, but not if they're signing out or have just logged out
   useEffect(() => {
-    if (!authLoading && user && !isSigningOut && !hasLoggedOut) {
-      // Only redirect if email is verified
-      const isVerified = user.email_confirmed_at !== null;
-      if (isVerified) {
-      // Always redirect to dashboard by default
-      navigate('/dashboard', { replace: true });
+    const processTelegramAndRedirect = async () => {
+      if (!authLoading && user && !isSigningOut && !hasLoggedOut) {
+        // Only redirect if email is verified
+        const isVerified = user.email_confirmed_at !== null;
+        if (isVerified) {
+          // Check for pending telegram_chat_id (from magic link or URL)
+          const pendingTelegramChatId = sessionStorage.getItem('pending_telegram_chat_id');
+          
+          if (pendingTelegramChatId) {
+            console.log('Processing pending Telegram chat ID on auto-login:', pendingTelegramChatId);
+            
+            try {
+              const { data: functionData, error: functionError } = await supabase.functions.invoke(
+                'update-telegram-chat-id',
+                {
+                  body: {
+                    email: user.email,
+                    telegram_chat_id: pendingTelegramChatId,
+                  },
+                }
+              );
+
+              if (functionError) {
+                console.error('Error updating Telegram chat ID on auto-login:', functionError);
+              } else {
+                console.log('Telegram chat ID updated successfully on auto-login:', functionData);
+              }
+            } catch (telegramError) {
+              console.error('Exception updating Telegram chat ID on auto-login:', telegramError);
+            } finally {
+              sessionStorage.removeItem('pending_telegram_chat_id');
+            }
+          }
+          
+          // Always redirect to dashboard by default
+          navigate('/dashboard', { replace: true });
+        }
       }
-    }
+    };
+
+    processTelegramAndRedirect();
   }, [user, authLoading, isSigningOut, hasLoggedOut, navigate]);
 
   useEffect(() => {
