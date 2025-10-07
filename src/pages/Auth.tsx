@@ -42,8 +42,15 @@ const Auth = () => {
         // Only redirect if email is verified
         const isVerified = user.email_confirmed_at !== null;
         if (isVerified) {
-          // Check for pending telegram_chat_id (from magic link or URL)
-          const pendingTelegramChatId = sessionStorage.getItem('pending_telegram_chat_id');
+          // Check for telegram_chat_id from URL first (higher priority for magic links)
+          const urlParams = new URLSearchParams(window.location.search);
+          const urlTelegramChatId = urlParams.get('telegram_chat_id');
+          
+          // Then check sessionStorage (for regular sign-in flow)
+          const storedTelegramChatId = sessionStorage.getItem('pending_telegram_chat_id');
+          
+          // Use URL param if available, otherwise use stored value
+          const pendingTelegramChatId = urlTelegramChatId || storedTelegramChatId;
           
           if (pendingTelegramChatId) {
             console.log('Processing pending Telegram chat ID on auto-login:', pendingTelegramChatId);
