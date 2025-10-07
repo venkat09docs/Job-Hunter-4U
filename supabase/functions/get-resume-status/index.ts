@@ -67,8 +67,8 @@ const handler = async (req: Request): Promise<Response> => {
       .eq('user_id', profile.user_id)
       .single();
 
-    // Calculate resume completion percentage
-    const resumeProgress = calculateResumeProgress(portfolio);
+    // Calculate resume completion percentage with detailed breakdown
+    const resumeBreakdown = calculateResumeProgressDetailed(portfolio);
 
     // Get career task assignments for resume category
     const { data: assignments, error: assignmentsError } = await supabaseClient
@@ -112,8 +112,13 @@ const handler = async (req: Request): Promise<Response> => {
         username: profile.username,
       },
       resume_profile: {
-        completion_percentage: resumeProgress,
-        status: resumeProgress === 100 ? 'complete' : resumeProgress >= 70 ? 'good' : resumeProgress >= 40 ? 'moderate' : 'needs_improvement',
+        completion_percentage: resumeBreakdown.totalProgress,
+        status: resumeBreakdown.totalProgress === 100 ? 'complete' : 
+                resumeBreakdown.totalProgress >= 70 ? 'good' : 
+                resumeBreakdown.totalProgress >= 40 ? 'moderate' : 'needs_improvement',
+        section_scores: resumeBreakdown.sections,
+        missing_requirements: resumeBreakdown.missing,
+        recommendations: resumeBreakdown.recommendations,
       },
       tasks: {
         total: totalTasks,
@@ -122,13 +127,6 @@ const handler = async (req: Request): Promise<Response> => {
         completion_rate: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0,
         breakdown: tasksByStatus,
       },
-      portfolio_sections: portfolio ? {
-        has_personal_details: !!(portfolio.personal_details && Object.keys(portfolio.personal_details).length > 0),
-        has_experience: !!(portfolio.experience && portfolio.experience.length > 0),
-        has_education: !!(portfolio.education && portfolio.education.length > 0),
-        has_skills: !!(portfolio.skills && portfolio.skills.length > 0),
-        has_summary: !!(portfolio.professional_summary),
-      } : null,
       timestamp: new Date().toISOString(),
     };
 
@@ -154,6 +152,113 @@ const handler = async (req: Request): Promise<Response> => {
     );
   }
 };
+
+function calculateResumeProgressDetailed(portfolio: any): any {
+  if (!portfolio) {
+    return {
+      totalProgress: 0,
+      sections: {
+        personal_details: { score: 0, weight: 20, complete: false },
+        experience: { score: 0, weight: 25, complete: false },
+        education: { score: 0, weight: 20, complete: false },
+        skills: { score: 0, weight: 15, complete: false },
+        professional_summary: { score: 0, weight: 20, complete: false },
+      },
+      missing: ['personal_details', 'experience', 'education', 'skills', 'professional_summary'],
+      recommendations: ['Add all resume sections to get started'],
+    };
+  }
+
+  const sections = {
+    personal_details: {
+      weight: 20,
+      check: () => {
+        const details = portfolio.personal_details;
+        if (!details || typeof details !== 'object') return { score: 0, missing: ['first_name', 'last_name', 'email', 'phone'] };
+        const fields = ['first_name', 'last_name', 'email', 'phone'];
+        const filledFields = fields.filter(f => details[f] && details[f].toString().trim() !== '');
+        const missingFields = fields.filter(f => !details[f] || details[f].toString().trim() === '');
+        return {
+          score: (filledFields.length / fields.length) * 100,
+          missing: missingFields,
+        };
+      }
+    },
+    experience: {
+      weight: 25,
+      check: () => {
+        const exp = portfolio.experience;
+        if (!Array.isArray(exp) || exp.length === 0) return { score: 0, missing: ['Add at least one work experience'] };
+        const validExperiences = exp.filter(e => 
+          e.company && e.position && (e.description || e.responsibilities)
+        );
+        if (validExperiences.length === 0) return { score: 50, missing: ['Complete work experience details'] };
+        return { score: 100, missing: [] };
+      }
+    },
+    education: {
+      weight: 20,
+      check: () => {
+        const edu = portfolio.education;
+        if (!Array.isArray(edu) || edu.length === 0) return { score: 0, missing: ['Add at least one education entry'] };
+        const validEducation = edu.filter(e => e.institution && e.degree);
+        if (validEducation.length === 0) return { score: 50, missing: ['Complete education details'] };
+        return { score: 100, missing: [] };
+      }
+    },
+    skills: {
+      weight: 15,
+      check: () => {
+        const skills = portfolio.skills;
+        if (!Array.isArray(skills) || skills.length === 0) return { score: 0, missing: ['Add at least 5 skills'] };
+        if (skills.length < 5) return { score: (skills.length / 5) * 100, missing: [`Add ${5 - skills.length} more skills`] };
+        return { score: 100, missing: [] };
+      }
+    },
+    professional_summary: {
+      weight: 20,
+      check: () => {
+        const summary = portfolio.professional_summary;
+        if (!summary || typeof summary !== 'string') return { score: 0, missing: ['Add professional summary'] };
+        const wordCount = summary.trim().split(/\s+/).length;
+        if (wordCount < 50) return { score: (wordCount / 50) * 100, missing: [`Add ${50 - wordCount} more words to summary`] };
+        return { score: 100, missing: [] };
+      }
+    }
+  };
+
+  let totalProgress = 0;
+  const sectionScores: any = {};
+  const missing: string[] = [];
+  const recommendations: string[] = [];
+
+  Object.entries(sections).forEach(([name, section]) => {
+    const result = section.check();
+    const weightedScore = (result.score * section.weight) / 100;
+    totalProgress += weightedScore;
+    
+    sectionScores[name] = {
+      score: Math.round(result.score),
+      weight: section.weight,
+      complete: result.score === 100,
+      missing: result.missing,
+    };
+
+    if (result.score < 100) {
+      missing.push(name);
+      if (result.missing.length > 0) {
+        recommendations.push(...result.missing);
+      }
+    }
+  });
+
+  return {
+    totalProgress: Math.round(totalProgress),
+    sections: sectionScores,
+    missing,
+    recommendations,
+  };
+}
 
 function calculateResumeProgress(portfolio: any): number {
   if (!portfolio) return 0;
