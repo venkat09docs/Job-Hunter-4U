@@ -1,5 +1,8 @@
 project_id = "moirryvajzyriagqihbe"
 
+[functions.search-jobs-api]
+verify_jwt = false
+
 [functions.auto-assign-section-assignments]
 verify_jwt = false
 
