@@ -10,6 +10,36 @@ interface JobSearchParams {
   employment_type?: string;
 }
 
+// Retry function with exponential backoff
+async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3): Promise<Response> {
+  let lastError: Error | null = null;
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`Attempt ${attempt} to call n8n webhook`);
+      const response = await fetch(url, options);
+      
+      if (response.ok) {
+        return response;
+      }
+      
+      // If not ok, throw to retry
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    } catch (error) {
+      lastError = error as Error;
+      console.error(`Attempt ${attempt} failed:`, error);
+      
+      if (attempt < maxRetries) {
+        const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
+        console.log(`Waiting ${delay}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  
+  throw lastError || new Error('Max retries reached');
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -62,27 +92,24 @@ Deno.serve(async (req) => {
 
     console.log('Search parameters:', searchParams);
 
-    // Call n8n webhook
+    // Call n8n webhook with retry logic
     const n8nWebhookUrl = 'https://n8n.srv995073.hstgr.cloud/webhook/jsearch';
     
-    const n8nResponse = await fetch(n8nWebhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(searchParams),
-    });
-
-    console.log('n8n response status:', n8nResponse.status);
-
-    if (!n8nResponse.ok) {
-      const errorText = await n8nResponse.text();
-      console.error('n8n webhook error:', errorText);
-      
+    let n8nResponse: Response;
+    try {
+      n8nResponse = await fetchWithRetry(n8nWebhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(searchParams),
+      });
+    } catch (error) {
+      console.error('Failed to call n8n webhook after retries:', error);
       return new Response(
         JSON.stringify({
           success: false,
-          error: `n8n webhook failed: ${n8nResponse.status}`,
+          error: `Failed to call n8n webhook: ${error.message}`,
           jobs: []
         }),
         {
@@ -92,21 +119,38 @@ Deno.serve(async (req) => {
       );
     }
 
+    console.log('n8n response status:', n8nResponse.status);
+
     // Parse n8n response
     const responseText = await n8nResponse.text();
     console.log('n8n response length:', responseText.length);
+    console.log('n8n raw response:', responseText.substring(0, 500)); // Log first 500 chars
 
     let jobResults = [];
     
     if (!responseText || responseText.trim() === '') {
-      console.log('Empty response from n8n');
+      console.log('Empty response from n8n webhook');
     } else {
       try {
         const parsedResult = JSON.parse(responseText);
-        jobResults = Array.isArray(parsedResult) ? parsedResult : (parsedResult.jobs || []);
-        console.log('Found jobs:', jobResults.length);
+        console.log('Parsed result type:', typeof parsedResult, 'isArray:', Array.isArray(parsedResult));
+        
+        // Handle different response formats from n8n
+        if (Array.isArray(parsedResult)) {
+          jobResults = parsedResult;
+        } else if (parsedResult.jobs && Array.isArray(parsedResult.jobs)) {
+          jobResults = parsedResult.jobs;
+        } else if (parsedResult.data && Array.isArray(parsedResult.data)) {
+          jobResults = parsedResult.data;
+        } else {
+          console.log('Unexpected response structure:', Object.keys(parsedResult));
+          jobResults = [parsedResult]; // Wrap single object in array
+        }
+        
+        console.log('Successfully extracted jobs:', jobResults.length);
       } catch (parseError) {
         console.error('Error parsing n8n response:', parseError);
+        console.error('Response text that failed to parse:', responseText);
       }
     }
 
