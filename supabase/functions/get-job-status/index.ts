@@ -80,6 +80,7 @@ Deno.serve(async (req) => {
     // Define pipeline stages
     const pipelineStages = [
       'wishlist',
+      'applying',
       'applied',
       'interviewing',
       'negotiating',
@@ -143,6 +144,10 @@ Deno.serve(async (req) => {
         wishlist: {
           count: statusCounts.wishlist,
           label: 'Wishlist'
+        },
+        applying: {
+          count: statusCounts.applying,
+          label: 'Applying'
         },
         applied: {
           count: statusCounts.applied,
