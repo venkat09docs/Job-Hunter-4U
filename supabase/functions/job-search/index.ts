@@ -42,7 +42,34 @@ Deno.serve(async (req) => {
       refresh_token: '',
     });
 
-    const { query, num_pages, date_posted, country, language, job_requirements, employment_type }: JobSearchRequest = await req.json();
+    // Parse request parameters from either query string or body
+    let query: string;
+    let num_pages: number;
+    let date_posted: string;
+    let country: string;
+    let language: string;
+    let job_requirements: string;
+    let employment_type: string;
+
+    if (req.method === 'GET') {
+      const url = new URL(req.url);
+      query = url.searchParams.get('query') || '';
+      num_pages = parseInt(url.searchParams.get('num_pages') || '1');
+      date_posted = url.searchParams.get('date_posted') || 'all';
+      country = url.searchParams.get('country') || 'us';
+      language = url.searchParams.get('language') || 'en';
+      job_requirements = url.searchParams.get('job_requirements') || 'under_3_years_experience';
+      employment_type = url.searchParams.get('employment_type') || 'FULLTIME';
+    } else {
+      const body = await req.json();
+      query = body.query;
+      num_pages = body.num_pages;
+      date_posted = body.date_posted;
+      country = body.country;
+      language = body.language;
+      job_requirements = body.job_requirements;
+      employment_type = body.employment_type;
+    }
     
     if (!query) {
       throw new Error('Missing required field: query');
