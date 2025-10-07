@@ -22,7 +22,19 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { email, user_id }: ResumeStatusRequest = await req.json();
+    // Handle both GET and POST requests
+    let email: string | undefined;
+    let user_id: string | undefined;
+
+    if (req.method === 'GET') {
+      const url = new URL(req.url);
+      email = url.searchParams.get('email') ?? undefined;
+      user_id = url.searchParams.get('user_id') ?? undefined;
+    } else {
+      const body: ResumeStatusRequest = await req.json();
+      email = body.email;
+      user_id = body.user_id;
+    }
 
     if (!email && !user_id) {
       return new Response(
