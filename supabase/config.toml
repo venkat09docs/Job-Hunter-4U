@@ -63,5 +63,8 @@ verify_jwt = true
 [functions.get-resume-status]
 verify_jwt = false
 
+[functions.get-skills-status]
+verify_jwt = false
+
 [functions.get-job-status]
 verify_jwt = false
