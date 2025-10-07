@@ -75,7 +75,7 @@ const handler = async (req: Request): Promise<Response> => {
       .from('career_task_assignments')
       .select(`
         *,
-        career_task_templates!inner(category, module)
+        career_task_templates!career_task_assignments_template_id_fkey(category, module)
       `)
       .eq('user_id', profile.user_id);
 
