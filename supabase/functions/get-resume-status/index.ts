@@ -60,7 +60,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Get career task assignments for RESUME module (matching Profile Assignments page logic)
+    // Get career task assignments for all modules
     const { data: assignments, error: assignmentsError } = await supabaseClient
       .from('career_task_assignments')
       .select(`
@@ -85,50 +85,69 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Filter RESUME module tasks (matching Profile Assignments page)
-    const resumeTasks = assignments?.filter(
-      a => a.career_task_templates?.module === 'RESUME'
-    ) || [];
+    // Helper function to calculate module status
+    const calculateModuleStatus = (moduleName: string) => {
+      const moduleTasks = assignments?.filter(
+        a => a.career_task_templates?.module === moduleName
+      ) || [];
 
-    const totalTasks = resumeTasks.length;
-    const verifiedTasks = resumeTasks.filter(a => a.status === 'verified').length;
-    const pendingTasks = totalTasks - verifiedTasks;
+      const totalTasks = moduleTasks.length;
+      const verifiedTasks = moduleTasks.filter(a => a.status === 'verified').length;
+      const pendingTasks = totalTasks - verifiedTasks;
 
-    // Calculate progress percentage (matching Profile Assignments page)
-    const progressPercentage = totalTasks > 0 
-      ? Math.round((verifiedTasks / totalTasks) * 100) 
-      : 0;
+      const progressPercentage = totalTasks > 0 
+        ? Math.round((verifiedTasks / totalTasks) * 100) 
+        : 0;
 
-    // Determine status based on progress (matching Profile Assignments page)
-    let status = 'Getting Started';
-    if (progressPercentage >= 100) {
-      status = 'Complete';
-    } else if (progressPercentage >= 50) {
-      status = 'In Progress';
-    }
+      let status = 'Getting Started';
+      if (progressPercentage >= 100) {
+        status = 'Complete';
+      } else if (progressPercentage >= 50) {
+        status = 'In Progress';
+      }
 
-    // Get task breakdown by status
-    const tasksByStatus = {
-      assigned: resumeTasks.filter(a => a.status === 'assigned').length,
-      in_progress: resumeTasks.filter(a => a.status === 'in_progress').length,
-      submitted: resumeTasks.filter(a => a.status === 'submitted').length,
-      completed: resumeTasks.filter(a => a.status === 'completed').length,
-      verified: verifiedTasks,
+      const tasksByStatus = {
+        assigned: moduleTasks.filter(a => a.status === 'assigned').length,
+        in_progress: moduleTasks.filter(a => a.status === 'in_progress').length,
+        submitted: moduleTasks.filter(a => a.status === 'submitted').length,
+        completed: moduleTasks.filter(a => a.status === 'completed').length,
+        verified: verifiedTasks,
+      };
+
+      const taskDetails = moduleTasks.map(task => ({
+        id: task.id,
+        title: task.career_task_templates?.title || 'Unknown Task',
+        description: task.career_task_templates?.description || '',
+        status: task.status,
+        points_reward: task.career_task_templates?.points_reward || 0,
+        points_earned: task.points_earned || 0,
+        assigned_at: task.assigned_at,
+        submitted_at: task.submitted_at,
+        verified_at: task.verified_at,
+        due_date: task.due_date,
+      }));
+
+      return {
+        progress_percentage: progressPercentage,
+        status: status,
+        total_tasks: totalTasks,
+        completed_tasks: verifiedTasks,
+        pending_tasks: pendingTasks,
+        tasks: {
+          total: totalTasks,
+          verified: verifiedTasks,
+          pending: pendingTasks,
+          breakdown: tasksByStatus,
+          details: taskDetails,
+        }
+      };
     };
 
-    // Get task details
-    const taskDetails = resumeTasks.map(task => ({
-      id: task.id,
-      title: task.career_task_templates?.title || 'Unknown Task',
-      description: task.career_task_templates?.description || '',
-      status: task.status,
-      points_reward: task.career_task_templates?.points_reward || 0,
-      points_earned: task.points_earned || 0,
-      assigned_at: task.assigned_at,
-      submitted_at: task.submitted_at,
-      verified_at: task.verified_at,
-      due_date: task.due_date,
-    }));
+    // Calculate status for all modules
+    const resumeStatus = calculateModuleStatus('RESUME');
+    const linkedinStatus = calculateModuleStatus('LINKEDIN');
+    const githubStatus = calculateModuleStatus('GITHUB');
+    const portfolioStatus = calculateModuleStatus('PORTFOLIO');
 
     const responseData = {
       user: {
@@ -137,20 +156,10 @@ const handler = async (req: Request): Promise<Response> => {
         full_name: profile.full_name,
         username: profile.username,
       },
-      resume_profile: {
-        progress_percentage: progressPercentage,
-        status: status,
-        total_tasks: totalTasks,
-        completed_tasks: verifiedTasks,
-        pending_tasks: pendingTasks,
-      },
-      tasks: {
-        total: totalTasks,
-        verified: verifiedTasks,
-        pending: pendingTasks,
-        breakdown: tasksByStatus,
-        details: taskDetails,
-      },
+      resume_profile: resumeStatus,
+      linkedin_profile: linkedinStatus,
+      github_profile: githubStatus,
+      digital_portfolio: portfolioStatus,
       timestamp: new Date().toISOString(),
     };
 
