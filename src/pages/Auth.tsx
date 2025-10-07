@@ -53,6 +53,14 @@ const Auth = () => {
     if (selectedPlan) {
       // We'll show the plan dialog after successful login
     }
+
+    // Check for telegram_chat_id in URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const telegramChatId = urlParams.get('telegram_chat_id');
+    if (telegramChatId) {
+      sessionStorage.setItem('pending_telegram_chat_id', telegramChatId);
+      console.log('Telegram chat ID detected in URL:', telegramChatId);
+    }
   }, []);
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -162,7 +170,7 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -182,10 +190,48 @@ const Auth = () => {
           });
         }
       } else {
-        toast({
-          title: 'Welcome back!',
-          description: 'You have successfully signed in.',
-        });
+        // Check for pending telegram_chat_id
+        const pendingTelegramChatId = sessionStorage.getItem('pending_telegram_chat_id');
+        
+        if (pendingTelegramChatId && data.user) {
+          console.log('Processing pending Telegram chat ID:', pendingTelegramChatId);
+          
+          try {
+            const { data: functionData, error: functionError } = await supabase.functions.invoke(
+              'update-telegram-chat-id',
+              {
+                body: {
+                  email: data.user.email,
+                  telegram_chat_id: pendingTelegramChatId,
+                },
+              }
+            );
+
+            if (functionError) {
+              console.error('Error updating Telegram chat ID:', functionError);
+              toast({
+                variant: "destructive",
+                title: "Warning",
+                description: "Signed in successfully, but failed to link Telegram account.",
+              });
+            } else {
+              console.log('Telegram chat ID updated successfully:', functionData);
+              toast({
+                title: 'Success!',
+                description: 'You have successfully signed in and linked your Telegram account.',
+              });
+            }
+          } catch (telegramError) {
+            console.error('Exception updating Telegram chat ID:', telegramError);
+          } finally {
+            sessionStorage.removeItem('pending_telegram_chat_id');
+          }
+        } else {
+          toast({
+            title: 'Welcome back!',
+            description: 'You have successfully signed in.',
+          });
+        }
         
         // Check if user came from pricing page
         const selectedPlan = sessionStorage.getItem('selectedPlan');
