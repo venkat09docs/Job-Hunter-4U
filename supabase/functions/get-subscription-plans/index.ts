@@ -34,11 +34,22 @@ Deno.serve(async (req) => {
 
     console.log('Request params:', { currentPlanName, currentPlanId, userId });
 
-    // Fetch all active subscription plans, ordered by duration
+    // Fetch all active subscription plans with courses, ordered by duration
     // Exclude institute-level plans (plans with member_limit > 1)
     const { data: plans, error: plansError } = await supabase
       .from('subscription_plans')
-      .select('*')
+      .select(`
+        *,
+        courses:clp_courses(
+          id,
+          title,
+          description,
+          category,
+          code,
+          image,
+          order_index
+        )
+      `)
       .eq('is_active', true)
       .or('member_limit.eq.1,member_limit.is.null')
       .order('duration_days', { ascending: true });
@@ -48,10 +59,10 @@ Deno.serve(async (req) => {
       throw plansError;
     }
 
-    console.log(`Fetched ${plans?.length || 0} subscription plans`);
+    console.log(`Fetched ${plans?.length || 0} subscription plans with course details`);
 
-    // Convert paisa to rupees for easier consumption
-    const formattedPlans = plans?.map((plan: SubscriptionPlan) => ({
+    // Convert paisa to rupees and add comprehensive details
+    const formattedPlans = plans?.map((plan: any) => ({
       ...plan,
       price_rupees: plan.price_paisa / 100,
       original_price_rupees: plan.original_price_paisa / 100,
@@ -61,7 +72,27 @@ Deno.serve(async (req) => {
                        plan.duration_days === 90 ? '3 Months' :
                        plan.duration_days === 180 ? '6 Months' :
                        plan.duration_days === 365 ? '1 Year' :
-                       `${plan.duration_days} Days`
+                       `${plan.duration_days} Days`,
+      duration_info: {
+        days: plan.duration_days,
+        weeks: Math.floor(plan.duration_days / 7),
+        months: Math.floor(plan.duration_days / 30),
+        display: plan.duration_days === 7 ? '1 Week' :
+                 plan.duration_days === 30 ? '1 Month' :
+                 plan.duration_days === 90 ? '3 Months' :
+                 plan.duration_days === 180 ? '6 Months' :
+                 plan.duration_days === 365 ? '1 Year' :
+                 `${plan.duration_days} Days`
+      },
+      course_count: plan.courses?.length || 0,
+      courses: plan.courses || [],
+      price_per_day: Math.round((plan.price_paisa / 100 / plan.duration_days) * 100) / 100,
+      features_list: plan.features || [],
+      value_proposition: {
+        total_savings: plan.original_price_paisa - plan.price_paisa,
+        daily_cost: Math.round((plan.price_paisa / 100 / plan.duration_days) * 100) / 100,
+        discount_amount: plan.original_price_paisa - plan.price_paisa
+      }
     })) || [];
 
     // If current plan is provided, find it and suggest upgrades
