@@ -115,10 +115,20 @@ const Dashboard = () => {
   // Define eligible subscription plans for Badge Leaders and Leaderboard
   const eligiblePlans = ['One Month Plan', '3 Months Plan', '6 Months Plan', '1 Year Plan'];
   
-  // Check if user has eligible subscription
+  // Check if user has eligible subscription (with flexible plan name matching)
   const hasEligibleSubscription = () => {
     const hasActive = hasActiveSubscription();
-    const hasPlan = profile?.subscription_plan && eligiblePlans.includes(profile.subscription_plan);
+    if (!hasActive || !profile?.subscription_plan) return false;
+    
+    const planName = profile.subscription_plan.toLowerCase();
+    
+    // Check for exact match or variations of plan names
+    const hasPlan = eligiblePlans.some(plan => plan.toLowerCase() === planName) ||
+                    planName.includes('1 month') || planName.includes('one month') ||
+                    planName.includes('3 month') || planName.includes('three month') || planName.includes('quarterly') ||
+                    planName.includes('6 month') || planName.includes('six month') || planName.includes('half year') ||
+                    planName.includes('1 year') || planName.includes('one year') || planName.includes('annual');
+    
     return hasActive && hasPlan;
   };
 
@@ -138,7 +148,12 @@ const Dashboard = () => {
   const hasRestrictedPlanForBadgeLeaders = () => {
     if (isAdmin || isRecruiter) return false;
     if (!profile?.subscription_plan || !hasActiveSubscription()) return true;
-    return ['One Month Plan'].includes(profile.subscription_plan);
+    
+    const planName = profile.subscription_plan.toLowerCase();
+    // One month plan is restricted - check for variations
+    return planName.includes('1 month') || planName.includes('one month') || 
+           (planName.includes('month') && !planName.includes('3') && !planName.includes('6') && 
+            !planName.includes('three') && !planName.includes('six'));
   };
 
   // Debug logging for subscription status
@@ -168,7 +183,17 @@ const Dashboard = () => {
   const canAccessLevelUpStatus = () => {
     if (isAdmin || isRecruiter) return true;
     const hasActive = hasActiveSubscription();
-    const hasPlan = profile?.subscription_plan && eligiblePlans.includes(profile.subscription_plan);
+    if (!hasActive || !profile?.subscription_plan) return false;
+    
+    const planName = profile.subscription_plan.toLowerCase();
+    
+    // Check for exact match or variations of plan names
+    const hasPlan = eligiblePlans.some(plan => plan.toLowerCase() === planName) ||
+                    planName.includes('1 month') || planName.includes('one month') ||
+                    planName.includes('3 month') || planName.includes('three month') || planName.includes('quarterly') ||
+                    planName.includes('6 month') || planName.includes('six month') || planName.includes('half year') ||
+                    planName.includes('1 year') || planName.includes('one year') || planName.includes('annual');
+    
     return hasActive && hasPlan;
   };
 

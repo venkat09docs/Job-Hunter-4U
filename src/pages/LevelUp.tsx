@@ -249,11 +249,18 @@ const LevelUp = () => {
   // Define eligible plans for gold badge upgrade (all paid plans)
   const goldBadgeUpgradePlans = ['One Month Plan', '3 Months Plan', '6 Months Plan', '1 Year Plan'];
   
-  // Check if user has eligible subscription
+  // Check if user has eligible subscription (with flexible plan name matching)
   const hasEligibleSubscription = () => {
-    return hasActiveSubscription() && 
-           profile?.subscription_plan && 
-           eligiblePlans.includes(profile.subscription_plan);
+    if (!hasActiveSubscription() || !profile?.subscription_plan) return false;
+    
+    const planName = profile.subscription_plan.toLowerCase();
+    
+    // Check for exact match or variations of plan names
+    return eligiblePlans.some(plan => plan.toLowerCase() === planName) ||
+           planName.includes('1 month') || planName.includes('one month') ||
+           planName.includes('3 month') || planName.includes('three month') || planName.includes('quarterly') ||
+           planName.includes('6 month') || planName.includes('six month') || planName.includes('half year') ||
+           planName.includes('1 year') || planName.includes('one year') || planName.includes('annual');
   };
 
   // Check if user can access Level Up (admin or eligible subscription)
