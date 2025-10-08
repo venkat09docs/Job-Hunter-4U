@@ -4,6 +4,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Cache-Control': 'no-cache, no-store, must-revalidate',
+  'Pragma': 'no-cache',
+  'Expires': '0',
 };
 
 interface ResumeStatusRequest {
@@ -17,10 +20,27 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Create Supabase client with no caching
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        db: {
+          schema: 'public',
+        },
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+        },
+        global: {
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
+        },
+      }
     );
+
+    console.log('Fetching latest profile status at:', new Date().toISOString());
 
     // Handle both GET and POST requests
     let email: string | undefined;
@@ -60,7 +80,8 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Get career task assignments for all modules
+    // Get career task assignments for all modules with fresh data
+    console.log('Fetching assignments for user:', profile.user_id);
     const { data: assignments, error: assignmentsError } = await supabaseClient
       .from('career_task_assignments')
       .select(`
@@ -75,7 +96,10 @@ const handler = async (req: Request): Promise<Response> => {
           sub_category_id
         )
       `)
-      .eq('user_id', profile.user_id);
+      .eq('user_id', profile.user_id)
+      .order('updated_at', { ascending: false }); // Get most recently updated first
+
+    console.log('Fetched assignments count:', assignments?.length || 0);
 
     if (assignmentsError) {
       console.error('Error fetching assignments:', assignmentsError);
