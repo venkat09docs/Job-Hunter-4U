@@ -19,8 +19,8 @@ Deno.serve(async (req) => {
   try {
     const { message, userId, context } = await req.json();
     
-    console.log('🎯 AI Assistant Request:', { 
-      message: message?.substring(0, 100) + '...', 
+    console.log('🎯 AI Assistant Request received:', { 
+      messagePreview: message?.substring(0, 100) + '...', 
       userId, 
       context,
       timestamp: new Date().toISOString()
