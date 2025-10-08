@@ -35,10 +35,12 @@ Deno.serve(async (req) => {
     console.log('Request params:', { currentPlanName, currentPlanId, userId });
 
     // Fetch all active subscription plans, ordered by duration
+    // Exclude institute-level plans (plans with member_limit > 1)
     const { data: plans, error: plansError } = await supabase
       .from('subscription_plans')
       .select('*')
       .eq('is_active', true)
+      .eq('member_limit', 1)
       .order('duration_days', { ascending: true });
 
     if (plansError) {
