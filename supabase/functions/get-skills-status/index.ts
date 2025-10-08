@@ -116,41 +116,47 @@ const handler = async (req: Request): Promise<Response> => {
     const userSubscription = profile.subscription_plan || 'free';
     const isSubscribed = profile.subscription_active || false;
 
-    // Define subscription hierarchy
-    const subscriptionHierarchy: { [key: string]: number } = {
-      'free': 0,
-      'basic': 1,
-      'premium': 2,
-      'enterprise': 3
+    // Define subscription plan hierarchy (matching client-side logic)
+    const planNameToTier: { [key: string]: number } = {
+      'One Week Plan': 1,
+      'One Month Plan': 1,
+      '1 Month Plan': 1,
+      'Monthly Plan': 1,
+      'Three Months Plan': 2,
+      '3 Months Plan': 2,
+      'Six Months Plan': 3,
+      '6 Months Plan': 3,
+      'One Year Plan': 4,
+      '1 Year Plan': 4,
+      'Annual Plan': 4
     };
 
-    // Determine user's subscription tier
+    // Get user's subscription tier
     const getUserTier = (): number => {
-      if (!isSubscribed) return 0;
-      const tier = subscriptionHierarchy[userSubscription.toLowerCase()] ?? 0;
-      return tier;
+      if (!isSubscribed) return 0; // No active subscription = free tier
+      return planNameToTier[userSubscription] || 1; // Default to tier 1 if unknown
     };
 
     const userTier = getUserTier();
+    console.log('User subscription tier:', userTier, 'Plan:', userSubscription, 'Active:', isSubscribed);
 
-    // Map course subscription requirements
+    // Map subscription_plan_id (UUID) to tier
+    const planUUIDToTier: { [key: string]: number } = {
+      '4f72fb43-6e55-407e-969e-c83acfa5b05f': 1, // One Month Plan (30 days)
+      'f077e30e-bdb9-4b09-9fa2-9c33a355189d': 2, // 3 Months Plan (90 days)
+      '726be3fc-fdd5-4a59-883a-6b60cd2f68c5': 3, // 6 Months Plan (180 days)
+      'c0aff632-80b0-4832-827a-ece42aa37ead': 4, // 1 Year Plan (365 days)
+    };
+
+    // Get course required tier
     const getCourseRequiredTier = (course: any): number => {
       if (course.is_free) return 0;
       
-      // Map subscription_plan_id to tier
-      const planMapping: { [key: string]: number } = {
-        'free': 0,
-        'basic': 1,
-        'premium': 2,
-        'enterprise': 3
-      };
-
       if (course.subscription_plan_id) {
-        // Fetch the subscription plan details
-        return planMapping[course.subscription_plan_id] ?? 1;
+        return planUUIDToTier[course.subscription_plan_id] ?? 1;
       }
 
-      return 1; // Default to basic if not specified
+      return 1; // Default to tier 1 if not specified
     };
 
     // Filter accessible courses
@@ -161,22 +167,56 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Accessible courses for user:', accessibleCourses.length, 'out of', allCourses?.length || 0);
 
-    // Calculate course statistics
+    // Calculate course statistics with detailed information
     const enrolledCourseIds = new Set(learningGoals?.map(lg => lg.course_id) || []);
     
     const coursesInProgress = accessibleCourses.filter(course => {
       const goal = learningGoals?.find(lg => lg.course_id === course.id);
       return goal && goal.status === 'in_progress';
+    }).map(course => {
+      const goal = learningGoals?.find(lg => lg.course_id === course.id);
+      return {
+        id: course.id,
+        title: course.title,
+        code: course.code,
+        category: course.category,
+        description: course.description,
+        is_free: course.is_free,
+        enrolled_at: goal?.created_at,
+        status: goal?.status
+      };
     });
 
     const coursesCompleted = accessibleCourses.filter(course => {
       const goal = learningGoals?.find(lg => lg.course_id === course.id);
       return goal && goal.status === 'completed';
+    }).map(course => {
+      const goal = learningGoals?.find(lg => lg.course_id === course.id);
+      return {
+        id: course.id,
+        title: course.title,
+        code: course.code,
+        category: course.category,
+        description: course.description,
+        is_free: course.is_free,
+        enrolled_at: goal?.created_at,
+        completed_at: goal?.updated_at,
+        status: goal?.status
+      };
     });
 
     const coursesPending = accessibleCourses.filter(course => {
       return !enrolledCourseIds.has(course.id);
-    });
+    }).map(course => ({
+      id: course.id,
+      title: course.title,
+      code: course.code,
+      category: course.category,
+      description: course.description,
+      is_free: course.is_free,
+      required_tier: getCourseRequiredTier(course),
+      can_enroll: true
+    }));
 
     // Get modules to map sections to courses
     console.log('Fetching all modules');
@@ -254,14 +294,38 @@ const handler = async (req: Request): Promise<Response> => {
       console.error('Error fetching attempts:', attemptsError);
     }
 
-    // Calculate assignment statistics
-    const completedAssignmentIds = new Set(
-      attempts?.filter(a => a.status === 'submitted' && a.review_status === 'approved')
-        .map(a => a.assignment_id) || []
-    );
+    // Calculate assignment statistics with detailed status information
+    const assignmentStatuses = accessibleAssignments.map(assignment => {
+      const userAttempts = attempts?.filter(a => a.assignment_id === assignment.id) || [];
+      const latestAttempt = userAttempts.length > 0 ? userAttempts[0] : null;
+      
+      let status = 'not_started';
+      if (latestAttempt) {
+        if (latestAttempt.status === 'submitted' && latestAttempt.review_status === 'approved') {
+          status = 'completed';
+        } else if (latestAttempt.status === 'submitted') {
+          status = 'pending_review';
+        } else if (latestAttempt.status === 'started') {
+          status = 'in_progress';
+        }
+      }
+      
+      return {
+        id: assignment.id,
+        title: assignment.title,
+        type: assignment.type,
+        status,
+        attempts_count: userAttempts.length,
+        latest_score: latestAttempt?.score_points || 0,
+        submitted_at: latestAttempt?.submitted_at,
+        course_id: sectionToCourseMap.get(assignment.section_id)
+      };
+    });
 
-    const assignmentsAvailable = accessibleAssignments.length;
-    const assignmentsCompleted = completedAssignmentIds.size;
+    const assignmentsCompleted = assignmentStatuses.filter(a => a.status === 'completed').length;
+    const assignmentsInProgress = assignmentStatuses.filter(a => a.status === 'in_progress').length;
+    const assignmentsPendingReview = assignmentStatuses.filter(a => a.status === 'pending_review').length;
+    const assignmentsNotStarted = assignmentStatuses.filter(a => a.status === 'not_started').length;
 
     const responseData = {
       user: {
@@ -271,6 +335,7 @@ const handler = async (req: Request): Promise<Response> => {
         username: profile.username,
         subscription_plan: userSubscription,
         subscription_active: isSubscribed,
+        subscription_tier: userTier,
       },
       courses: {
         total: accessibleCourses.length,
@@ -278,30 +343,21 @@ const handler = async (req: Request): Promise<Response> => {
         completed: coursesCompleted.length,
         pending: coursesPending.length,
         details: {
-          in_progress: coursesInProgress.map(c => ({
-            id: c.id,
-            title: c.title,
-            code: c.code,
-          })),
-          completed: coursesCompleted.map(c => ({
-            id: c.id,
-            title: c.title,
-            code: c.code,
-          })),
-          pending: coursesPending.map(c => ({
-            id: c.id,
-            title: c.title,
-            code: c.code,
-          })),
+          in_progress: coursesInProgress,
+          completed: coursesCompleted,
+          pending: coursesPending,
         }
       },
       skill_assignments: {
-        available: assignmentsAvailable,
+        total: accessibleAssignments.length,
         completed: assignmentsCompleted,
-        pending: assignmentsAvailable - assignmentsCompleted,
-        completion_percentage: assignmentsAvailable > 0 
-          ? Math.round((assignmentsCompleted / assignmentsAvailable) * 100) 
+        in_progress: assignmentsInProgress,
+        pending_review: assignmentsPendingReview,
+        not_started: assignmentsNotStarted,
+        completion_percentage: accessibleAssignments.length > 0 
+          ? Math.round((assignmentsCompleted / accessibleAssignments.length) * 100) 
           : 0,
+        details: assignmentStatuses
       },
       timestamp: new Date().toISOString(),
     };
