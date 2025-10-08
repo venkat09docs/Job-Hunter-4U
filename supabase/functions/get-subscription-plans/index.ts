@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
       .from('subscription_plans')
       .select('*')
       .eq('is_active', true)
-      .eq('member_limit', 1)
+      .or('member_limit.eq.1,member_limit.is.null')
       .order('duration_days', { ascending: true });
 
     if (plansError) {
