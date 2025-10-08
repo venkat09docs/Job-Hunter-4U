@@ -4,6 +4,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Cache-Control': 'no-cache, no-store, must-revalidate',
+  'Pragma': 'no-cache',
+  'Expires': '0',
 };
 
 interface SkillsStatusRequest {
@@ -17,10 +20,27 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Create Supabase client with no caching
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        db: {
+          schema: 'public',
+        },
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+        },
+        global: {
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
+        },
+      }
     );
+
+    console.log('Fetching latest skills status at:', new Date().toISOString());
 
     // Handle both GET and POST requests
     let email: string | undefined;
@@ -60,11 +80,15 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Get all active courses
+    // Get all active courses with latest data
+    console.log('Fetching all active courses for user:', profile.user_id);
     const { data: allCourses, error: coursesError } = await supabaseClient
       .from('clp_courses')
-      .select('id, title, code, is_free, subscription_plan_id')
-      .eq('is_active', true);
+      .select('id, title, code, is_free, subscription_plan_id, category, description')
+      .eq('is_active', true)
+      .order('updated_at', { ascending: false }); // Get most recently updated first
+
+    console.log('Total active courses found:', allCourses?.length || 0);
 
     if (coursesError) {
       console.error('Error fetching courses:', coursesError);
@@ -74,11 +98,15 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Get user's learning goals (enrolled courses)
+    // Get user's learning goals (enrolled courses) with latest data
+    console.log('Fetching learning goals for user:', profile.user_id);
     const { data: learningGoals, error: goalsError } = await supabaseClient
       .from('learning_goals')
       .select('*')
-      .eq('user_id', profile.user_id);
+      .eq('user_id', profile.user_id)
+      .order('updated_at', { ascending: false }); // Get most recently updated first
+
+    console.log('User learning goals count:', learningGoals?.length || 0);
 
     if (goalsError) {
       console.error('Error fetching learning goals:', goalsError);
@@ -131,6 +159,8 @@ const handler = async (req: Request): Promise<Response> => {
       return userTier >= requiredTier;
     }) || [];
 
+    console.log('Accessible courses for user:', accessibleCourses.length, 'out of', allCourses?.length || 0);
+
     // Calculate course statistics
     const enrolledCourseIds = new Set(learningGoals?.map(lg => lg.course_id) || []);
     
@@ -148,7 +178,8 @@ const handler = async (req: Request): Promise<Response> => {
       return !enrolledCourseIds.has(course.id);
     });
 
-    // Get user's assignment attempts for skill assignments
+    // Get user's assignment attempts for skill assignments with latest data
+    console.log('Fetching attempts for user:', profile.user_id);
     const { data: attempts, error: attemptsError } = await supabaseClient
       .from('clp_attempts')
       .select(`
@@ -166,13 +197,17 @@ const handler = async (req: Request): Promise<Response> => {
           )
         )
       `)
-      .eq('user_id', profile.user_id);
+      .eq('user_id', profile.user_id)
+      .order('updated_at', { ascending: false }); // Get most recently updated first
+
+    console.log('User attempts count:', attempts?.length || 0);
 
     if (attemptsError) {
       console.error('Error fetching attempts:', attemptsError);
     }
 
-    // Get all published assignments accessible to the user
+    // Get all published assignments accessible to the user with latest data
+    console.log('Fetching all published assignments');
     const { data: allAssignments, error: assignmentsError } = await supabaseClient
       .from('clp_assignments')
       .select(`
@@ -187,7 +222,10 @@ const handler = async (req: Request): Promise<Response> => {
           course_id
         )
       `)
-      .eq('is_published', true);
+      .eq('is_published', true)
+      .order('updated_at', { ascending: false }); // Get most recently updated first
+
+    console.log('Total published assignments found:', allAssignments?.length || 0);
 
     if (assignmentsError) {
       console.error('Error fetching assignments:', assignmentsError);
@@ -199,6 +237,8 @@ const handler = async (req: Request): Promise<Response> => {
       const courseId = (assignment as any).clp_modules?.course_id;
       return accessibleCourseIds.has(courseId);
     }) || [];
+
+    console.log('Accessible assignments:', accessibleAssignments.length, 'out of', allAssignments?.length || 0);
 
     // Calculate assignment statistics
     const completedAssignmentIds = new Set(
