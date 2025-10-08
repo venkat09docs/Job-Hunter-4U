@@ -1,5 +1,8 @@
 project_id = "moirryvajzyriagqihbe"
 
+[functions.get-subscription-plans]
+verify_jwt = false
+
 [functions.search-jobs-api]
 verify_jwt = false
 
