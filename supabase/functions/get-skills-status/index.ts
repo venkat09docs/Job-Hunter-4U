@@ -178,52 +178,26 @@ const handler = async (req: Request): Promise<Response> => {
       return !enrolledCourseIds.has(course.id);
     });
 
-    // Get user's assignment attempts for skill assignments with latest data
-    console.log('Fetching attempts for user:', profile.user_id);
-    const { data: attempts, error: attemptsError } = await supabaseClient
-      .from('clp_attempts')
-      .select(`
-        *,
-        clp_assignments!inner(
-          id,
-          title,
-          type,
-          section_id,
-          is_published,
-          clp_modules!inner(
-            id,
-            title,
-            course_id
-          )
-        )
-      `)
-      .eq('user_id', profile.user_id)
-      .order('updated_at', { ascending: false }); // Get most recently updated first
+    // Get modules to map sections to courses
+    console.log('Fetching all modules');
+    const { data: allModules, error: modulesError } = await supabaseClient
+      .from('clp_modules')
+      .select('id, course_id, title')
+      .eq('is_active', true);
 
-    console.log('User attempts count:', attempts?.length || 0);
+    console.log('Total modules found:', allModules?.length || 0);
 
-    if (attemptsError) {
-      console.error('Error fetching attempts:', attemptsError);
+    if (modulesError) {
+      console.error('Error fetching modules:', modulesError);
     }
 
-    // Get all published assignments accessible to the user with latest data
+    // Get all published assignments with section info
     console.log('Fetching all published assignments');
     const { data: allAssignments, error: assignmentsError } = await supabaseClient
       .from('clp_assignments')
-      .select(`
-        id,
-        title,
-        type,
-        section_id,
-        is_published,
-        clp_modules!inner(
-          id,
-          title,
-          course_id
-        )
-      `)
+      .select('id, title, type, section_id, is_published')
       .eq('is_published', true)
-      .order('updated_at', { ascending: false }); // Get most recently updated first
+      .order('updated_at', { ascending: false });
 
     console.log('Total published assignments found:', allAssignments?.length || 0);
 
@@ -231,14 +205,54 @@ const handler = async (req: Request): Promise<Response> => {
       console.error('Error fetching assignments:', assignmentsError);
     }
 
+    // Get sections to link assignments to modules
+    const sectionIds = allAssignments?.map(a => a.section_id).filter(Boolean) || [];
+    let sections: any[] = [];
+    
+    if (sectionIds.length > 0) {
+      const { data: sectionsData, error: sectionsError } = await supabaseClient
+        .from('clp_sections')
+        .select('id, module_id')
+        .in('id', sectionIds);
+
+      if (!sectionsError && sectionsData) {
+        sections = sectionsData;
+      } else {
+        console.log('No sections table or error fetching sections:', sectionsError?.message);
+      }
+    }
+
+    // Create a map of section_id -> module_id -> course_id
+    const sectionToCourseMap = new Map();
+    sections.forEach(section => {
+      const module = allModules?.find(m => m.id === section.module_id);
+      if (module) {
+        sectionToCourseMap.set(section.id, module.course_id);
+      }
+    });
+
     // Filter assignments that belong to accessible courses
     const accessibleCourseIds = new Set(accessibleCourses.map(c => c.id));
     const accessibleAssignments = allAssignments?.filter(assignment => {
-      const courseId = (assignment as any).clp_modules?.course_id;
-      return accessibleCourseIds.has(courseId);
+      const courseId = sectionToCourseMap.get(assignment.section_id);
+      return courseId && accessibleCourseIds.has(courseId);
     }) || [];
 
     console.log('Accessible assignments:', accessibleAssignments.length, 'out of', allAssignments?.length || 0);
+
+    // Get user's assignment attempts
+    console.log('Fetching attempts for user:', profile.user_id);
+    const { data: attempts, error: attemptsError } = await supabaseClient
+      .from('clp_attempts')
+      .select('id, assignment_id, status, review_status, score_points, submitted_at')
+      .eq('user_id', profile.user_id)
+      .order('updated_at', { ascending: false });
+
+    console.log('User attempts count:', attempts?.length || 0);
+
+    if (attemptsError) {
+      console.error('Error fetching attempts:', attemptsError);
+    }
 
     // Calculate assignment statistics
     const completedAssignmentIds = new Set(
