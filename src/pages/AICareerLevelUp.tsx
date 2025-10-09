@@ -326,19 +326,54 @@ export default function AICareerLevelUp() {
               </div>
             </div>
 
-            {/* Right side - Image and Stats */}
+            {/* Right side - Career Level Up with Labels */}
             <div className="flex flex-col justify-center">
-              <div className="relative mb-8">
-                <img 
-                  src={devopsHeroImage} 
-                  alt="AI DevOps AWS Career Transformation with AI Agents, Vibe Coding, GenAI, Cloud & DevOps" 
-                  className="w-full h-auto rounded-2xl shadow-2xl border border-white/20"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-purple-900/20 to-transparent rounded-2xl"></div>
+              <div className="relative bg-gradient-to-br from-purple-900/40 to-pink-900/40 backdrop-blur-sm rounded-3xl p-12 border-2 border-white/30 shadow-2xl">
+                {/* Main Text */}
+                <div className="text-center mb-8">
+                  <h3 className="text-5xl md:text-6xl lg:text-7xl font-black text-white mb-4 animate-pulse">
+                    Career Level Up
+                  </h3>
+                </div>
+                
+                {/* Labels Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl p-4 transform hover:scale-105 transition-all duration-300 shadow-lg">
+                    <div className="flex items-center justify-center gap-2">
+                      <FileText className="h-5 w-5 text-white" />
+                      <span className="text-white font-bold text-sm md:text-base">ATS Resume</span>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl p-4 transform hover:scale-105 transition-all duration-300 shadow-lg">
+                    <div className="flex items-center justify-center gap-2">
+                      <Brain className="h-5 w-5 text-white" />
+                      <span className="text-white font-bold text-sm md:text-base">AI Generalist</span>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl p-4 transform hover:scale-105 transition-all duration-300 shadow-lg">
+                    <div className="flex items-center justify-center gap-2">
+                      <Briefcase className="h-5 w-5 text-white" />
+                      <span className="text-white font-bold text-sm md:text-base">Job Hunting</span>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gradient-to-r from-green-500 to-teal-500 rounded-xl p-4 transform hover:scale-105 transition-all duration-300 shadow-lg">
+                    <div className="flex items-center justify-center gap-2">
+                      <Users className="h-5 w-5 text-white" />
+                      <span className="text-white font-bold text-sm md:text-base">LinkedIn Optimization</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Decorative Elements */}
+                <div className="absolute -top-4 -right-4 w-24 h-24 bg-yellow-400/30 rounded-full blur-xl animate-pulse"></div>
+                <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-pink-400/30 rounded-full blur-xl animate-pulse delay-500"></div>
               </div>
               
-              {/* Stats Grid - Below Image */}
-              <div className="hidden lg:grid grid-cols-2 gap-4">
+              {/* Stats Grid - Below */}
+              <div className="hidden lg:grid grid-cols-2 gap-4 mt-8">
                 {stats.map((stat, index) => (
                   <div key={index} className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/30 hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
                     <stat.icon className={`h-6 w-6 ${stat.color} mx-auto mb-2`} />
