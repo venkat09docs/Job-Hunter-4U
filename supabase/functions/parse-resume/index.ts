@@ -36,23 +36,11 @@ Deno.serve(async (req) => {
   try {
     console.log('Starting resume parsing function');
     
+    // Use service role key to bypass RLS for portfolio operations
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
-
-    // Get the authorization header
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('No authorization header');
-    }
-
-    // Set the auth context
-    const token = authHeader.replace('Bearer ', '');
-    await supabaseClient.auth.setSession({
-      access_token: token,
-      refresh_token: '',
-    });
 
     const { resumeUrl, userId }: ResumeParseRequest = await req.json();
     
