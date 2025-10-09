@@ -243,11 +243,6 @@ export default function Student() {
       {/* Navigation */}
       <Navigation />
       
-      {/* Top Banner */}
-      <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white py-3 text-center font-medium">
-        Join Now 30 Days Challenge Programme | To Start Your AI Enhanced Career
-      </div>
-
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
         {/* Hero Background Image */}
