@@ -36,6 +36,7 @@ import { GenerateAchievementsDialog } from '@/components/GenerateAchievementsDia
 import { WriteEffectiveResumeDialog } from '@/components/WriteEffectiveResumeDialog';
 import { ResumePrerequisiteDialog } from '@/components/ResumePrerequisiteDialog';
 import { ResumeTemplatePreview } from '@/components/ResumeTemplatePreview';
+import { ResumeTemplateSelector } from '@/components/ResumeTemplateSelector';
 
 interface Experience {
   company: string;
@@ -2438,48 +2439,10 @@ ${resumeData.personalDetails.fullName}`;
 
             <TabsContent value="resume-builder" className="space-y-6 mt-6">
               {/* Resume Template Selector */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-xl">Choose Your Resume Template</CardTitle>
-                  <CardDescription>
-                    Select a professional template that best suits your career level and industry
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <ResumeTemplatePreview
-                      template="classic"
-                      selected={selectedTemplate === 'classic'}
-                      onSelect={setSelectedTemplate}
-                    />
-                    <ResumeTemplatePreview
-                      template="modern"
-                      selected={selectedTemplate === 'modern'}
-                      onSelect={setSelectedTemplate}
-                    />
-                    <ResumeTemplatePreview
-                      template="executive"
-                      selected={selectedTemplate === 'executive'}
-                      onSelect={setSelectedTemplate}
-                    />
-                    <ResumeTemplatePreview
-                      template="ats"
-                      selected={selectedTemplate === 'ats'}
-                      onSelect={setSelectedTemplate}
-                    />
-                    <ResumeTemplatePreview
-                      template="creative"
-                      selected={selectedTemplate === 'creative'}
-                      onSelect={setSelectedTemplate}
-                    />
-                    <ResumeTemplatePreview
-                      template="technical"
-                      selected={selectedTemplate === 'technical'}
-                      onSelect={setSelectedTemplate}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+              <ResumeTemplateSelector
+                selectedTemplate={selectedTemplate}
+                onSelectTemplate={setSelectedTemplate}
+              />
 
               {/* Progress Bar */}
               <ResumeProgressBar resumeData={resumeData} />
@@ -3075,11 +3038,15 @@ ${resumeData.personalDetails.fullName}`;
                               </div>
                             )}
                          </div>
-                      ) : (
-                        <div className="max-h-96 overflow-y-auto">
-                          {generateResumePreview()}
-                        </div>
-                      )}
+                       ) : (
+                         <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 300px)' }}>
+                           <ResumeTemplatePreview
+                             template={selectedTemplate}
+                             selected={true}
+                             onSelect={() => {}}
+                           />
+                         </div>
+                       )}
                     </CardContent>
                   </Card>
                 </div>
