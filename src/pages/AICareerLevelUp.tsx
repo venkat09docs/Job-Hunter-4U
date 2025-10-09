@@ -298,14 +298,6 @@ export default function AICareerLevelUp() {
                 Create stunning portfolios, track job applications with smart Kanban boards, and get AI-powered career insights - all in one powerful platform.
               </h2>
               
-              {/* Updated Tagline */}
-              <div className="relative mb-12 animate-fade-in">
-                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-pink-400/20 to-cyan-400/20 blur-xl rounded-full"></div>
-                <p className="relative text-xl md:text-2xl font-bold bg-gradient-to-r from-yellow-200 via-pink-200 to-cyan-200 bg-clip-text text-transparent border-2 border-white/30 rounded-2xl py-6 px-8 backdrop-blur-sm">
-                  Transform Your Career Into An AI Generalist
-                </p>
-              </div>
-              
               <div className="flex flex-col sm:flex-row gap-6 justify-center lg:justify-start items-center animate-fade-in">
                 <Button 
                   size="lg" 
