@@ -254,7 +254,7 @@ export default function AICareerLevelUp() {
     { icon: Users, value: "6,000+", label: "Students Enrolled", color: "text-blue-600" },
     { icon: Trophy, value: "95%", label: "Job Success Rate", color: "text-green-600" },
     { icon: Star, value: "4.8/5", label: "Average Rating", color: "text-yellow-600" },
-    { icon: Clock, value: "6 Months", label: "Average Completion", color: "text-purple-600" }
+    { icon: Clock, value: "3-4 Months", label: "Average Completion", color: "text-purple-600" }
   ];
 
   return (
@@ -508,7 +508,7 @@ export default function AICareerLevelUp() {
               About the Program
             </Badge>
             <h2 className="text-4xl md:text-6xl font-bold mb-6 text-gray-900">
-              From Beginner to AI Generalist
+              Build Your Next Gen AI Career
             </h2>
             <p className="text-xl text-gray-700 max-w-4xl mx-auto leading-relaxed">
               Our comprehensive program is designed to take you from where you are today to becoming a confident AI generalist, 
@@ -2379,7 +2379,7 @@ export default function AICareerLevelUp() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
             <div className="text-center sm:text-left">
               <p className="font-semibold text-sm sm:text-base">
-                🚀 Join Now to Transform Your Career Into an AI Generalist
+                🚀 Join Now to Land Your Career with AI Assistance
               </p>
             </div>
             <div className="flex items-center gap-4 text-xs sm:text-sm">

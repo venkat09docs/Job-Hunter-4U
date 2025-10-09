@@ -235,7 +235,7 @@ export default function Student() {
     { icon: Users, value: "6,000+", label: "Students Enrolled", color: "text-blue-600" },
     { icon: Trophy, value: "95%", label: "Job Success Rate", color: "text-green-600" },
     { icon: Star, value: "4.8/5", label: "Average Rating", color: "text-yellow-600" },
-    { icon: Clock, value: "6 Months", label: "Average Completion", color: "text-purple-600" }
+    { icon: Clock, value: "3-4 Months", label: "Average Completion", color: "text-purple-600" }
   ];
 
   return (
@@ -430,7 +430,7 @@ export default function Student() {
               About the Program
             </Badge>
             <h2 className="text-4xl md:text-6xl font-bold mb-6 text-gray-900">
-              From Beginner to AI Generalist
+              Build Your Next Gen AI Career
             </h2>
             <p className="text-xl text-gray-700 max-w-4xl mx-auto leading-relaxed">
               Our comprehensive program transforms you into a versatile AI professional through hands-on learning, 
