@@ -83,3 +83,6 @@ verify_jwt = false
 
 [functions.get-job-status]
 verify_jwt = false
+
+[functions.scrape-job-details]
+verify_jwt = false

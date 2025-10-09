@@ -13,25 +13,60 @@ serve(async (req) => {
 
   try {
     const { jobUrl } = await req.json();
-    console.log('Scraping job URL:', jobUrl);
+    console.log('Starting job scraping for URL:', jobUrl);
 
     if (!jobUrl) {
+      console.error('No job URL provided');
       throw new Error('Job URL is required');
     }
 
-    // Fetch the job page content
-    const response = await fetch(jobUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    console.log('Fetching job page...');
+    // Fetch the job page content with retry logic
+    let response;
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    while (retryCount < maxRetries) {
+      try {
+        response = await fetch(jobUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          },
+          redirect: 'follow'
+        });
+        
+        console.log('Fetch response status:', response.status);
+        console.log('Fetch response status text:', response.statusText);
+        
+        if (response.ok) {
+          break;
+        }
+        
+        retryCount++;
+        if (retryCount < maxRetries) {
+          console.log(`Retry ${retryCount}/${maxRetries} after status ${response.status}`);
+          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+        }
+      } catch (fetchError) {
+        console.error(`Fetch attempt ${retryCount + 1} failed:`, fetchError);
+        retryCount++;
+        if (retryCount >= maxRetries) {
+          throw new Error(`Failed to fetch after ${maxRetries} attempts: ${fetchError.message}`);
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
       }
-    });
+    }
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch job page: ${response.statusText}`);
+    if (!response || !response.ok) {
+      throw new Error(`Failed to fetch job page: ${response?.status} ${response?.statusText}`);
     }
 
     const html = await response.text();
-    console.log('HTML fetched, length:', html.length);
+    console.log('HTML fetched successfully, length:', html.length);
 
     // Extract job details using regex and text parsing
     const jobDetails = {

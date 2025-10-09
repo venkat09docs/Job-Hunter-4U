@@ -749,45 +749,92 @@ const FindYourNextRole = () => {
   };
 
   const handleViewJobDetails = async (job: JobResult) => {
-    if (!job.job_apply_link) {
-      toast({
-        title: "No job URL available",
-        description: "This job posting doesn't have a URL to scrape details from.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setSelectedJobForDetails(job);
     setShowJobDetailsDialog(true);
     setLoadingJobDetails(true);
-    setCurrentJobDetails(null);
 
     try {
-      const { data, error } = await supabase.functions.invoke('scrape-job-details', {
-        body: { jobUrl: job.job_apply_link }
-      });
+      console.log('Fetching job details for:', job.job_title);
+      
+      // Try to scrape additional details if URL is available
+      if (job.job_apply_link) {
+        const { data, error } = await supabase.functions.invoke('scrape-job-details', {
+          body: { jobUrl: job.job_apply_link }
+        });
 
-      if (error) {
-        throw error;
-      }
+        console.log('Scrape response:', { data, error });
 
-      if (data && data.success) {
-        setCurrentJobDetails(data.data);
+        if (data && data.success && data.data) {
+          // Merge scraped data with existing job data
+          setCurrentJobDetails({
+            companyDetails: data.data.companyDetails || job.employer_name || 'Not available',
+            jobDescription: data.data.jobDescription || job.job_description || 'Not available',
+            keySkills: data.data.keySkills || [],
+            location: data.data.location || job.job_location || 'Not specified',
+            contactDetails: data.data.contactDetails || {},
+            url: job.job_apply_link
+          });
+        } else {
+          // Fallback to existing job data
+          console.log('Using fallback job data');
+          setCurrentJobDetails({
+            companyDetails: job.employer_name || 'Not available',
+            jobDescription: job.job_description || 'Not available',
+            keySkills: extractSkillsFromDescription(job.job_description),
+            location: job.job_location || 'Not specified',
+            contactDetails: {},
+            url: job.job_apply_link
+          });
+        }
       } else {
-        throw new Error(data?.error || 'Failed to scrape job details');
+        // Use existing job data when no URL is available
+        setCurrentJobDetails({
+          companyDetails: job.employer_name || 'Not available',
+          jobDescription: job.job_description || 'Not available',
+          keySkills: extractSkillsFromDescription(job.job_description),
+          location: job.job_location || 'Not specified',
+          contactDetails: {},
+          url: job.job_apply_link || ''
+        });
       }
     } catch (error) {
-      console.error('Error fetching job details:', error);
-      toast({
-        title: "Failed to load job details",
-        description: "Unable to scrape job details. Please visit the job page directly.",
-        variant: "destructive",
+      console.error('Error in handleViewJobDetails:', error);
+      // Use fallback data even on error
+      setCurrentJobDetails({
+        companyDetails: job.employer_name || 'Not available',
+        jobDescription: job.job_description || 'Not available',
+        keySkills: extractSkillsFromDescription(job.job_description),
+        location: job.job_location || 'Not specified',
+        contactDetails: {},
+        url: job.job_apply_link || ''
       });
-      setCurrentJobDetails(null);
     } finally {
       setLoadingJobDetails(false);
     }
+  };
+
+  const extractSkillsFromDescription = (description: string): string[] => {
+    if (!description) return [];
+    
+    const commonSkills = [
+      'JavaScript', 'TypeScript', 'React', 'Node.js', 'Python', 'Java', 'C++', 'C#',
+      'AWS', 'Azure', 'GCP', 'Docker', 'Kubernetes', 'SQL', 'NoSQL', 'MongoDB',
+      'PostgreSQL', 'Redis', 'GraphQL', 'REST API', 'Microservices', 'Agile',
+      'Git', 'CI/CD', 'DevOps', 'Machine Learning', 'AI', 'Data Science',
+      'Angular', 'Vue.js', 'Express', 'Django', 'Flask', 'Spring Boot',
+      'Communication', 'Leadership', 'Problem Solving', 'Team Work'
+    ];
+
+    const foundSkills: string[] = [];
+    const lowerDesc = description.toLowerCase();
+    
+    for (const skill of commonSkills) {
+      if (lowerDesc.includes(skill.toLowerCase())) {
+        foundSkills.push(skill);
+      }
+    }
+    
+    return foundSkills.slice(0, 10);
   };
 
   const handleAddInternalJobToWishlist = async (job: InternalJob) => {
