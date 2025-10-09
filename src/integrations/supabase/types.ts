@@ -4382,6 +4382,33 @@ export type Database = {
         }
         Relationships: []
       }
+      resume_analysis_usage: {
+        Row: {
+          analysis_count: number
+          created_at: string
+          id: string
+          last_analysis_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          analysis_count?: number
+          created_at?: string
+          id?: string
+          last_analysis_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          analysis_count?: number
+          created_at?: string
+          id?: string
+          last_analysis_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       resume_checks: {
         Row: {
           created_at: string | null
@@ -5590,6 +5617,10 @@ export type Database = {
           total_sent: number
         }[]
       }
+      get_resume_analysis_usage: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
       get_safe_admin_profiles: {
         Args: { user_ids?: string[] }
         Returns: {
@@ -5771,6 +5802,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_resume_analysis_count: {
+        Args: { p_user_id: string }
+        Returns: Json
       }
       increment_user_analytics: {
         Args: { action_type: string }

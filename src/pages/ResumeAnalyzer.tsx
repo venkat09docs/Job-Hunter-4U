@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Upload, FileText, Sparkles, AlertCircle, CheckCircle, TrendingUp, AlertTriangle, Lightbulb, Target, Award } from "lucide-react";
+import { Upload, FileText, Sparkles, AlertCircle, CheckCircle, TrendingUp, AlertTriangle, Lightbulb, Target, Award, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,10 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
 import { SubscriptionUpgrade } from "@/components/SubscriptionUpgrade";
+import { useResumeAnalysisUsage } from "@/hooks/useResumeAnalysisUsage";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import PricingDialog from "@/components/PricingDialog";
 
 export default function ResumeAnalyzer() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -23,9 +27,11 @@ export default function ResumeAnalyzer() {
   const [isDragging, setIsDragging] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
+  const [showPricingDialog, setShowPricingDialog] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { usageInfo, loading: usageLoading, incrementUsage } = useResumeAnalysisUsage();
 
   const handleFileSelect = (file: File) => {
     const validTypes = [
@@ -96,6 +102,17 @@ export default function ResumeAnalyzer() {
       return;
     }
 
+    // Check usage limit before proceeding
+    if (usageInfo && !usageInfo.canAnalyze) {
+      setShowPricingDialog(true);
+      toast({
+        variant: "destructive",
+        title: "Free limit reached",
+        description: usageInfo.message,
+      });
+      return;
+    }
+
     if (!selectedFile) {
       toast({
         variant: "destructive",
@@ -146,11 +163,24 @@ export default function ResumeAnalyzer() {
         throw new Error(data.error);
       }
 
+      // Increment usage count after successful analysis
+      const usageResult = await incrementUsage();
+      
       setAnalysisResult(data.analysis);
-      toast({
-        title: "Analysis complete!",
-        description: "Your resume has been analyzed successfully.",
-      });
+      
+      // Show appropriate toast based on usage
+      if (usageResult.limitReached) {
+        toast({
+          title: "Analysis complete!",
+          description: usageResult.message,
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Analysis complete!",
+          description: usageResult.message || "Your resume has been analyzed successfully.",
+        });
+      }
     } catch (error) {
       console.error('Analysis error:', error);
       toast({
@@ -215,6 +245,25 @@ export default function ResumeAnalyzer() {
               <SidebarTrigger />
               <h1 className="text-xl font-semibold text-foreground">Resume Analyzer</h1>
               <div className="ml-auto flex items-center gap-4">
+                {/* Usage Badge */}
+                {!usageLoading && usageInfo && (
+                  <Badge 
+                    variant={usageInfo.isPremium ? "default" : usageInfo.canAnalyze ? "outline" : "destructive"}
+                    className="flex items-center gap-2"
+                  >
+                    {usageInfo.isPremium ? (
+                      <>
+                        <Zap className="h-3 w-3" />
+                        Unlimited
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-3 w-3" />
+                        {usageInfo.remainingCredits} Free {usageInfo.remainingCredits === 1 ? 'Analysis' : 'Analyses'} Left
+                      </>
+                    )}
+                  </Badge>
+                )}
                 <SubscriptionUpgrade />
                 <UserProfileDropdown />
               </div>
@@ -378,11 +427,11 @@ export default function ResumeAnalyzer() {
         </div>
 
         {/* Analyze Button */}
-        <div className="mt-8 text-center">
+        <div className="mt-8 text-center space-y-3">
           <Button
             size="lg"
             onClick={handleAnalyze}
-            disabled={isAnalyzing}
+            disabled={isAnalyzing || usageLoading}
             className="px-12 h-14 text-lg font-semibold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all"
             variant="premium"
           >
@@ -392,6 +441,18 @@ export default function ResumeAnalyzer() {
           <p className="mt-4 text-sm text-muted-foreground">
             Get instant AI-powered feedback on your resume match
           </p>
+          
+          {/* Usage Warning */}
+          {!usageLoading && usageInfo && !usageInfo.isPremium && usageInfo.canAnalyze && (
+            <div className="max-w-md mx-auto p-3 bg-warning/10 border border-warning/20 rounded-lg">
+              <div className="flex items-center gap-2 justify-center">
+                <AlertCircle className="h-4 w-4 text-warning" />
+                <p className="text-sm text-warning font-medium">
+                  {usageInfo.message}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Analysis Results - Visual Report */}
@@ -633,6 +694,19 @@ export default function ResumeAnalyzer() {
             </div>
           </div>
         </div>
+
+        {/* Subscription Dialog for Free Limit Reached */}
+        <Dialog open={showPricingDialog} onOpenChange={setShowPricingDialog}>
+          <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-center text-2xl">Upgrade to Continue Analyzing</DialogTitle>
+              <DialogDescription className="text-center">
+                You've used all 3 free resume analyses. Upgrade to get unlimited access to AI-powered resume analysis and all premium features.
+              </DialogDescription>
+            </DialogHeader>
+            <PricingDialog />
+          </DialogContent>
+        </Dialog>
       </div>
     </SidebarProvider>
   );
