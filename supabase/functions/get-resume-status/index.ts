@@ -100,11 +100,26 @@ const handler = async (req: Request): Promise<Response> => {
       .order('updated_at', { ascending: false });
 
     console.log('Fetched career assignments count:', assignments?.length || 0);
+    
+    // Debug: Check assignments without templates
+    const assignmentsWithoutTemplate = assignments?.filter(a => !a.career_task_templates) || [];
+    console.log('Assignments without template:', assignmentsWithoutTemplate.length);
+    
+    // Debug: Check unique module values
+    const uniqueModules = [...new Set(assignments?.map(a => a.career_task_templates?.module).filter(Boolean))];
+    console.log('Unique modules found:', uniqueModules);
+    
+    // Debug: Sample assignments without template
+    if (assignmentsWithoutTemplate.length > 0) {
+      console.log('Sample assignment without template:', JSON.stringify(assignmentsWithoutTemplate[0], null, 2));
+    }
+    
     console.log('Assignments by module:', {
       resume: assignments?.filter(a => a.career_task_templates?.module === 'RESUME').length || 0,
       linkedin: assignments?.filter(a => a.career_task_templates?.module === 'LINKEDIN').length || 0,
       github: assignments?.filter(a => a.career_task_templates?.module === 'GITHUB').length || 0,
       portfolio: assignments?.filter(a => a.career_task_templates?.module === 'PORTFOLIO').length || 0,
+      no_template: assignmentsWithoutTemplate.length,
     });
 
     if (assignmentsError) {
@@ -115,11 +130,53 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Additional debug: Check if template_ids exist but module is null
+    const templateIds = assignments?.map(a => a.template_id).filter(Boolean) || [];
+    if (templateIds.length > 0) {
+      const { data: templates } = await supabaseClient
+        .from('career_task_templates')
+        .select('id, title, module, is_active')
+        .in('id', templateIds);
+      
+      console.log('Templates check:', {
+        total_templates: templates?.length || 0,
+        templates_with_null_module: templates?.filter(t => !t.module).length || 0,
+        inactive_templates: templates?.filter(t => !t.is_active).length || 0,
+      });
+      
+      // Sample templates without module
+      const templatesWithoutModule = templates?.filter(t => !t.module) || [];
+      if (templatesWithoutModule.length > 0) {
+        console.log('Sample template without module:', JSON.stringify(templatesWithoutModule[0], null, 2));
+      }
+    }
+
+    // Helper function to determine module from assignment
+    const getAssignmentModule = (assignment: any): string | null => {
+      // First try the template module
+      if (assignment.career_task_templates?.module) {
+        return assignment.career_task_templates.module;
+      }
+      
+      // Fallback: Try to infer from category
+      const category = assignment.career_task_templates?.category?.toUpperCase();
+      if (category) {
+        if (category.includes('LINKEDIN')) return 'LINKEDIN';
+        if (category.includes('GITHUB')) return 'GITHUB';
+        if (category.includes('PORTFOLIO') || category.includes('DIGITAL')) return 'PORTFOLIO';
+        if (category.includes('RESUME')) return 'RESUME';
+      }
+      
+      return null;
+    };
+
     // Helper function to calculate module status with subcategory grouping
     const calculateModuleStatusWithSubcategories = (moduleName: string) => {
       const moduleTasks = assignments?.filter(
-        a => a.career_task_templates?.module === moduleName
+        a => getAssignmentModule(a) === moduleName
       ) || [];
+
+      console.log(`[${moduleName}] Found ${moduleTasks.length} tasks`);
 
       // Group by subcategory
       const subcategoryMap = new Map();
@@ -210,8 +267,10 @@ const handler = async (req: Request): Promise<Response> => {
     // Helper function for LinkedIn status from career_task_assignments
     const calculateLinkedInStatus = () => {
       const moduleTasks = assignments?.filter(
-        a => a.career_task_templates?.module === 'LINKEDIN'
+        a => getAssignmentModule(a) === 'LINKEDIN'
       ) || [];
+
+      console.log(`[LINKEDIN] Found ${moduleTasks.length} tasks`);
 
       const totalTasks = moduleTasks.length;
       const verifiedTasks = moduleTasks.filter(a => a.status === 'verified').length;
@@ -268,8 +327,10 @@ const handler = async (req: Request): Promise<Response> => {
     // Helper function for GitHub status from career_task_assignments
     const calculateGitHubStatus = () => {
       const moduleTasks = assignments?.filter(
-        a => a.career_task_templates?.module === 'GITHUB'
+        a => getAssignmentModule(a) === 'GITHUB'
       ) || [];
+
+      console.log(`[GITHUB] Found ${moduleTasks.length} tasks`);
 
       const totalTasks = moduleTasks.length;
       const verifiedTasks = moduleTasks.filter(a => a.status === 'verified').length;
@@ -326,8 +387,10 @@ const handler = async (req: Request): Promise<Response> => {
     // Helper function for Portfolio status from career_task_assignments
     const calculatePortfolioStatus = () => {
       const moduleTasks = assignments?.filter(
-        a => a.career_task_templates?.module === 'PORTFOLIO'
+        a => getAssignmentModule(a) === 'PORTFOLIO'
       ) || [];
+
+      console.log(`[PORTFOLIO] Found ${moduleTasks.length} tasks`);
 
       const totalTasks = moduleTasks.length;
       const verifiedTasks = moduleTasks.filter(a => a.status === 'verified').length;
