@@ -151,11 +151,25 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
+    // Subcategory ID to Module mapping
+    const SUBCATEGORY_MODULE_MAP: Record<string, string> = {
+      'ce552091-3a66-4aed-a165-686a524c8bca': 'RESUME',      // Resume Building
+      '1f6bd7f0-117c-4167-8719-f55525b362e2': 'LINKEDIN',    // LinkedIn Profile
+      '1c47c855-7705-456b-867a-0e7a563f54db': 'GITHUB',      // GitHub Profile
+      '1a2c3b0a-abba-4342-b538-575872b109a2': 'PORTFOLIO',   // Digital Profile
+    };
+
     // Helper function to determine module from assignment
     const getAssignmentModule = (assignment: any): string | null => {
       // First try the template module
       if (assignment.career_task_templates?.module) {
         return assignment.career_task_templates.module;
+      }
+      
+      // Second: Check sub_category_id mapping
+      const subCategoryId = assignment.career_task_templates?.sub_category_id;
+      if (subCategoryId && SUBCATEGORY_MODULE_MAP[subCategoryId]) {
+        return SUBCATEGORY_MODULE_MAP[subCategoryId];
       }
       
       // Fallback: Try to infer from category
