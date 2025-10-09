@@ -8,8 +8,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Card, CardContent } from '@/components/ui/card';
-import { FileText, CheckCircle } from 'lucide-react';
+import { FileText } from 'lucide-react';
+import { ResumeTemplatePreview } from '@/components/ResumeTemplatePreview';
 
 interface ResumeTemplateSelectorProps {
   selectedTemplate: string;
@@ -74,7 +74,7 @@ export const ResumeTemplateSelector = ({ selectedTemplate, onSelectTemplate }: R
         </DialogTrigger>
       </div>
 
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto bg-background">
         <DialogHeader>
           <DialogTitle>Choose Your Resume Template</DialogTitle>
           <DialogDescription>
@@ -82,32 +82,14 @@ export const ResumeTemplateSelector = ({ selectedTemplate, onSelectTemplate }: R
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mt-4">
           {templates.map((template) => (
-            <Card
+            <ResumeTemplatePreview
               key={template.id}
-              className={`cursor-pointer transition-all hover:shadow-lg ${
-                selectedTemplate === template.id
-                  ? 'ring-2 ring-primary shadow-lg'
-                  : 'hover:ring-1 hover:ring-primary/50'
-              }`}
-              onClick={() => handleSelect(template.id)}
-            >
-              <CardContent className="p-4">
-                <div className="aspect-[8.5/11] bg-muted rounded mb-3 flex items-center justify-center">
-                  <FileText className="h-12 w-12 text-muted-foreground" />
-                </div>
-                <div className="space-y-1">
-                  <h3 className="font-semibold flex items-center gap-2">
-                    {template.name}
-                    {selectedTemplate === template.id && (
-                      <CheckCircle className="h-4 w-4 text-primary" />
-                    )}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">{template.description}</p>
-                </div>
-              </CardContent>
-            </Card>
+              template={template.id}
+              selected={selectedTemplate === template.id}
+              onSelect={handleSelect}
+            />
           ))}
         </div>
       </DialogContent>
