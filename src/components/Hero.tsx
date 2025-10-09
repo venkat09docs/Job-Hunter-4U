@@ -18,17 +18,12 @@ const Hero = () => {
           <div className="space-y-6 md:space-y-8 text-center lg:text-left">
             <div className="space-y-4">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-                Stop Getting{" "}
-                <span className="bg-gradient-primary bg-clip-text text-transparent line-through opacity-60">
-                  Rejected
-                </span>{" "}
-                Start Getting{" "}
                 <span className="bg-gradient-primary bg-clip-text text-transparent">
-                  Hired
+                  Your Complete Career Success Platform
                 </span>
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-                <strong className="text-foreground">Discover the career platform trusted by top job seekers</strong>—land your dream role up to 5x faster with AI-powered tools designed to elevate your job search. <span className="text-primary font-semibold">Users report an average salary boost of 40%.</span>
+                Create stunning portfolios, track job applications with smart Kanban boards, and get AI-powered career insights - all in one powerful platform.
               </p>
               <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
                 <p className="text-sm text-destructive font-medium">
