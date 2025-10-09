@@ -1305,9 +1305,7 @@ export default function Student() {
           
           <div className="border-t border-gray-800 mt-12 pt-8 text-center">
             <p className="text-gray-400">
-              © 2024 AI Career Level Up. All rights reserved. | 
-              <span className="text-white hover:text-purple-400 cursor-pointer transition-colors"> Privacy Policy</span> | 
-              <span className="text-white hover:text-purple-400 cursor-pointer transition-colors"> Terms of Service</span>
+              © 2024 AI Career Level Up. All rights reserved.
             </p>
           </div>
         </div>

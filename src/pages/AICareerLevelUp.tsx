@@ -2430,7 +2430,7 @@ export default function AICareerLevelUp() {
           </div>
           
           <div className="border-t border-gray-800 mt-12 pt-8 text-center">
-            <p className="text-gray-400 text-lg">&copy; 2025 AI Enhanced Career Level Up. All rights reserved.</p>
+            <p className="text-gray-400 text-lg">&copy; 2025 AI Career Level Up. All rights reserved.</p>
             <p className="text-gray-500 mt-2">Empowering the next generation of AI professionals</p>
           </div>
         </div>
