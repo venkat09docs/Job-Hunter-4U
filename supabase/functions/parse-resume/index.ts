@@ -62,40 +62,97 @@ Deno.serve(async (req) => {
 
     console.log('Processing resume for user:', userId);
 
-    // Get n8n webhook URL from environment
-    const n8nWebhookUrl = Deno.env.get('N8N_WEBHOOK_URL');
-    if (!n8nWebhookUrl) {
-      throw new Error('N8N_WEBHOOK_URL not configured');
+    // Download the resume file
+    console.log('Downloading resume from:', resumeUrl);
+    const fileResponse = await fetch(resumeUrl);
+    if (!fileResponse.ok) {
+      throw new Error('Failed to download resume file');
     }
 
-    // Send resume URL to n8n for parsing
-    console.log('Sending to n8n webhook:', n8nWebhookUrl);
-    const n8nResponse = await fetch(n8nWebhookUrl, {
+    const fileBuffer = await fileResponse.arrayBuffer();
+    const fileBase64 = btoa(String.fromCharCode(...new Uint8Array(fileBuffer)));
+
+    // Get Lovable API key
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    if (!lovableApiKey) {
+      throw new Error('LOVABLE_API_KEY not configured');
+    }
+
+    // Use Lovable AI to parse the resume
+    console.log('Parsing resume with AI');
+    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        resumeUrl,
-        userId,
-        action: 'parse_resume'
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          {
+            role: 'system',
+            content: `You are a resume parser. Extract structured information from resumes and return it as JSON. 
+            Always return valid JSON with this exact structure:
+            {
+              "summary": "Professional summary or objective",
+              "skills": ["skill1", "skill2", ...],
+              "experience": [
+                {
+                  "title": "Job Title",
+                  "company": "Company Name",
+                  "duration": "Start - End",
+                  "description": "Job description"
+                }
+              ],
+              "education": [
+                {
+                  "degree": "Degree Name",
+                  "institution": "School/University",
+                  "year": "Year or Duration",
+                  "description": "Optional details"
+                }
+              ]
+            }`
+          },
+          {
+            role: 'user',
+            content: `Parse this resume and extract all information. Return only valid JSON, no additional text:\n\n${fileBase64.substring(0, 100000)}`
+          }
+        ],
+        response_format: { type: "json_object" }
       }),
     });
 
-    if (!n8nResponse.ok) {
-      throw new Error(`n8n webhook failed: ${n8nResponse.status} ${n8nResponse.statusText}`);
+    if (!aiResponse.ok) {
+      const errorText = await aiResponse.text();
+      console.error('AI parsing failed:', aiResponse.status, errorText);
+      throw new Error(`AI parsing failed: ${aiResponse.status}`);
     }
 
-    const n8nResult = await n8nResponse.json();
-    console.log('n8n parsing result:', n8nResult);
+    const aiResult = await aiResponse.json();
+    console.log('AI parsing result:', aiResult);
 
-    // Extract parsed data from n8n response
-    const parsedData: ParsedResumeData = {
-      summary: n8nResult.summary || 'Resume parsed successfully',
-      skills: n8nResult.skills || [],
-      experience: n8nResult.experience || [],
-      education: n8nResult.education || []
-    };
+    // Extract parsed data from AI response
+    let parsedData: ParsedResumeData;
+    try {
+      const content = aiResult.choices[0].message.content;
+      const parsed = JSON.parse(content);
+      parsedData = {
+        summary: parsed.summary || '',
+        skills: parsed.skills || [],
+        experience: parsed.experience || [],
+        education: parsed.education || []
+      };
+    } catch (parseError) {
+      console.error('Failed to parse AI response:', parseError);
+      // Fallback to empty data if parsing fails
+      parsedData = {
+        summary: 'Resume uploaded successfully',
+        skills: [],
+        experience: [],
+        education: []
+      };
+    }
 
     // Update or create portfolio record
     const { data: existingPortfolio, error: fetchError } = await supabaseClient
