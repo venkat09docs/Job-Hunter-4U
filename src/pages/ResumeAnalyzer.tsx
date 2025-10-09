@@ -10,6 +10,8 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Progress } from "@/components/ui/progress";
 import { CircularScoreIndicator } from "@/components/CircularScoreIndicator";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 export default function ResumeAnalyzer() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -18,6 +20,8 @@ export default function ResumeAnalyzer() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const handleFileSelect = (file: File) => {
     const validTypes = [
@@ -77,6 +81,17 @@ export default function ResumeAnalyzer() {
   };
 
   const handleAnalyze = async () => {
+    // Check if user is authenticated
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Authentication required",
+        description: "Please sign in to analyze your resume.",
+      });
+      navigate('/auth');
+      return;
+    }
+
     if (!selectedFile) {
       toast({
         variant: "destructive",
