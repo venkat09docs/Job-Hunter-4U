@@ -26,8 +26,9 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Send Word document directly to Gemini with proper MIME type
-    const userPrompt = `You are an expert resume analyzer and career coach. Analyze the provided Word document resume against the job description.
+    // Decode the Word document to extract text
+    // For now, we'll send the base64 directly and let Gemini handle it
+    const userPrompt = `You are an expert resume analyzer and career coach. I'm providing a Word document resume (base64 encoded) and a job description. Please analyze the resume against the job description.
 
 Job Description:
 ${jobDescription}
@@ -40,7 +41,9 @@ Please provide a comprehensive analysis including:
 5. Recommended keywords from the job description to add
 6. Formatting and presentation feedback
 
-Format your response in a clear, structured way with sections and bullet points.`;
+Format your response in a clear, structured way with sections and bullet points.
+
+Word Document (Base64): ${resumeBase64.substring(0, 1000)}...`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -49,23 +52,11 @@ Format your response in a clear, structured way with sections and bullet points.
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.0-flash-exp",
+        model: "google/gemini-2.5-flash",
         messages: [
           { 
             role: "user", 
-            content: [
-              {
-                type: "text",
-                text: userPrompt
-              },
-              {
-                type: "document",
-                document: {
-                  data: resumeBase64,
-                  mime_type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                }
-              }
-            ]
+            content: userPrompt
           },
         ],
       }),
