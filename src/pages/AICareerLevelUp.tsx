@@ -393,17 +393,6 @@ export default function AICareerLevelUp() {
                 <div className="absolute top-1/2 right-0 w-32 h-32 bg-cyan-400/50 rounded-full blur-xl animate-pulse" style={{ animationDelay: '1s' }}></div>
                 <div className="absolute bottom-0 left-1/3 w-36 h-36 bg-purple-400/50 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1.5s' }}></div>
               </div>
-              
-              {/* Stats Grid - Below */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8">
-                {stats.map((stat, index) => (
-                  <div key={index} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/30 hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
-                    <stat.icon className={`h-8 w-8 ${stat.color} mx-auto mb-3`} />
-                    <div className="text-2xl font-bold text-white mb-1 text-center">{stat.value}</div>
-                    <div className="text-sm text-white/90 text-center">{stat.label}</div>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
 
@@ -412,6 +401,30 @@ export default function AICareerLevelUp() {
             <ChevronDown className="h-8 w-8 text-white/70" />
           </div>
         </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-16 px-4 bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjA1KSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30"></div>
+        
+        <div className="container mx-auto max-w-7xl relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {stats.map((stat, index) => (
+              <div 
+                key={index} 
+                className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 hover:bg-white/15 hover:border-white/30 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-lg group"
+              >
+                <stat.icon className={`h-12 w-12 ${stat.color} mx-auto mb-4 group-hover:scale-110 transition-transform duration-300`} />
+                <div className="text-4xl font-bold text-white mb-2 text-center">{stat.value}</div>
+                <div className="text-base text-white/90 text-center font-medium">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Decorative elements */}
+        <div className="absolute top-0 left-1/4 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl"></div>
       </section>
 
       {/* Problems Without AI Skills Section */}
