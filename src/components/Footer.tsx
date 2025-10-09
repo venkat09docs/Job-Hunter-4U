@@ -96,9 +96,25 @@ const Footer = () => {
 
         {/* Bottom footer */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-           <p className="text-sm text-muted-foreground">
-             © 2025 AI Career Level Up. A product by Rise n Shine Technologies. All Rights Reserved.
-           </p>
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-sm">
+            <p className="text-muted-foreground">
+              © 2025 AI Career Level Up. All Rights Reserved.
+            </p>
+            <span className="hidden sm:inline text-muted-foreground">|</span>
+            <div className="flex items-center gap-3">
+              <Link to="/privacy-policy" className="text-muted-foreground hover:text-primary transition-colors">
+                Privacy Policy
+              </Link>
+              <span className="text-muted-foreground">•</span>
+              <Link to="/terms-of-service" className="text-muted-foreground hover:text-primary transition-colors">
+                Terms
+              </Link>
+              <span className="text-muted-foreground">•</span>
+              <a href="#testimonials" className="text-muted-foreground hover:text-primary transition-colors">
+                Contact
+              </a>
+            </div>
+          </div>
           
           {/* Social links */}
           <div className="flex items-center gap-4">
