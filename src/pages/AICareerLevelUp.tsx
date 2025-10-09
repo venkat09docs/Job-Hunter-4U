@@ -62,6 +62,7 @@ import portfolioImage from "@/assets/digital-portfolio.jpg";
 import jobHuntingImage from "@/assets/smart-job-hunting.jpg";
 import solopreneurImage from "@/assets/solopreneur-journey.jpg";
 import devopsHeroImage from "@/assets/devops-aws-ai-hero.jpg";
+import careerSuccessSteps from "@/assets/career-success-steps.jpg";
 
 export default function AICareerLevelUp() {
   console.log("✅ AICareerLevelUp component starting");
@@ -326,9 +327,9 @@ export default function AICareerLevelUp() {
               </div>
             </div>
 
-            {/* Right side - Career Level Up with Labels */}
+            {/* Right side - Career Level Up with Labels and Image */}
             <div className="flex flex-col justify-center">
-              <div className="relative bg-gradient-to-br from-purple-600/60 via-pink-600/50 to-indigo-600/60 backdrop-blur-md rounded-3xl p-12 border-2 border-white/40 shadow-2xl overflow-hidden">
+              <div className="relative bg-gradient-to-br from-purple-600/60 via-pink-600/50 to-indigo-600/60 backdrop-blur-md rounded-3xl p-8 md:p-12 border-2 border-white/40 shadow-2xl overflow-hidden">
                 {/* Strong Animated Background Pattern */}
                 <div className="absolute inset-0 opacity-40">
                   <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-yellow-400/40 via-pink-500/30 to-transparent"></div>
@@ -337,29 +338,19 @@ export default function AICareerLevelUp() {
                   <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.5s' }}></div>
                 </div>
                 
-                {/* Stronger Grid Pattern Overlay */}
-                <div className="absolute inset-0 opacity-20" style={{
-                  backgroundImage: `
-                    linear-gradient(rgba(255, 255, 255, 0.3) 2px, transparent 2px),
-                    linear-gradient(90deg, rgba(255, 255, 255, 0.3) 2px, transparent 2px)
-                  `,
-                  backgroundSize: '40px 40px'
-                }}></div>
-                
-                {/* Diagonal Lines Pattern */}
-                <div className="absolute inset-0 opacity-10" style={{
-                  backgroundImage: `repeating-linear-gradient(
-                    45deg,
-                    transparent,
-                    transparent 10px,
-                    rgba(255, 255, 255, 0.3) 10px,
-                    rgba(255, 255, 255, 0.3) 20px
-                  )`
-                }}></div>
+                {/* Career Success Steps Image */}
+                <div className="relative z-10 mb-8 rounded-2xl overflow-hidden shadow-2xl">
+                  <img 
+                    src={careerSuccessSteps} 
+                    alt="Career success journey - climbing steps to reach goals" 
+                    className="w-full h-auto"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-purple-900/30 to-transparent"></div>
+                </div>
                 
                 {/* Main Text */}
-                <div className="text-center mb-8 relative z-10">
-                  <h3 className="text-5xl md:text-6xl lg:text-7xl font-black text-white mb-4 animate-pulse drop-shadow-2xl" style={{
+                <div className="text-center mb-6 relative z-10">
+                  <h3 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-4 animate-pulse drop-shadow-2xl" style={{
                     textShadow: '0 0 30px rgba(255, 255, 255, 0.5), 0 0 60px rgba(255, 105, 180, 0.3)'
                   }}>
                     Career Level Up
@@ -367,32 +358,32 @@ export default function AICareerLevelUp() {
                 </div>
                 
                 {/* Labels Grid */}
-                <div className="grid grid-cols-2 gap-4 relative z-10">
-                  <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl p-4 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
+                <div className="grid grid-cols-2 gap-3 md:gap-4 relative z-10">
+                  <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl p-3 md:p-4 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
                     <div className="flex items-center justify-center gap-2">
-                      <FileText className="h-5 w-5 text-white" />
-                      <span className="text-white font-bold text-sm md:text-base drop-shadow-lg">ATS Resume</span>
+                      <FileText className="h-4 w-4 md:h-5 md:w-5 text-white" />
+                      <span className="text-white font-bold text-xs md:text-base drop-shadow-lg">ATS Resume</span>
                     </div>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl p-4 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
+                  <div className="bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl p-3 md:p-4 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
                     <div className="flex items-center justify-center gap-2">
-                      <Brain className="h-5 w-5 text-white" />
-                      <span className="text-white font-bold text-sm md:text-base drop-shadow-lg">AI Generalist</span>
+                      <Brain className="h-4 w-4 md:h-5 md:w-5 text-white" />
+                      <span className="text-white font-bold text-xs md:text-base drop-shadow-lg">AI Generalist</span>
                     </div>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl p-4 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
+                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl p-3 md:p-4 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
                     <div className="flex items-center justify-center gap-2">
-                      <Briefcase className="h-5 w-5 text-white" />
-                      <span className="text-white font-bold text-sm md:text-base drop-shadow-lg">Job Hunting</span>
+                      <Briefcase className="h-4 w-4 md:h-5 md:w-5 text-white" />
+                      <span className="text-white font-bold text-xs md:text-base drop-shadow-lg">Job Hunting</span>
                     </div>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-green-500 to-teal-500 rounded-xl p-4 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
+                  <div className="bg-gradient-to-r from-green-500 to-teal-500 rounded-xl p-3 md:p-4 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
                     <div className="flex items-center justify-center gap-2">
-                      <Users className="h-5 w-5 text-white" />
-                      <span className="text-white font-bold text-sm md:text-base drop-shadow-lg">LinkedIn Optimization</span>
+                      <Users className="h-4 w-4 md:h-5 md:w-5 text-white" />
+                      <span className="text-white font-bold text-xs md:text-base drop-shadow-lg">LinkedIn Optimization</span>
                     </div>
                   </div>
                 </div>
