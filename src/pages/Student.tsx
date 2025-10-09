@@ -740,13 +740,13 @@ export default function Student() {
       </section>
 
       {/* Who Can Join Section */}
-      <section className="py-20 px-4 bg-white">
-        <div className="container mx-auto max-w-7xl">
+      <section className="py-20 px-4 bg-gradient-to-br from-blue-50 to-indigo-50">
+        <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <Badge className="mb-6 bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-0">
               Who Can Join
             </Badge>
-            <h2 className="text-4xl md:text-6xl font-bold mb-6 text-gray-900">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
               Perfect for Everyone
             </h2>
             <p className="text-xl text-gray-700 max-w-3xl mx-auto">
@@ -754,53 +754,53 @@ export default function Student() {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <Card className="text-center p-8 border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-blue-50 to-indigo-50">
-              <CardContent className="p-0">
-                <div className="bg-gradient-to-br from-blue-500 to-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <GraduationCap className="h-8 w-8 text-white" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="text-center border-0 shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white h-full">
+              <CardContent className="p-8 flex flex-col items-center">
+                <div className="bg-blue-500 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <GraduationCap className="h-10 w-10 text-white" />
                 </div>
-                <h3 className="text-xl font-bold mb-4 text-gray-900">Students & Fresh Graduates</h3>
-                <p className="text-gray-700 text-sm leading-relaxed">
+                <h3 className="text-xl font-bold mb-3 text-gray-900">Students & Fresh Graduates</h3>
+                <p className="text-gray-600 text-base leading-relaxed">
                   Get a competitive edge in the job market with AI skills that employers are actively seeking. 
                   Start your career with future-ready capabilities.
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="text-center p-8 border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-purple-50 to-pink-50">
-              <CardContent className="p-0">
-                <div className="bg-gradient-to-br from-purple-500 to-pink-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Briefcase className="h-8 w-8 text-white" />
+            <Card className="text-center border-0 shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white h-full">
+              <CardContent className="p-8 flex flex-col items-center">
+                <div className="bg-purple-500 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Briefcase className="h-10 w-10 text-white" />
                 </div>
-                <h3 className="text-xl font-bold mb-4 text-gray-900">Working Professionals</h3>
-                <p className="text-gray-700 text-sm leading-relaxed">
+                <h3 className="text-xl font-bold mb-3 text-gray-900">Working Professionals</h3>
+                <p className="text-gray-600 text-base leading-relaxed">
                   Upskill to stay relevant in your current role or transition to high-paying AI positions. 
                   Future-proof your career with in-demand skills.
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="text-center p-8 border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-green-50 to-emerald-50">
-              <CardContent className="p-0">
-                <div className="bg-gradient-to-br from-green-500 to-emerald-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <TrendingUp className="h-8 w-8 text-white" />
+            <Card className="text-center border-0 shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white h-full">
+              <CardContent className="p-8 flex flex-col items-center">
+                <div className="bg-green-500 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <TrendingUp className="h-10 w-10 text-white" />
                 </div>
-                <h3 className="text-xl font-bold mb-4 text-gray-900">Career Changers</h3>
-                <p className="text-gray-700 text-sm leading-relaxed">
+                <h3 className="text-xl font-bold mb-3 text-gray-900">Career Changers</h3>
+                <p className="text-gray-600 text-base leading-relaxed">
                   Transition from any field into the lucrative AI industry with comprehensive training 
                   and hands-on experience. No prior tech background required.
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="text-center p-8 border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-orange-50 to-amber-50">
-              <CardContent className="p-0">
-                <div className="bg-gradient-to-br from-orange-500 to-amber-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Lightbulb className="h-8 w-8 text-white" />
+            <Card className="text-center border-0 shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white h-full">
+              <CardContent className="p-8 flex flex-col items-center">
+                <div className="bg-orange-500 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Lightbulb className="h-10 w-10 text-white" />
                 </div>
-                <h3 className="text-xl font-bold mb-4 text-gray-900">Entrepreneurs</h3>
-                <p className="text-gray-700 text-sm leading-relaxed">
+                <h3 className="text-xl font-bold mb-3 text-gray-900">Entrepreneurs</h3>
+                <p className="text-gray-600 text-base leading-relaxed">
                   Learn to build AI-powered products and services. Master the skills needed to create 
                   innovative solutions and launch successful AI startups.
                 </p>

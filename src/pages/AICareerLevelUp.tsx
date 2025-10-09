@@ -612,12 +612,12 @@ export default function AICareerLevelUp() {
 
       {/* Who Can Join */}
       <section className="py-20 px-4 bg-gradient-to-br from-blue-50 to-indigo-50">
-        <div className="container mx-auto max-w-7xl">
+        <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16 animate-fade-in">
             <Badge className="mb-6 bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0">
               Join Our Community
             </Badge>
-            <h2 className="text-4xl md:text-6xl font-bold mb-6 text-gray-900">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
               Who Can Join?
             </h2>
             <p className="text-xl text-gray-700 mb-8 max-w-3xl mx-auto">
@@ -625,44 +625,43 @@ export default function AICareerLevelUp() {
             </p>
           </div>
           
-           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-8">
-             <Card className="hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white border-0 shadow-lg">
-               <CardContent className="p-10 text-center">
-                 <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-6 rounded-3xl w-24 h-24 mx-auto mb-8 flex items-center justify-center">
-                   <Users className="h-12 w-12 text-white" />
-                 </div>
-                 <h3 className="text-2xl font-bold mb-4 text-gray-900">Fresh Graduates</h3>
-                 <p className="text-gray-700 leading-relaxed text-lg">
-                   Recent graduates looking to enter the AI field with strong foundations
-                 </p>
-               </CardContent>
-             </Card>
-             
-             <Card className="hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white border-0 shadow-lg">
-               <CardContent className="p-10 text-center">
-                 <div className="bg-gradient-to-br from-green-500 to-teal-600 p-6 rounded-3xl w-24 h-24 mx-auto mb-8 flex items-center justify-center">
-                   <Brain className="h-12 w-12 text-white" />
-                 </div>
-                 <h3 className="text-2xl font-bold mb-4 text-gray-900">College Students</h3>
-                 <p className="text-gray-700 leading-relaxed text-lg">
-                   Students wanting to get ahead with AI skills before graduation
-                 </p>
-               </CardContent>
-             </Card>
-             
-             <Card className="hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white border-0 shadow-lg">
-               <CardContent className="p-10 text-center">
-                 <div className="bg-gradient-to-br from-orange-500 to-pink-600 p-6 rounded-3xl w-24 h-24 mx-auto mb-8 flex items-center justify-center">
-                   <TrendingUp className="h-12 w-12 text-white" />
-                 </div>
-                 <h3 className="text-2xl font-bold mb-4 text-gray-900">IT & Non-IT Professionals</h3>
-                 <p className="text-gray-700 leading-relaxed text-lg">
-                   Working professionals ready to transition or upskill in AI
-                 </p>
-               </CardContent>
-             </Card>
-
-           </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <Card className="hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white border-0 shadow-md h-full">
+              <CardContent className="p-8 text-center flex flex-col items-center">
+                <div className="bg-blue-500 p-5 rounded-2xl w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                  <Users className="h-10 w-10 text-white" />
+                </div>
+                <h3 className="text-xl font-bold mb-3 text-gray-900">Fresh Graduates</h3>
+                <p className="text-gray-600 leading-relaxed text-base">
+                  Recent graduates looking to enter the AI field with strong foundations
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card className="hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white border-0 shadow-md h-full">
+              <CardContent className="p-8 text-center flex flex-col items-center">
+                <div className="bg-green-500 p-5 rounded-2xl w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                  <Brain className="h-10 w-10 text-white" />
+                </div>
+                <h3 className="text-xl font-bold mb-3 text-gray-900">College Students</h3>
+                <p className="text-gray-600 leading-relaxed text-base">
+                  Students wanting to get ahead with AI skills before graduation
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card className="hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white border-0 shadow-md h-full">
+              <CardContent className="p-8 text-center flex flex-col items-center">
+                <div className="bg-orange-500 p-5 rounded-2xl w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                  <TrendingUp className="h-10 w-10 text-white" />
+                </div>
+                <h3 className="text-xl font-bold mb-3 text-gray-900">IT & Non-IT Professionals</h3>
+                <p className="text-gray-600 leading-relaxed text-base">
+                  Working professionals ready to transition or upskill in AI
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </section>
 
