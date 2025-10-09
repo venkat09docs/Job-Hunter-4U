@@ -193,6 +193,35 @@ Deno.serve(async (req) => {
 
     console.log('Portfolio updated successfully:', portfolioData.id);
 
+    // Also create/update public_profiles entry for shareable URL
+    const { data: userProfile } = await supabaseClient
+      .from('profiles')
+      .select('username, full_name')
+      .eq('user_id', userId)
+      .single();
+
+    if (userProfile) {
+      // Create or update public profile using username as slug
+      const { error: publicProfileError } = await supabaseClient
+        .from('public_profiles')
+        .upsert({
+          user_id: userId,
+          slug: userProfile.username,
+          full_name: userProfile.full_name,
+          bio: parsedData.summary,
+          is_public: true,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        });
+
+      if (publicProfileError) {
+        console.error('Error creating public profile:', publicProfileError);
+      } else {
+        console.log('Public profile created/updated successfully');
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
