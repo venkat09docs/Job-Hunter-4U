@@ -26,24 +26,42 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Decode the Word document to extract text
-    // For now, we'll send the base64 directly and let Gemini handle it
-    const userPrompt = `You are an expert resume analyzer and career coach. I'm providing a Word document resume (base64 encoded) and a job description. Please analyze the resume against the job description.
+    console.log('Starting Word document text extraction...');
+
+    // Decode base64 to binary
+    const binaryData = Uint8Array.from(atob(resumeBase64), c => c.charCodeAt(0));
+    
+    // Extract text from Word document using mammoth
+    const mammoth = await import('https://esm.sh/mammoth@1.6.0');
+    const result = await mammoth.extractRawText({ arrayBuffer: binaryData.buffer });
+    const resumeText = result.value;
+
+    console.log('Extracted text length:', resumeText.length);
+
+    if (!resumeText || resumeText.trim().length < 50) {
+      throw new Error('Could not extract text from document or document is too short');
+    }
+
+    // Prepare the analysis prompt with extracted text
+    const userPrompt = `You are an expert resume analyzer and career coach. Analyze the following resume text against the provided job description.
+
+Resume Content:
+${resumeText}
 
 Job Description:
 ${jobDescription}
 
 Please provide a comprehensive analysis including:
-1. Overall Match Score (out of 100)
-2. Key Strengths that align with the job
-3. Gaps or missing qualifications
+1. Overall Match Score (out of 100) - Be specific and justify the score
+2. Key Strengths that align with the job requirements
+3. Gaps or missing qualifications compared to the job description
 4. Specific optimization suggestions to improve the resume for this role
-5. Recommended keywords from the job description to add
+5. Recommended keywords from the job description that should be added
 6. Formatting and presentation feedback
 
-Format your response in a clear, structured way with sections and bullet points.
+Format your response in a clear, structured way with sections and bullet points.`;
 
-Word Document (Base64): ${resumeBase64.substring(0, 1000)}...`;
+    console.log('Sending request to Gemini...');
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -59,6 +77,8 @@ Word Document (Base64): ${resumeBase64.substring(0, 1000)}...`;
             content: userPrompt
           },
         ],
+        max_tokens: 2000,
+        temperature: 0.7,
       }),
     });
 
@@ -88,6 +108,8 @@ Word Document (Base64): ${resumeBase64.substring(0, 1000)}...`;
     if (!analysis) {
       throw new Error("No analysis generated");
     }
+
+    console.log('Analysis completed successfully');
 
     return new Response(
       JSON.stringify({ 
