@@ -11,8 +11,9 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, MapPin, Building, Clock, ExternalLink, Heart, ArrowLeft, Save, FolderOpen, Trash2, Search, BarChart3 } from "lucide-react";
+import { Loader2, MapPin, Building, Clock, ExternalLink, Heart, ArrowLeft, Save, FolderOpen, Trash2, Search, BarChart3, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { JobDetailsDialog } from "@/components/JobDetailsDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
@@ -100,6 +101,10 @@ const FindYourNextRole = () => {
   const [showProfileMatchDialog, setShowProfileMatchDialog] = useState(false);
   const [profileMatchJob, setProfileMatchJob] = useState<JobResult | null>(null);
   const [showLinkedInUpgradeDialog, setShowLinkedInUpgradeDialog] = useState(false);
+  const [showJobDetailsDialog, setShowJobDetailsDialog] = useState(false);
+  const [currentJobDetails, setCurrentJobDetails] = useState<any>(null);
+  const [loadingJobDetails, setLoadingJobDetails] = useState(false);
+  const [selectedJobForDetails, setSelectedJobForDetails] = useState<JobResult | null>(null);
 
   // Debug effect to track jobs state changes
   useEffect(() => {
@@ -740,6 +745,48 @@ const FindYourNextRole = () => {
     // Then open the apply link
     if (job.job_apply_link) {
       window.open(job.job_apply_link, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const handleViewJobDetails = async (job: JobResult) => {
+    if (!job.job_apply_link) {
+      toast({
+        title: "No job URL available",
+        description: "This job posting doesn't have a URL to scrape details from.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSelectedJobForDetails(job);
+    setShowJobDetailsDialog(true);
+    setLoadingJobDetails(true);
+    setCurrentJobDetails(null);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('scrape-job-details', {
+        body: { jobUrl: job.job_apply_link }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data && data.success) {
+        setCurrentJobDetails(data.data);
+      } else {
+        throw new Error(data?.error || 'Failed to scrape job details');
+      }
+    } catch (error) {
+      console.error('Error fetching job details:', error);
+      toast({
+        title: "Failed to load job details",
+        description: "Unable to scrape job details. Please visit the job page directly.",
+        variant: "destructive",
+      });
+      setCurrentJobDetails(null);
+    } finally {
+      setLoadingJobDetails(false);
     }
   };
 
@@ -1404,16 +1451,11 @@ const FindYourNextRole = () => {
                                   <Button 
                                     variant="default"
                                     size="sm"
-                                    onClick={() => handleApplyAndWishlist(job)}
-                                    disabled={addingToWishlist === job.job_id}
+                                    onClick={() => handleViewJobDetails(job)}
                                     className="flex items-center gap-2"
                                   >
-                                    {addingToWishlist === job.job_id ? (
-                                      <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                      <ExternalLink className="h-4 w-4" />
-                                    )}
-                                    Apply & Add to Tracker
+                                    <FileText className="h-4 w-4" />
+                                    More Details
                                   </Button>
                                 )}
                               </div>
@@ -1656,16 +1698,11 @@ const FindYourNextRole = () => {
                                     <Button 
                                       variant="default"
                                       size="sm"
-                                      onClick={() => handleApplyAndWishlist(job)}
-                                      disabled={addingToWishlist === job.job_id}
+                                      onClick={() => handleViewJobDetails(job)}
                                       className="flex items-center gap-2"
                                     >
-                                      {addingToWishlist === job.job_id ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                      ) : (
-                                        <ExternalLink className="h-4 w-4" />
-                                      )}
-                                      Apply & Add to Tracker
+                                      <FileText className="h-4 w-4" />
+                                      More Details
                                     </Button>
                                   )}
                                 </div>
@@ -2373,6 +2410,15 @@ const FindYourNextRole = () => {
                   <PricingDialog eligiblePlans={["One Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"]} />
                 </DialogContent>
               </Dialog>
+
+              {/* Job Details Dialog */}
+              <JobDetailsDialog
+                open={showJobDetailsDialog}
+                onOpenChange={setShowJobDetailsDialog}
+                jobDetails={currentJobDetails}
+                loading={loadingJobDetails}
+                jobTitle={selectedJobForDetails?.job_title || ''}
+              />
         </div>
       </main>
     </div>
