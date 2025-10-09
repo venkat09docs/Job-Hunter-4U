@@ -121,11 +121,14 @@ function extractCompanyDetails(html: string): string {
   for (const pattern of patterns) {
     const match = html.match(pattern);
     if (match && match[1]) {
-      return cleanText(match[1]);
+      const cleaned = cleanText(match[1]);
+      if (cleaned && cleaned.length > 0) {
+        return cleaned;
+      }
     }
   }
 
-  return 'Company information not available';
+  return '';
 }
 
 function extractJobDescription(html: string): string {
@@ -140,20 +143,14 @@ function extractJobDescription(html: string): string {
   for (const pattern of patterns) {
     const match = html.match(pattern);
     if (match && match[1]) {
-      return cleanHtml(match[1]);
+      const cleaned = cleanHtml(match[1]);
+      if (cleaned && cleaned.length > 100) {
+        return cleaned;
+      }
     }
   }
 
-  // Fallback: extract text between common markers
-  const bodyMatch = html.match(/<body[^>]*>([\s\S]+)<\/body>/i);
-  if (bodyMatch) {
-    const bodyText = cleanHtml(bodyMatch[1]);
-    if (bodyText.length > 100) {
-      return bodyText.substring(0, 1000) + '...';
-    }
-  }
-
-  return 'Job description not available';
+  return '';
 }
 
 function extractKeySkills(html: string): string[] {
@@ -209,41 +206,50 @@ function extractLocation(html: string): string {
   for (const pattern of patterns) {
     const match = html.match(pattern);
     if (match && match[1]) {
-      return cleanText(match[1]);
+      const cleaned = cleanText(match[1]);
+      if (cleaned && cleaned.length > 0) {
+        return cleaned;
+      }
     }
   }
 
-  return 'Location not specified';
+  return '';
 }
 
 function extractContactDetails(html: string): { email?: string; phone?: string } {
   const contactDetails: { email?: string; phone?: string } = {};
 
-  // Extract email
+  // Extract email - only real contact emails
   const emailPattern = /[\w.-]+@[\w.-]+\.\w+/gi;
   const emailMatch = html.match(emailPattern);
   if (emailMatch && emailMatch.length > 0) {
-    // Filter out common non-contact emails
-    const filteredEmails = emailMatch.filter(email => 
-      !email.includes('example.com') && 
-      !email.includes('domain.com') &&
-      !email.includes('test.com')
-    );
+    // Filter out common non-contact emails and generic ones
+    const filteredEmails = emailMatch.filter(email => {
+      const lower = email.toLowerCase();
+      return !lower.includes('example.com') && 
+             !lower.includes('domain.com') &&
+             !lower.includes('test.com') &&
+             !lower.includes('noreply') &&
+             !lower.includes('no-reply') &&
+             !lower.includes('@w3.org') &&
+             !lower.includes('@schema.org') &&
+             lower.length > 5; // Must have reasonable length
+    });
     if (filteredEmails.length > 0) {
       contactDetails.email = filteredEmails[0];
     }
   }
 
-  // Extract phone
+  // Extract phone - be more strict
   const phonePatterns = [
-    /\+?\d{1,3}[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g,
-    /\d{3}[-.\s]?\d{3}[-.\s]?\d{4}/g,
+    /(?:tel:|phone:|call:)\s*(\+?\d{1,3}[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4})/gi,
+    /contact.*?(\+?\d{1,3}[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4})/gi,
   ];
 
   for (const pattern of phonePatterns) {
     const phoneMatch = html.match(pattern);
     if (phoneMatch && phoneMatch.length > 0) {
-      contactDetails.phone = phoneMatch[0];
+      contactDetails.phone = phoneMatch[1] || phoneMatch[0];
       break;
     }
   }

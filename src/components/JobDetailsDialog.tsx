@@ -105,9 +105,9 @@ export const JobDetailsDialog = ({
             </div>
 
             {/* Contact Details */}
-            {(jobDetails.contactDetails?.email || jobDetails.contactDetails?.phone) && (
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold">Contact Details</h3>
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold">Contact Details</h3>
+              {(jobDetails.contactDetails?.email || jobDetails.contactDetails?.phone) ? (
                 <div className="space-y-2 pl-4">
                   {jobDetails.contactDetails.email && (
                     <div className="flex items-center gap-2 text-muted-foreground">
@@ -132,8 +132,10 @@ export const JobDetailsDialog = ({
                     </div>
                   )}
                 </div>
-              </div>
-            )}
+              ) : (
+                <p className="text-muted-foreground pl-4">No contacts are available</p>
+              )}
+            </div>
 
             {/* Action Buttons */}
             <div className="flex gap-3 pt-4 border-t">
