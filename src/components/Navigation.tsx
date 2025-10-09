@@ -128,14 +128,6 @@ const Navigation = () => {
                 className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
                 onClick={() => handleNavigate('/auth')}
               >
-                Recruiter
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink
-                className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
-                onClick={() => handleNavigate('/auth')}
-              >
                 Login
               </NavigationMenuLink>
             </NavigationMenuItem>
@@ -198,13 +190,6 @@ const Navigation = () => {
                   onClick={() => handleNavigate('/careerlevelup')}
                 >
                   Career Level Up
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="justify-start"
-                  onClick={() => handleNavigate('/auth')}
-                >
-                  Recruiter
                 </Button>
                 <Button
                   variant="ghost"
