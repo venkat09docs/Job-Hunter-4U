@@ -26,29 +26,21 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Decode base64 PDF (extract text - simplified approach)
-    const pdfBuffer = Uint8Array.from(atob(resumeBase64), c => c.charCodeAt(0));
-    const pdfText = new TextDecoder().decode(pdfBuffer);
-    
-    // Extract visible text from PDF (basic extraction)
-    const resumeText = pdfText.replace(/[^\x20-\x7E\n]/g, ' ').trim();
+    // Send Word document directly to Gemini with proper MIME type
+    const userPrompt = `You are an expert resume analyzer and career coach. Analyze the provided Word document resume against the job description.
 
-    const systemPrompt = `You are an expert resume analyzer and career coach. Analyze the provided resume against the job description and provide:
-1. A matching score out of 100
-2. Key strengths that align with the job
-3. Gaps or missing qualifications
-4. Specific optimization suggestions to improve the resume for this role
-5. Keywords from the job description that should be included
-
-Provide your response in a structured format with clear sections.`;
-
-    const userPrompt = `Job Description:
+Job Description:
 ${jobDescription}
 
-Resume Content:
-${resumeText.substring(0, 10000)} 
+Please provide a comprehensive analysis including:
+1. Overall Match Score (out of 100)
+2. Key Strengths that align with the job
+3. Gaps or missing qualifications
+4. Specific optimization suggestions to improve the resume for this role
+5. Recommended keywords from the job description to add
+6. Formatting and presentation feedback
 
-Analyze this resume against the job description and provide detailed feedback.`;
+Format your response in a clear, structured way with sections and bullet points.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -57,10 +49,24 @@ Analyze this resume against the job description and provide detailed feedback.`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-2.0-flash-exp",
         messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
+          { 
+            role: "user", 
+            content: [
+              {
+                type: "text",
+                text: userPrompt
+              },
+              {
+                type: "document",
+                document: {
+                  data: resumeBase64,
+                  mime_type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                }
+              }
+            ]
+          },
         ],
       }),
     });

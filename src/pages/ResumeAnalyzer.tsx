@@ -16,11 +16,16 @@ export default function ResumeAnalyzer() {
   const { toast } = useToast();
 
   const handleFileSelect = (file: File) => {
-    if (file.type !== "application/pdf") {
+    const validTypes = [
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
+      "application/msword" // .doc
+    ];
+    
+    if (!validTypes.includes(file.type)) {
       toast({
         variant: "destructive",
         title: "Invalid file type",
-        description: "Please upload a PDF file only.",
+        description: "Please upload a Word document (.doc or .docx) only.",
       });
       return;
     }
@@ -167,7 +172,7 @@ export default function ResumeAnalyzer() {
                 Upload Resume
               </CardTitle>
               <CardDescription>
-                Upload your resume in PDF format (Max 10MB)
+                Upload your resume in Word format (.doc or .docx, Max 10MB)
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -187,7 +192,7 @@ export default function ResumeAnalyzer() {
               >
                 <input
                   type="file"
-                  accept=".pdf"
+                  accept=".doc,.docx"
                   onChange={handleFileInput}
                   className="hidden"
                   id="resume-upload"
@@ -203,7 +208,7 @@ export default function ResumeAnalyzer() {
                           Drop your resume here or click to browse
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          PDF files only, up to 10MB
+                          Word documents (.doc, .docx) only, up to 10MB
                         </p>
                       </div>
                     </div>
@@ -243,9 +248,9 @@ export default function ResumeAnalyzer() {
                   <div className="text-xs text-muted-foreground">
                     <p className="font-medium text-info mb-1">File Requirements:</p>
                     <ul className="list-disc list-inside space-y-0.5">
-                      <li>Only PDF format accepted</li>
+                      <li>Only Word documents (.doc, .docx) accepted</li>
                       <li>Maximum file size: 10MB</li>
-                      <li>Ensure text is readable and not image-based</li>
+                      <li>Ensure document is properly formatted</li>
                     </ul>
                   </div>
                 </div>
