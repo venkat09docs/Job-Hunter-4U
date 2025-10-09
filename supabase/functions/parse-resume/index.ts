@@ -79,32 +79,42 @@ Deno.serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a resume parser. Extract structured information from resumes and return it as JSON. 
-            Always return valid JSON with this exact structure:
-            {
-              "summary": "Professional summary or objective",
-              "skills": ["skill1", "skill2", ...],
-              "experience": [
-                {
-                  "title": "Job Title",
-                  "company": "Company Name",
-                  "duration": "Start - End",
-                  "description": "Job description"
-                }
-              ],
-              "education": [
-                {
-                  "degree": "Degree Name",
-                  "institution": "School/University",
-                  "year": "Year or Duration",
-                  "description": "Optional details"
-                }
-              ]
-            }`
+            content: `You are a precise resume parser that extracts ONLY the actual text from resumes without any modifications, additions, or assumptions.
+
+CRITICAL RULES:
+1. Extract ONLY text that actually appears in the resume - DO NOT create, invent, or hallucinate any information
+2. If a section is missing or empty, return empty arrays/strings - DO NOT make up example data
+3. Copy the exact wording from the resume without paraphrasing or improving it
+4. If you cannot read the resume clearly, return empty data rather than guessing
+5. DO NOT add your own interpretations, examples, or placeholder data
+
+Return valid JSON with this exact structure:
+{
+  "summary": "Exact professional summary text from resume, or empty string if not found",
+  "skills": ["Exact skill names as written in resume"],
+  "experience": [
+    {
+      "title": "Exact job title from resume",
+      "company": "Exact company name from resume",
+      "duration": "Exact dates as written",
+      "description": "Exact job description from resume"
+    }
+  ],
+  "education": [
+    {
+      "degree": "Exact degree name from resume",
+      "institution": "Exact institution name from resume",
+      "year": "Exact year/dates from resume",
+      "description": "Exact details from resume or empty string"
+    }
+  ]
+}
+
+REMEMBER: If information is not present in the resume, use empty values. Never invent data.`
           },
           {
             role: 'user',
-            content: `Parse this resume and extract all information. Return only valid JSON, no additional text:\n\n${fileBase64.substring(0, 100000)}`
+            content: `Extract information from this resume. Return ONLY what is actually written in the document, no examples or made-up data:\n\n${fileBase64.substring(0, 100000)}`
           }
         ],
         response_format: { type: "json_object" }
