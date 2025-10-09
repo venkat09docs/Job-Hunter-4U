@@ -104,6 +104,7 @@ const ResumeBuilder = () => {
   const [showWriteEffectiveResumeDialog, setShowWriteEffectiveResumeDialog] = useState(false);
   const [generatedResumeText, setGeneratedResumeText] = useState("");
   const [showPrerequisiteDialog, setShowPrerequisiteDialog] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('classic');
   
   // Job Application Tracker notes
   const JOB_TRACKER_TOOL_ID = '343aeaa1-fe2d-40fb-b660-a2064774bee3';
@@ -2435,6 +2436,145 @@ ${resumeData.personalDetails.fullName}`;
             </TabsContent>
 
             <TabsContent value="resume-builder" className="space-y-6 mt-6">
+              {/* Resume Template Selector */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-xl">Choose Your Resume Template</CardTitle>
+                  <CardDescription>
+                    Select a professional template that best suits your career level and industry
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Classic Template */}
+                    <div 
+                      className={`cursor-pointer border-2 rounded-lg p-4 transition-all hover:shadow-lg ${
+                        selectedTemplate === 'classic' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                      }`}
+                      onClick={() => setSelectedTemplate('classic')}
+                    >
+                      <div className="aspect-[8.5/11] bg-muted rounded mb-3 flex items-center justify-center">
+                        <FileText className="h-12 w-12 text-muted-foreground" />
+                      </div>
+                      <div className="space-y-1">
+                        <h3 className="font-semibold flex items-center gap-2">
+                          Classic Professional
+                          {selectedTemplate === 'classic' && <CheckCircle className="h-4 w-4 text-primary" />}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Traditional layout perfect for corporate roles
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Modern Template */}
+                    <div 
+                      className={`cursor-pointer border-2 rounded-lg p-4 transition-all hover:shadow-lg ${
+                        selectedTemplate === 'modern' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                      }`}
+                      onClick={() => setSelectedTemplate('modern')}
+                    >
+                      <div className="aspect-[8.5/11] bg-muted rounded mb-3 flex items-center justify-center">
+                        <FileText className="h-12 w-12 text-muted-foreground" />
+                      </div>
+                      <div className="space-y-1">
+                        <h3 className="font-semibold flex items-center gap-2">
+                          Modern Minimal
+                          {selectedTemplate === 'modern' && <CheckCircle className="h-4 w-4 text-primary" />}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Clean design for tech and creative industries
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Executive Template */}
+                    <div 
+                      className={`cursor-pointer border-2 rounded-lg p-4 transition-all hover:shadow-lg ${
+                        selectedTemplate === 'executive' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                      }`}
+                      onClick={() => setSelectedTemplate('executive')}
+                    >
+                      <div className="aspect-[8.5/11] bg-muted rounded mb-3 flex items-center justify-center">
+                        <FileText className="h-12 w-12 text-muted-foreground" />
+                      </div>
+                      <div className="space-y-1">
+                        <h3 className="font-semibold flex items-center gap-2">
+                          Executive
+                          {selectedTemplate === 'executive' && <CheckCircle className="h-4 w-4 text-primary" />}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Professional layout for senior positions
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* ATS-Optimized Template */}
+                    <div 
+                      className={`cursor-pointer border-2 rounded-lg p-4 transition-all hover:shadow-lg ${
+                        selectedTemplate === 'ats' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                      }`}
+                      onClick={() => setSelectedTemplate('ats')}
+                    >
+                      <div className="aspect-[8.5/11] bg-muted rounded mb-3 flex items-center justify-center">
+                        <FileText className="h-12 w-12 text-muted-foreground" />
+                      </div>
+                      <div className="space-y-1">
+                        <h3 className="font-semibold flex items-center gap-2">
+                          ATS-Optimized
+                          {selectedTemplate === 'ats' && <CheckCircle className="h-4 w-4 text-primary" />}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Designed to pass applicant tracking systems
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Creative Template */}
+                    <div 
+                      className={`cursor-pointer border-2 rounded-lg p-4 transition-all hover:shadow-lg ${
+                        selectedTemplate === 'creative' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                      }`}
+                      onClick={() => setSelectedTemplate('creative')}
+                    >
+                      <div className="aspect-[8.5/11] bg-muted rounded mb-3 flex items-center justify-center">
+                        <FileText className="h-12 w-12 text-muted-foreground" />
+                      </div>
+                      <div className="space-y-1">
+                        <h3 className="font-semibold flex items-center gap-2">
+                          Creative
+                          {selectedTemplate === 'creative' && <CheckCircle className="h-4 w-4 text-primary" />}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Stand out in design and creative fields
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Technical Template */}
+                    <div 
+                      className={`cursor-pointer border-2 rounded-lg p-4 transition-all hover:shadow-lg ${
+                        selectedTemplate === 'technical' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                      }`}
+                      onClick={() => setSelectedTemplate('technical')}
+                    >
+                      <div className="aspect-[8.5/11] bg-muted rounded mb-3 flex items-center justify-center">
+                        <FileText className="h-12 w-12 text-muted-foreground" />
+                      </div>
+                      <div className="space-y-1">
+                        <h3 className="font-semibold flex items-center gap-2">
+                          Technical
+                          {selectedTemplate === 'technical' && <CheckCircle className="h-4 w-4 text-primary" />}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Ideal for developers and engineers
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Progress Bar */}
               <ResumeProgressBar resumeData={resumeData} />
               
