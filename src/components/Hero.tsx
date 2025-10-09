@@ -17,13 +17,13 @@ const Hero = () => {
           {/* Text content */}
           <div className="space-y-6 md:space-y-8 text-center lg:text-left">
             <div className="space-y-4">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-                <span className="bg-gradient-primary bg-clip-text text-transparent">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight animate-fade-in">
+                <span className="bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent animate-pulse">
                   Your Complete Career Success Platform
                 </span>
               </h1>
-              <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-                Create stunning portfolios, track job applications with smart Kanban boards, and get AI-powered career insights - all in one powerful platform.
+              <p className="text-lg md:text-xl text-muted-foreground leading-relaxed animate-fade-in animation-delay-200">
+                <span className="font-semibold text-foreground">Create stunning portfolios</span>, track job applications with <span className="text-primary font-semibold">smart Kanban boards</span>, and get <span className="bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent font-semibold">AI-powered career insights</span> - all in one powerful platform.
               </p>
               <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
                 <p className="text-sm text-destructive font-medium">
