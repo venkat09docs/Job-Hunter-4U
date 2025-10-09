@@ -207,11 +207,11 @@ export default function AICareerLevelUp() {
       gradient: "from-orange-500 to-red-500"
     },
     {
-      icon: Code,
-      title: "Solopreneur Journey with Vibe Coding",
-      description: "Implement SaaS applications and learn digital marketing",
-      benefits: ["Build real applications", "Digital marketing mastery", "Entrepreneurial mindset"],
-      image: solopreneurImage,
+      icon: Briefcase,
+      title: "Land Your Dream Job",
+      description: "Master job search strategies and ace your interviews",
+      benefits: ["Smart job search tactics", "Interview mastery", "Career positioning"],
+      image: jobHuntingImage,
       gradient: "from-green-500 to-teal-500"
     }
   ];
