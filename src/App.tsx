@@ -98,6 +98,7 @@ import Student from "./pages/Student";
 import InstitutesSubscriptionPlan from "./pages/InstitutesSubscriptionPlan";
 import AWSCerts from "./pages/AWSCerts";
 import AWSCertsAssistants from "./pages/AWSCertsAssistants";
+import ResumeAnalyzer from "./pages/ResumeAnalyzer";
 
 const queryClient = new QueryClient();
 
@@ -716,6 +717,7 @@ const AppContent = () => {
               </ProtectedRoute>
             } 
           />
+          <Route path="/resume-analyzer" element={<ResumeAnalyzer />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/cookie-policy" element={<CookiePolicy />} />
