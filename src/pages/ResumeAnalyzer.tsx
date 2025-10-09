@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Upload, FileText, Sparkles, AlertCircle, CheckCircle } from "lucide-react";
+import { Upload, FileText, Sparkles, AlertCircle, CheckCircle, TrendingUp, AlertTriangle, Lightbulb, Target, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Progress } from "@/components/ui/progress";
+import { CircularScoreIndicator } from "@/components/CircularScoreIndicator";
 
 export default function ResumeAnalyzer() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -145,6 +147,43 @@ export default function ResumeAnalyzer() {
   const removeFile = () => {
     setSelectedFile(null);
   };
+
+  const parseAnalysis = (text: string) => {
+    const sections: any = {};
+    
+    // Extract match score
+    const scoreMatch = text.match(/##\s*Match Score\s*\n([^\n]+)/i);
+    if (scoreMatch) {
+      const scoreText = scoreMatch[1];
+      const scoreNum = scoreText.match(/(\d+)/);
+      sections.score = scoreNum ? parseInt(scoreNum[1]) : 0;
+      sections.scoreText = scoreText;
+    }
+    
+    // Extract sections
+    const extractSection = (title: string) => {
+      const regex = new RegExp(`##\\s*${title}\\s*\\n([\\s\\S]*?)(?=##|$)`, 'i');
+      const match = text.match(regex);
+      if (match) {
+        const content = match[1].trim();
+        return content.split('\n').filter(line => line.trim().startsWith('-')).map(line => line.replace(/^-\s*/, '').trim());
+      }
+      return [];
+    };
+    
+    sections.strengths = extractSection('Key Strengths');
+    sections.gaps = extractSection('Gaps & Missing Qualifications');
+    sections.suggestions = extractSection('Optimization Suggestions');
+    sections.keywords = extractSection('Recommended Keywords');
+    
+    // Extract overall recommendation
+    const recMatch = text.match(/##\s*Overall Recommendation\s*\n([^\n]+(?:\n(?!##)[^\n]+)*)/i);
+    sections.recommendation = recMatch ? recMatch[1].trim() : '';
+    
+    return sections;
+  };
+
+  const analysis = analysisResult ? parseAnalysis(analysisResult) : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-purple-950 dark:to-indigo-950">
@@ -321,47 +360,169 @@ export default function ResumeAnalyzer() {
           </p>
         </div>
 
-        {/* Analysis Results */}
-        {analysisResult && (
-          <div className="mt-8 space-y-6">
+        {/* Analysis Results - Visual Report */}
+        {analysisResult && analysis && (
+          <div className="mt-8 space-y-6 animate-fade-in">
+            {/* Header Card with Score */}
             <Card className="shadow-2xl border-2 border-primary/30 overflow-hidden">
-              <div className="bg-gradient-to-r from-primary to-primary-light p-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
-                    <CheckCircle className="h-8 w-8 text-white" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-2xl text-white font-bold">
+              <div className="bg-gradient-to-r from-primary via-primary-light to-primary p-8">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                  <div className="text-center md:text-left">
+                    <CardTitle className="text-3xl text-white font-bold mb-2">
                       Resume Analysis Report
                     </CardTitle>
-                    <CardDescription className="text-white/90 text-base mt-1">
-                      AI-powered insights to optimize your resume
+                    <CardDescription className="text-white/90 text-lg">
+                      AI-Powered Insights & Recommendations
                     </CardDescription>
+                  </div>
+                  
+                  {/* Circular Score Indicator */}
+                  <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+                    <CircularScoreIndicator score={analysis.score || 0} size={180} />
                   </div>
                 </div>
               </div>
+            </Card>
 
-              <CardContent className="p-8">
-                <div className="prose prose-lg max-w-none dark:prose-invert">
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    components={{
-                      h2: ({node, ...props}) => <h2 className="text-2xl font-bold text-foreground mt-8 mb-4 pb-2 border-b-2 border-primary/20" {...props} />,
-                      h3: ({node, ...props}) => <h3 className="text-xl font-semibold text-foreground mt-6 mb-3" {...props} />,
-                      p: ({node, ...props}) => <p className="text-muted-foreground leading-relaxed my-3" {...props} />,
-                      ul: ({node, ...props}) => <ul className="space-y-2 my-4" {...props} />,
-                      ol: ({node, ...props}) => <ol className="space-y-2 my-4 list-decimal" {...props} />,
-                      li: ({node, ...props}) => <li className="ml-4 text-muted-foreground leading-relaxed" {...props} />,
-                      strong: ({node, ...props}) => <strong className="font-semibold text-foreground" {...props} />,
-                      code: ({node, ...props}) => <code className="bg-accent px-2 py-1 rounded text-sm" {...props} />,
-                    }}
-                  >
-                    {analysisResult}
-                  </ReactMarkdown>
-                </div>
+            {/* Key Strengths Section */}
+            {analysis.strengths && analysis.strengths.length > 0 && (
+              <Card className="border-2 border-success/30 bg-success/5 animate-scale-in">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-success/20 rounded-xl">
+                      <CheckCircle className="h-7 w-7 text-success" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-2xl text-success">Key Strengths</CardTitle>
+                      <CardDescription className="text-lg">What makes your resume stand out</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4">
+                    {analysis.strengths.map((strength: string, idx: number) => (
+                      <div key={idx} className="flex items-start gap-3 p-4 bg-background rounded-lg border border-success/20 hover:border-success/40 transition-colors">
+                        <div className="flex-shrink-0 w-8 h-8 bg-success/20 rounded-full flex items-center justify-center">
+                          <span className="text-success font-bold">{idx + 1}</span>
+                        </div>
+                        <p className="text-foreground leading-relaxed pt-1">{strength}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
-                {/* Action Buttons */}
-                <div className="flex gap-4 mt-8 pt-6 border-t border-border">
+            {/* Gaps & Missing Qualifications */}
+            {analysis.gaps && analysis.gaps.length > 0 && (
+              <Card className="border-2 border-warning/30 bg-warning/5 animate-scale-in">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-warning/20 rounded-xl">
+                      <AlertTriangle className="h-7 w-7 text-warning" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-2xl text-warning">Gaps & Missing Qualifications</CardTitle>
+                      <CardDescription className="text-lg">Areas that need improvement</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4">
+                    {analysis.gaps.map((gap: string, idx: number) => (
+                      <div key={idx} className="flex items-start gap-3 p-4 bg-background rounded-lg border border-warning/20 hover:border-warning/40 transition-colors">
+                        <div className="flex-shrink-0 w-8 h-8 bg-warning/20 rounded-full flex items-center justify-center">
+                          <AlertTriangle className="h-4 w-4 text-warning" />
+                        </div>
+                        <p className="text-foreground leading-relaxed pt-1">{gap}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Optimization Suggestions */}
+            {analysis.suggestions && analysis.suggestions.length > 0 && (
+              <Card className="border-2 border-info/30 bg-info/5 animate-scale-in">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-info/20 rounded-xl">
+                      <Lightbulb className="h-7 w-7 text-info" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-2xl text-info">Optimization Suggestions</CardTitle>
+                      <CardDescription className="text-lg">Actionable steps to improve your resume</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4">
+                    {analysis.suggestions.map((suggestion: string, idx: number) => (
+                      <div key={idx} className="flex items-start gap-3 p-4 bg-background rounded-lg border border-info/20 hover:border-info/40 transition-colors hover-scale">
+                        <div className="flex-shrink-0 w-8 h-8 bg-info/20 rounded-full flex items-center justify-center">
+                          <Lightbulb className="h-4 w-4 text-info" />
+                        </div>
+                        <p className="text-foreground leading-relaxed pt-1">{suggestion}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Recommended Keywords */}
+            {analysis.keywords && analysis.keywords.length > 0 && (
+              <Card className="border-2 border-primary/30 bg-primary/5 animate-scale-in">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-primary/20 rounded-xl">
+                      <Target className="h-7 w-7 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-2xl text-primary">Recommended Keywords</CardTitle>
+                      <CardDescription className="text-lg">Important terms to include in your resume</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-3">
+                    {analysis.keywords.map((keyword: string, idx: number) => (
+                      <div key={idx} className="px-4 py-2 bg-primary/10 border-2 border-primary/30 rounded-full hover:bg-primary/20 transition-colors hover-scale">
+                        <span className="text-primary font-semibold">{keyword}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Overall Recommendation */}
+            {analysis.recommendation && (
+              <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/10 to-primary-light/10 animate-scale-in">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-primary/20 rounded-xl">
+                      <Award className="h-7 w-7 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-2xl text-primary">Overall Recommendation</CardTitle>
+                      <CardDescription className="text-lg">Summary and next steps</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="p-6 bg-background rounded-lg border border-primary/20">
+                    <p className="text-foreground leading-relaxed text-lg">{analysis.recommendation}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Action Buttons */}
+            <Card className="border-2 border-border">
+              <CardContent className="pt-6">
+                <div className="flex flex-col sm:flex-row gap-4">
                   <Button
                     onClick={() => {
                       const element = document.createElement('a');
@@ -373,9 +534,10 @@ export default function ResumeAnalyzer() {
                       document.body.removeChild(element);
                     }}
                     variant="outline"
+                    size="lg"
                     className="flex-1"
                   >
-                    <FileText className="h-4 w-4 mr-2" />
+                    <FileText className="h-5 w-5 mr-2" />
                     Download Report
                   </Button>
                   <Button
@@ -388,53 +550,15 @@ export default function ResumeAnalyzer() {
                         description: "Upload another resume to analyze.",
                       });
                     }}
-                    variant="outline"
+                    size="lg"
                     className="flex-1"
                   >
+                    <Sparkles className="h-5 w-5 mr-2" />
                     Analyze Another Resume
                   </Button>
                 </div>
               </CardContent>
             </Card>
-
-            {/* Quick Stats */}
-            <div className="grid md:grid-cols-3 gap-4">
-              <Card className="border-2 border-success/20 bg-success/5">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-3">
-                    <CheckCircle className="h-8 w-8 text-success" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Analysis</p>
-                      <p className="text-xl font-bold text-success">Complete</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-2 border-info/20 bg-info/5">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-3">
-                    <Sparkles className="h-8 w-8 text-info" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Powered by</p>
-                      <p className="text-xl font-bold text-info">AI</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-2 border-primary/20 bg-primary/5">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-3">
-                    <FileText className="h-8 w-8 text-primary" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Document</p>
-                      <p className="text-xl font-bold text-primary">Analyzed</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
           </div>
         )}
 

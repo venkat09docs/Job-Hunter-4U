@@ -29,51 +29,82 @@ serve(async (req) => {
     console.log('Starting Word document text extraction...');
 
     // Decode base64 to binary
-    const binaryData = Uint8Array.from(atob(resumeBase64), c => c.charCodeAt(0));
+    const binaryString = atob(resumeBase64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
     
-    // Extract text from Word document using mammoth
-    const mammoth = await import('https://esm.sh/mammoth@1.6.0');
-    const result = await mammoth.extractRawText({ arrayBuffer: binaryData.buffer });
-    const resumeText = result.value;
-
-    console.log('Extracted text length:', resumeText.length);
-
-    if (!resumeText || resumeText.trim().length < 50) {
-      throw new Error('Could not extract text from document or document is too short');
+    // Import and use mammoth for text extraction
+    let resumeText = '';
+    
+    try {
+      const mammoth = await import('https://esm.sh/mammoth@1.8.0');
+      const result = await mammoth.extractRawText({ 
+        arrayBuffer: bytes.buffer 
+      });
+      
+      resumeText = result.value.trim();
+      
+      console.log('Text extraction successful. Length:', resumeText.length);
+      console.log('First 200 chars:', resumeText.substring(0, 200));
+      
+      if (!resumeText || resumeText.length < 50) {
+        throw new Error('Extracted text is too short. Please ensure the document contains text content.');
+      }
+    } catch (extractError) {
+      console.error('Error during text extraction:', extractError);
+      throw new Error(`Failed to extract text from Word document: ${extractError.message}`);
     }
 
     // Prepare the analysis prompt - don't include resume text in response
     const systemPrompt = `You are an expert resume analyzer and career coach. Provide a comprehensive analysis in a structured format with clear sections. Use markdown formatting for better readability.`;
 
-    const userPrompt = `Analyze this resume against the job description below.
+    const userPrompt = `You are analyzing a resume against a job description. Here is the actual resume content I extracted:
 
-**Job Description:**
+RESUME TEXT START:
+${resumeText}
+RESUME TEXT END
+
+JOB DESCRIPTION:
 ${jobDescription}
 
-**Resume Content:**
-${resumeText}
-
-Provide your analysis in the following structure:
+Based on this actual resume content above, provide your analysis in the following structured format:
 
 ## Match Score
-Provide an overall match score out of 100 with a brief justification.
+[Score out of 100] - [Brief justification in 1-2 sentences]
 
 ## Key Strengths
-List the top 3-5 strengths that align well with the job requirements.
+- [Strength 1]
+- [Strength 2]
+- [Strength 3]
+- [Strength 4]
+- [Strength 5]
 
 ## Gaps & Missing Qualifications
-Identify what's missing or could be improved to better match the job description.
+- [Gap 1]
+- [Gap 2]
+- [Gap 3]
+- [Gap 4]
 
 ## Optimization Suggestions
-Provide 5-7 specific, actionable recommendations to improve the resume for this role.
+- [Suggestion 1]
+- [Suggestion 2]
+- [Suggestion 3]
+- [Suggestion 4]
+- [Suggestion 5]
 
 ## Recommended Keywords
-List important keywords from the job description that should be incorporated into the resume.
+- [Keyword 1]
+- [Keyword 2]
+- [Keyword 3]
+- [Keyword 4]
+- [Keyword 5]
 
 ## Overall Recommendation
-Provide a brief summary and next steps.
+[Provide a brief 2-3 sentence summary and next steps]
 
-Keep the analysis focused, actionable, and professional. Do NOT repeat the resume content in your response.`;
+Important: Do NOT include or repeat the resume content in your analysis. Only provide the analysis itself.`;
 
     console.log('Sending request to Gemini...');
 
