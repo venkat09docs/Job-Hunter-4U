@@ -39,6 +39,7 @@ import Affiliate from "./pages/Affiliate";
 
 import FindYourNextRole from "./pages/FindYourNextRole";
 import BuildMyProfile from "./pages/BuildMyProfile";
+import BuildDigitalProfile from "./pages/BuildDigitalProfile";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import CookiePolicy from "./pages/CookiePolicy";
@@ -387,12 +388,20 @@ const AppContent = () => {
             } 
           />
           <Route 
+            path="/dashboard/build-digital-profile" 
+            element={
+              <ProtectedRoute>
+                <BuildDigitalProfile />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
             path="/dashboard/knowledge-base" 
             element={
               <ProtectedRoute>
                 <KnowledgeBase />
               </ProtectedRoute>
-            } 
+            }
           />
           <Route 
             path="/dashboard/knowledge-base/doc/:id" 
