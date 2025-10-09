@@ -345,12 +345,11 @@ export default function AICareerLevelUp() {
                     alt="Career success journey - climbing steps to reach goals" 
                     className="w-full h-auto"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-purple-900/30 to-transparent"></div>
                 </div>
                 
                 {/* Main Text */}
                 <div className="text-center mb-6 relative z-10">
-                  <h3 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-4 animate-pulse drop-shadow-2xl" style={{
+                  <h3 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-4 drop-shadow-2xl" style={{
                     textShadow: '0 0 30px rgba(255, 255, 255, 0.5), 0 0 60px rgba(255, 105, 180, 0.3)'
                   }}>
                     Career Level Up
@@ -358,7 +357,7 @@ export default function AICareerLevelUp() {
                 </div>
                 
                 {/* Labels Grid */}
-                <div className="grid grid-cols-2 gap-3 md:gap-4 relative z-10">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 relative z-10">
                   <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl p-3 md:p-4 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
                     <div className="flex items-center justify-center gap-2">
                       <FileText className="h-4 w-4 md:h-5 md:w-5 text-white" />
