@@ -144,7 +144,7 @@ const ActivityFeaturesShowcase = () => {
             className="bg-gradient-primary hover:shadow-glow transition-all duration-300"
             onClick={() => navigate('/auth')}
           >
-            Start Tracking Your Career Growth
+            Analyze Your Resume For Free
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
         </div>
