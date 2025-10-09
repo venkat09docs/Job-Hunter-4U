@@ -12,6 +12,10 @@ import { Progress } from "@/components/ui/progress";
 import { CircularScoreIndicator } from "@/components/CircularScoreIndicator";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
+import { UserProfileDropdown } from "@/components/UserProfileDropdown";
+import { SubscriptionUpgrade } from "@/components/SubscriptionUpgrade";
 
 export default function ResumeAnalyzer() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -201,25 +205,40 @@ export default function ResumeAnalyzer() {
   const analysis = analysisResult ? parseAnalysis(analysisResult) : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-purple-950 dark:to-indigo-950">
-      {/* Header */}
-      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-border">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-primary to-primary-light rounded-lg">
-              <Sparkles className="h-6 w-6 text-primary-foreground" />
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <AppSidebar />
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="flex h-14 items-center px-4 gap-4">
+              <SidebarTrigger />
+              <h1 className="text-xl font-semibold text-foreground">Resume Analyzer</h1>
+              <div className="ml-auto flex items-center gap-4">
+                <SubscriptionUpgrade />
+                <UserProfileDropdown />
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Resume Analyzer</h1>
-              <p className="text-muted-foreground">Get AI-powered insights on your resume</p>
-            </div>
-          </div>
-        </div>
-      </div>
+          </header>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-12 max-w-5xl">
-        <div className="grid lg:grid-cols-2 gap-6">
+          {/* Main Content */}
+          <div className="flex-1 overflow-auto">
+            <div className="bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-purple-950 dark:to-indigo-950">
+              {/* Hero Section */}
+              <div className="container mx-auto px-4 py-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-gradient-to-br from-primary to-primary-light rounded-lg">
+                    <Sparkles className="h-6 w-6 text-primary-foreground" />
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Get AI-powered insights on your resume</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Main Content */}
+              <div className="container mx-auto px-4 py-6 max-w-5xl">
+                <div className="grid lg:grid-cols-2 gap-6">
           {/* Upload Resume Card */}
           <Card className="shadow-lg border-2 hover:shadow-xl transition-shadow">
             <CardHeader>
@@ -609,8 +628,12 @@ export default function ResumeAnalyzer() {
               </CardContent>
             </Card>
           ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }
