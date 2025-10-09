@@ -124,71 +124,11 @@ const Navigation = () => {
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuTrigger>Courses</NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <div className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-1 lg:w-[600px]">
-                  <NavigationMenuLink
-                    className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer"
-                    onClick={() => handleNavigate('/careerlevelup')}
-                  >
-                    <div className="text-sm font-medium leading-none">Career Level Up Cohort</div>
-                    <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                      AI-Enhanced DevOps & AWS — 10-week intensive program
-                    </p>
-                  </NavigationMenuLink>
-                  <NavigationMenuLink
-                    className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer"
-                    onClick={() => handleExternalLink('https://risenshinetechnologies.com/aws-cloud-engineer')}
-                  >
-                    <div className="text-sm font-medium leading-none">AWS Cloud Engineer</div>
-                    <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                      Master AWS cloud infrastructure and services
-                    </p>
-                  </NavigationMenuLink>
-                  <NavigationMenuLink
-                    className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer"
-                    onClick={() => handleExternalLink('https://risenshinetechnologies.com/devops-with-aws')}
-                  >
-                    <div className="text-sm font-medium leading-none">DevOps and AWS with Python</div>
-                    <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                      Combine DevOps practices with AWS and Python development
-                    </p>
-                  </NavigationMenuLink>
-                  <NavigationMenuLink
-                    className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer"
-                    onClick={() => handleExternalLink('https://risenshinetechnologies.com/python-with-genai')}
-                  >
-                    <div className="text-sm font-medium leading-none">AWS, DevOps & Python with Generative AI</div>
-                    <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                      Advanced course integrating AI with cloud technologies
-                    </p>
-                  </NavigationMenuLink>
-                  <NavigationMenuLink
-                    className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer"
-                    onClick={() => handleExternalLink('https://risenshinetechnologies.com/ai-automation-bootcamp')}
-                  >
-                    <div className="text-sm font-medium leading-none">AI Automation Bootcamp</div>
-                    <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                      Learn to automate processes using AI technologies
-                    </p>
-                  </NavigationMenuLink>
-                </div>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
               <NavigationMenuLink
                 className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
                 onClick={() => handleNavigate('/auth')}
               >
                 Recruiter
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink
-                className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
-                onClick={() => handleExternalLink('https://members.risenshinetechnologies.com/communities/groups/job-hunting-pro/home')}
-              >
-                Community
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
@@ -254,23 +194,9 @@ const Navigation = () => {
                 <Button
                   variant="ghost"
                   className="justify-start"
-                  onClick={() => handleNavigate('/courses')}
-                >
-                  Courses
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="justify-start"
                   onClick={() => handleNavigate('/auth')}
                 >
                   Recruiter
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="justify-start"
-                  onClick={() => handleExternalLink('https://members.risenshinetechnologies.com/communities/groups/job-hunting-pro/home')}
-                >
-                  Community
                 </Button>
                 <Button
                   variant="ghost"
