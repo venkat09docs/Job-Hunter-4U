@@ -101,22 +101,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Fetched assignments count:', assignments?.length || 0);
 
-    // Fetch LinkedIn progress tasks
-    const { data: linkedinTasks, error: linkedinError } = await supabaseClient
-      .from('linkedin_progress')
-      .select('*')
-      .eq('user_id', profile.user_id);
-
-    console.log('Fetched LinkedIn tasks count:', linkedinTasks?.length || 0);
-
-    // Fetch GitHub progress tasks
-    const { data: githubTasks, error: githubError } = await supabaseClient
-      .from('github_progress')
-      .select('*')
-      .eq('user_id', profile.user_id);
-
-    console.log('Fetched GitHub tasks count:', githubTasks?.length || 0);
-
     if (assignmentsError) {
       console.error('Error fetching assignments:', assignmentsError);
       return new Response(
@@ -125,7 +109,99 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Helper function to calculate module status
+    // Helper function to calculate module status with subcategory grouping
+    const calculateModuleStatusWithSubcategories = (moduleName: string) => {
+      const moduleTasks = assignments?.filter(
+        a => a.career_task_templates?.module === moduleName
+      ) || [];
+
+      // Group by subcategory
+      const subcategoryMap = new Map();
+      
+      moduleTasks.forEach(task => {
+        const subCategoryId = task.career_task_templates?.sub_category_id;
+        if (!subCategoryId) return;
+        
+        if (!subcategoryMap.has(subCategoryId)) {
+          subcategoryMap.set(subCategoryId, []);
+        }
+        subcategoryMap.get(subCategoryId).push(task);
+      });
+
+      // Filter out 100% completed subcategories, get incomplete ones
+      const incompleteSubcategories = [];
+      const completedSubcategories = [];
+      
+      subcategoryMap.forEach((tasks, subCategoryId) => {
+        const totalTasks = tasks.length;
+        const verifiedTasks = tasks.filter(t => t.status === 'verified').length;
+        const percentage = totalTasks > 0 ? Math.round((verifiedTasks / totalTasks) * 100) : 0;
+        
+        if (percentage === 100) {
+          completedSubcategories.push(subCategoryId);
+        } else {
+          incompleteSubcategories.push(...tasks);
+        }
+      });
+
+      // Calculate overall stats
+      const totalTasks = moduleTasks.length;
+      const verifiedTasks = moduleTasks.filter(a => a.status === 'verified').length;
+      const pendingTasks = totalTasks - verifiedTasks;
+
+      const progressPercentage = totalTasks > 0 
+        ? Math.round((verifiedTasks / totalTasks) * 100) 
+        : 0;
+
+      let status = 'Getting Started';
+      if (progressPercentage >= 100) {
+        status = 'Complete';
+      } else if (progressPercentage >= 50) {
+        status = 'In Progress';
+      }
+
+      const tasksByStatus = {
+        assigned: incompleteSubcategories.filter(a => a.status === 'assigned').length,
+        in_progress: incompleteSubcategories.filter(a => a.status === 'in_progress').length,
+        submitted: incompleteSubcategories.filter(a => a.status === 'submitted').length,
+        completed: incompleteSubcategories.filter(a => a.status === 'completed').length,
+        verified: incompleteSubcategories.filter(a => a.status === 'verified').length,
+      };
+
+      // Only return tasks from incomplete subcategories
+      const taskDetails = incompleteSubcategories.map(task => ({
+        id: task.id,
+        title: task.career_task_templates?.title || 'Unknown Task',
+        description: task.career_task_templates?.description || '',
+        status: task.status,
+        sub_category_id: task.career_task_templates?.sub_category_id,
+        points_reward: task.career_task_templates?.points_reward || 0,
+        points_earned: task.points_earned || 0,
+        assigned_at: task.assigned_at,
+        submitted_at: task.submitted_at,
+        verified_at: task.verified_at,
+        due_date: task.due_date,
+      }));
+
+      return {
+        progress_percentage: progressPercentage,
+        status: status,
+        total_tasks: totalTasks,
+        completed_tasks: verifiedTasks,
+        pending_tasks: pendingTasks,
+        completed_subcategories_count: completedSubcategories.length,
+        incomplete_tasks_count: incompleteSubcategories.length,
+        tasks: {
+          total: totalTasks,
+          verified: verifiedTasks,
+          pending: pendingTasks,
+          breakdown: tasksByStatus,
+          details: taskDetails,
+        }
+      };
+    };
+
+    // Helper function for simple module status (LinkedIn, GitHub, Portfolio)
     const calculateModuleStatus = (moduleName: string) => {
       const moduleTasks = assignments?.filter(
         a => a.career_task_templates?.module === moduleName
@@ -183,102 +259,10 @@ const handler = async (req: Request): Promise<Response> => {
       };
     };
 
-    // Helper function to calculate LinkedIn status from linkedin_progress table
-    const calculateLinkedInStatus = () => {
-      const totalTasks = linkedinTasks?.length || 0;
-      const completedTasks = linkedinTasks?.filter(t => t.completed === true).length || 0;
-      const pendingTasks = totalTasks - completedTasks;
-      
-      const progressPercentage = totalTasks > 0 
-        ? Math.round((completedTasks / totalTasks) * 100) 
-        : 0;
-
-      let status = 'Getting Started';
-      if (progressPercentage >= 100) {
-        status = 'Complete';
-      } else if (progressPercentage >= 50) {
-        status = 'In Progress';
-      }
-
-      const taskDetails = linkedinTasks?.map(task => ({
-        id: task.id,
-        task_id: task.task_id,
-        title: task.task_id?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'LinkedIn Task',
-        status: task.completed ? 'completed' : 'pending',
-        completed: task.completed,
-        completed_at: task.completed_at,
-        created_at: task.created_at,
-      })) || [];
-
-      return {
-        progress_percentage: progressPercentage,
-        status: status,
-        total_tasks: totalTasks,
-        completed_tasks: completedTasks,
-        pending_tasks: pendingTasks,
-        tasks: {
-          total: totalTasks,
-          verified: completedTasks,
-          pending: pendingTasks,
-          breakdown: {
-            completed: completedTasks,
-            pending: pendingTasks,
-          },
-          details: taskDetails,
-        }
-      };
-    };
-
-    // Helper function to calculate GitHub status from github_progress table
-    const calculateGitHubStatus = () => {
-      const totalTasks = githubTasks?.length || 0;
-      const completedTasks = githubTasks?.filter(t => t.completed === true).length || 0;
-      const pendingTasks = totalTasks - completedTasks;
-      
-      const progressPercentage = totalTasks > 0 
-        ? Math.round((completedTasks / totalTasks) * 100) 
-        : 0;
-
-      let status = 'Getting Started';
-      if (progressPercentage >= 100) {
-        status = 'Complete';
-      } else if (progressPercentage >= 50) {
-        status = 'In Progress';
-      }
-
-      const taskDetails = githubTasks?.map(task => ({
-        id: task.id,
-        task_id: task.task_id,
-        title: task.task_id?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'GitHub Task',
-        status: task.completed ? 'completed' : 'pending',
-        completed: task.completed,
-        completed_at: task.completed_at,
-        created_at: task.created_at,
-      })) || [];
-
-      return {
-        progress_percentage: progressPercentage,
-        status: status,
-        total_tasks: totalTasks,
-        completed_tasks: completedTasks,
-        pending_tasks: pendingTasks,
-        tasks: {
-          total: totalTasks,
-          verified: completedTasks,
-          pending: pendingTasks,
-          breakdown: {
-            completed: completedTasks,
-            pending: pendingTasks,
-          },
-          details: taskDetails,
-        }
-      };
-    };
-
     // Calculate status for all modules
-    const resumeStatus = calculateModuleStatus('RESUME');
-    const linkedinStatus = calculateLinkedInStatus();
-    const githubStatus = calculateGitHubStatus();
+    const resumeStatus = calculateModuleStatusWithSubcategories('RESUME');
+    const linkedinStatus = calculateModuleStatus('LINKEDIN');
+    const githubStatus = calculateModuleStatus('GITHUB');
     const portfolioStatus = calculateModuleStatus('PORTFOLIO');
 
     const responseData = {
