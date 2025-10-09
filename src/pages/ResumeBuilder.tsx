@@ -37,6 +37,7 @@ import { WriteEffectiveResumeDialog } from '@/components/WriteEffectiveResumeDia
 import { ResumePrerequisiteDialog } from '@/components/ResumePrerequisiteDialog';
 import { ResumeTemplatePreview } from '@/components/ResumeTemplatePreview';
 import { ResumeTemplateSelector } from '@/components/ResumeTemplateSelector';
+import { ResumeTemplateRenderer } from '@/components/ResumeTemplateRenderer';
 
 interface Experience {
   company: string;
@@ -52,7 +53,7 @@ interface Education {
   gpa?: string;
 }
 
-interface ResumeData {
+export interface ResumeData {
   personalDetails: {
     fullName: string;
     email: string;
@@ -3040,10 +3041,9 @@ ${resumeData.personalDetails.fullName}`;
                          </div>
                        ) : (
                          <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 300px)' }}>
-                           <ResumeTemplatePreview
+                           <ResumeTemplateRenderer
                              template={selectedTemplate}
-                             selected={true}
-                             onSelect={() => {}}
+                             resumeData={resumeData}
                            />
                          </div>
                        )}
