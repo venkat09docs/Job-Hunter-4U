@@ -80,7 +80,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Get career task assignments for RESUME and PORTFOLIO modules with fresh data
+    // Get career task assignments for all modules (RESUME, LINKEDIN, GITHUB, PORTFOLIO) with fresh data
     console.log('Fetching assignments for user:', profile.user_id);
     const { data: assignments, error: assignmentsError } = await supabaseClient
       .from('career_task_assignments')
@@ -100,24 +100,12 @@ const handler = async (req: Request): Promise<Response> => {
       .order('updated_at', { ascending: false });
 
     console.log('Fetched career assignments count:', assignments?.length || 0);
-
-    // Get LinkedIn tasks separately
-    const { data: linkedinTasks, error: linkedinError } = await supabaseClient
-      .from('linkedin_progress')
-      .select('*')
-      .eq('user_id', profile.user_id)
-      .order('updated_at', { ascending: false });
-
-    console.log('Fetched LinkedIn tasks count:', linkedinTasks?.length || 0);
-
-    // Get GitHub tasks separately
-    const { data: githubTasks, error: githubError } = await supabaseClient
-      .from('github_progress')
-      .select('*')
-      .eq('user_id', profile.user_id)
-      .order('updated_at', { ascending: false });
-
-    console.log('Fetched GitHub tasks count:', githubTasks?.length || 0);
+    console.log('Assignments by module:', {
+      resume: assignments?.filter(a => a.career_task_templates?.module === 'RESUME').length || 0,
+      linkedin: assignments?.filter(a => a.career_task_templates?.module === 'LINKEDIN').length || 0,
+      github: assignments?.filter(a => a.career_task_templates?.module === 'GITHUB').length || 0,
+      portfolio: assignments?.filter(a => a.career_task_templates?.module === 'PORTFOLIO').length || 0,
+    });
 
     if (assignmentsError) {
       console.error('Error fetching assignments:', assignmentsError);
@@ -125,14 +113,6 @@ const handler = async (req: Request): Promise<Response> => {
         JSON.stringify({ error: 'Failed to fetch assignments', details: assignmentsError.message }),
         { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );
-    }
-
-    if (linkedinError) {
-      console.error('Error fetching LinkedIn tasks:', linkedinError);
-    }
-
-    if (githubError) {
-      console.error('Error fetching GitHub tasks:', githubError);
     }
 
     // Helper function to calculate module status with subcategory grouping
@@ -227,15 +207,18 @@ const handler = async (req: Request): Promise<Response> => {
       };
     };
 
-    // Helper function for LinkedIn status from linkedin_progress table
+    // Helper function for LinkedIn status from career_task_assignments
     const calculateLinkedInStatus = () => {
-      const tasks = linkedinTasks || [];
-      const totalTasks = tasks.length;
-      const completedTasks = tasks.filter(t => t.completed === true).length;
-      const pendingTasks = totalTasks - completedTasks;
+      const moduleTasks = assignments?.filter(
+        a => a.career_task_templates?.module === 'LINKEDIN'
+      ) || [];
+
+      const totalTasks = moduleTasks.length;
+      const verifiedTasks = moduleTasks.filter(a => a.status === 'verified').length;
+      const pendingTasks = totalTasks - verifiedTasks;
 
       const progressPercentage = totalTasks > 0 
-        ? Math.round((completedTasks / totalTasks) * 100) 
+        ? Math.round((verifiedTasks / totalTasks) * 100) 
         : 0;
 
       let status = 'Getting Started';
@@ -245,50 +228,55 @@ const handler = async (req: Request): Promise<Response> => {
         status = 'In Progress';
       }
 
-      const taskDetails = tasks.map(task => ({
+      const tasksByStatus = {
+        assigned: moduleTasks.filter(a => a.status === 'assigned').length,
+        in_progress: moduleTasks.filter(a => a.status === 'in_progress').length,
+        submitted: moduleTasks.filter(a => a.status === 'submitted').length,
+        completed: moduleTasks.filter(a => a.status === 'completed').length,
+        verified: verifiedTasks,
+      };
+
+      const taskDetails = moduleTasks.map(task => ({
         id: task.id,
-        title: task.task_name || task.task_id || 'LinkedIn Task',
-        description: task.description || '',
-        status: task.completed ? 'verified' : 'assigned',
-        points_reward: 0,
-        points_earned: task.completed ? 10 : 0,
-        assigned_at: task.created_at,
-        submitted_at: task.completed ? task.updated_at : null,
-        verified_at: task.completed ? task.updated_at : null,
-        due_date: null,
+        title: task.career_task_templates?.title || 'Unknown Task',
+        description: task.career_task_templates?.description || '',
+        status: task.status,
+        points_reward: task.career_task_templates?.points_reward || 0,
+        points_earned: task.points_earned || 0,
+        assigned_at: task.assigned_at,
+        submitted_at: task.submitted_at,
+        verified_at: task.verified_at,
+        due_date: task.due_date,
       }));
 
       return {
         progress_percentage: progressPercentage,
         status: status,
         total_tasks: totalTasks,
-        completed_tasks: completedTasks,
+        completed_tasks: verifiedTasks,
         pending_tasks: pendingTasks,
         tasks: {
           total: totalTasks,
-          verified: completedTasks,
+          verified: verifiedTasks,
           pending: pendingTasks,
-          breakdown: {
-            assigned: pendingTasks,
-            in_progress: 0,
-            submitted: 0,
-            completed: 0,
-            verified: completedTasks,
-          },
+          breakdown: tasksByStatus,
           details: taskDetails,
         }
       };
     };
 
-    // Helper function for GitHub status from github_progress table
+    // Helper function for GitHub status from career_task_assignments
     const calculateGitHubStatus = () => {
-      const tasks = githubTasks || [];
-      const totalTasks = tasks.length;
-      const completedTasks = tasks.filter(t => t.completed === true).length;
-      const pendingTasks = totalTasks - completedTasks;
+      const moduleTasks = assignments?.filter(
+        a => a.career_task_templates?.module === 'GITHUB'
+      ) || [];
+
+      const totalTasks = moduleTasks.length;
+      const verifiedTasks = moduleTasks.filter(a => a.status === 'verified').length;
+      const pendingTasks = totalTasks - verifiedTasks;
 
       const progressPercentage = totalTasks > 0 
-        ? Math.round((completedTasks / totalTasks) * 100) 
+        ? Math.round((verifiedTasks / totalTasks) * 100) 
         : 0;
 
       let status = 'Getting Started';
@@ -298,36 +286,38 @@ const handler = async (req: Request): Promise<Response> => {
         status = 'In Progress';
       }
 
-      const taskDetails = tasks.map(task => ({
+      const tasksByStatus = {
+        assigned: moduleTasks.filter(a => a.status === 'assigned').length,
+        in_progress: moduleTasks.filter(a => a.status === 'in_progress').length,
+        submitted: moduleTasks.filter(a => a.status === 'submitted').length,
+        completed: moduleTasks.filter(a => a.status === 'completed').length,
+        verified: verifiedTasks,
+      };
+
+      const taskDetails = moduleTasks.map(task => ({
         id: task.id,
-        title: task.task_name || task.task_id || 'GitHub Task',
-        description: task.description || '',
-        status: task.completed ? 'verified' : 'assigned',
-        points_reward: 0,
-        points_earned: task.completed ? 10 : 0,
-        assigned_at: task.created_at,
-        submitted_at: task.completed ? task.updated_at : null,
-        verified_at: task.completed ? task.updated_at : null,
-        due_date: null,
+        title: task.career_task_templates?.title || 'Unknown Task',
+        description: task.career_task_templates?.description || '',
+        status: task.status,
+        points_reward: task.career_task_templates?.points_reward || 0,
+        points_earned: task.points_earned || 0,
+        assigned_at: task.assigned_at,
+        submitted_at: task.submitted_at,
+        verified_at: task.verified_at,
+        due_date: task.due_date,
       }));
 
       return {
         progress_percentage: progressPercentage,
         status: status,
         total_tasks: totalTasks,
-        completed_tasks: completedTasks,
+        completed_tasks: verifiedTasks,
         pending_tasks: pendingTasks,
         tasks: {
           total: totalTasks,
-          verified: completedTasks,
+          verified: verifiedTasks,
           pending: pendingTasks,
-          breakdown: {
-            assigned: pendingTasks,
-            in_progress: 0,
-            submitted: 0,
-            completed: 0,
-            verified: completedTasks,
-          },
+          breakdown: tasksByStatus,
           details: taskDetails,
         }
       };
