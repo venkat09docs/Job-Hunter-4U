@@ -395,7 +395,7 @@ export default function AICareerLevelUp() {
               </div>
               
               {/* Stats Grid - Below */}
-              <div className="grid grid-cols-2 gap-4 mt-8">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8">
                 {stats.map((stat, index) => (
                   <div key={index} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/30 hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
                     <stat.icon className={`h-8 w-8 ${stat.color} mx-auto mb-3`} />
