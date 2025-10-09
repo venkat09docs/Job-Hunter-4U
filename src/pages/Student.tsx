@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -64,6 +65,7 @@ import devopsHeroImage from "@/assets/devops-aws-ai-hero.jpg";
 
 export default function Student() {
   console.log("✅ Student page loading - Bot icons replaced with Cpu");
+  const navigate = useNavigate();
   const { getCourses, loading } = useCareerLevelProgram();
   const [courses, setCourses] = useState<Course[]>([]);
 
@@ -286,9 +288,9 @@ export default function Student() {
                 <Button 
                   size="lg" 
                   className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold px-10 py-4 text-lg shadow-2xl transform hover:scale-105 transition-all duration-300"
-                  onClick={() => scrollToSection('investment-plans')}
+                  onClick={() => navigate('/auth')}
                 >
-                  Start Your AI Career Today
+                  Analyze Your Resume For Free
                   <ArrowRight className="ml-3 h-6 w-6" />
                 </Button>
                 <Button 

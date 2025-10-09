@@ -306,9 +306,9 @@ export default function AICareerLevelUp() {
                 <Button 
                   size="lg" 
                   className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold px-10 py-4 text-lg shadow-2xl transform hover:scale-105 transition-all duration-300"
-                  onClick={() => scrollToSection('pricing')}
+                  onClick={() => navigate('/auth')}
                 >
-                  Start Your AI Career Today
+                  Analyze Your Resume For Free
                   <ArrowRight className="ml-3 h-6 w-6" />
                 </Button>
                 <Button 
