@@ -662,41 +662,6 @@ export default function AICareerLevelUp() {
                </CardContent>
              </Card>
 
-             <Card className="hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white border-0 shadow-lg">
-               <CardContent className="p-10 text-center">
-                 <div className="bg-gradient-to-br from-purple-500 to-indigo-600 p-6 rounded-3xl w-24 h-24 mx-auto mb-8 flex items-center justify-center">
-                   <Briefcase className="h-12 w-12 text-white" />
-                 </div>
-                 <h3 className="text-2xl font-bold mb-4 text-gray-900">Freelancers</h3>
-                 <p className="text-gray-700 leading-relaxed text-lg">
-                   Independent professionals seeking to integrate AI into their services
-                 </p>
-               </CardContent>
-             </Card>
-
-             <Card className="hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white border-0 shadow-lg">
-               <CardContent className="p-10 text-center">
-                 <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-3xl w-24 h-24 mx-auto mb-8 flex items-center justify-center">
-                   <Rocket className="h-12 w-12 text-white" />
-                 </div>
-                 <h3 className="text-2xl font-bold mb-4 text-gray-900">Solopreneurs</h3>
-                 <p className="text-gray-700 leading-relaxed text-lg">
-                   One-person businesses looking to leverage AI for competitive advantage
-                 </p>
-               </CardContent>
-             </Card>
-
-             <Card className="hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white border-0 shadow-lg">
-               <CardContent className="p-10 text-center">
-                 <div className="bg-gradient-to-br from-teal-500 to-emerald-600 p-6 rounded-3xl w-24 h-24 mx-auto mb-8 flex items-center justify-center">
-                   <Lightbulb className="h-12 w-12 text-white" />
-                 </div>
-                 <h3 className="text-2xl font-bold mb-4 text-gray-900">Entrepreneurs</h3>
-                 <p className="text-gray-700 leading-relaxed text-lg">
-                   Business owners looking to scale their ventures with AI integration
-                 </p>
-               </CardContent>
-             </Card>
            </div>
         </div>
       </section>
