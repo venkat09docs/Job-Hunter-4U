@@ -2409,9 +2409,24 @@ export default function AICareerLevelUp() {
             </div>
           </div>
           
-          <div className="border-t border-gray-800 mt-12 pt-8 text-center">
-            <p className="text-gray-400 text-lg">&copy; 2025 AI Career Level Up. All rights reserved.</p>
-            <p className="text-gray-500 mt-2">Empowering the next generation of AI professionals</p>
+          <div className="border-t border-gray-800 mt-12 pt-8">
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex items-center gap-4 text-sm">
+                <Link to="/privacy-policy" className="text-gray-400 hover:text-white transition-colors">
+                  Privacy Policy
+                </Link>
+                <span className="text-gray-600">•</span>
+                <Link to="/terms-of-service" className="text-gray-400 hover:text-white transition-colors">
+                  Terms
+                </Link>
+                <span className="text-gray-600">•</span>
+                <a href="#contact" className="text-gray-400 hover:text-white transition-colors">
+                  Contact
+                </a>
+              </div>
+              <p className="text-gray-400 text-lg">&copy; 2025 AI Career Level Up. All rights reserved.</p>
+              <p className="text-gray-500">Empowering the next generation of AI professionals</p>
+            </div>
           </div>
         </div>
       </footer>
