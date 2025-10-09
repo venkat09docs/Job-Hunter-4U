@@ -812,6 +812,16 @@ const Dashboard = () => {
                   Let's continue building your professional presence
                 </p>
               </div>
+              
+              {/* Resume Analyzer Button */}
+              <Button
+                onClick={() => navigate('/resume-analyzer')}
+                size="lg"
+                className="whitespace-nowrap"
+              >
+                <FileText className="h-5 w-5 mr-2" />
+                Resume Analyzer
+              </Button>
             </div>
 
             {/* Badge Leaders - Premium Feature */}
