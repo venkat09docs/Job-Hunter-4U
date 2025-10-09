@@ -191,20 +191,36 @@ const handler = async (req: Request): Promise<Response> => {
         subcategoryMap.get(subCategoryId).push(task);
       });
 
-      // Filter out 100% completed subcategories, get incomplete ones
-      const incompleteSubcategories = [];
-      const completedSubcategories = [];
+      // Build subcategory details with all tasks
+      const subcategoryDetails = [];
       
       subcategoryMap.forEach((tasks, subCategoryId) => {
         const totalTasks = tasks.length;
         const verifiedTasks = tasks.filter(t => t.status === 'verified').length;
         const percentage = totalTasks > 0 ? Math.round((verifiedTasks / totalTasks) * 100) : 0;
         
-        if (percentage === 100) {
-          completedSubcategories.push(subCategoryId);
-        } else {
-          incompleteSubcategories.push(...tasks);
-        }
+        const taskDetails = tasks.map(task => ({
+          id: task.id,
+          title: task.career_task_templates?.title || 'Unknown Task',
+          description: task.career_task_templates?.description || '',
+          status: task.status,
+          points_reward: task.career_task_templates?.points_reward || 0,
+          points_earned: task.points_earned || 0,
+          assigned_at: task.assigned_at,
+          submitted_at: task.submitted_at,
+          verified_at: task.verified_at,
+          due_date: task.due_date,
+        }));
+
+        subcategoryDetails.push({
+          sub_category_id: subCategoryId,
+          total_tasks: totalTasks,
+          verified_tasks: verifiedTasks,
+          pending_tasks: totalTasks - verifiedTasks,
+          completion_percentage: percentage,
+          is_complete: percentage === 100,
+          tasks: taskDetails
+        });
       });
 
       // Calculate overall stats
@@ -224,27 +240,12 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       const tasksByStatus = {
-        assigned: incompleteSubcategories.filter(a => a.status === 'assigned').length,
-        in_progress: incompleteSubcategories.filter(a => a.status === 'in_progress').length,
-        submitted: incompleteSubcategories.filter(a => a.status === 'submitted').length,
-        completed: incompleteSubcategories.filter(a => a.status === 'completed').length,
-        verified: incompleteSubcategories.filter(a => a.status === 'verified').length,
+        assigned: moduleTasks.filter(a => a.status === 'assigned').length,
+        in_progress: moduleTasks.filter(a => a.status === 'in_progress').length,
+        submitted: moduleTasks.filter(a => a.status === 'submitted').length,
+        completed: moduleTasks.filter(a => a.status === 'completed').length,
+        verified: verifiedTasks,
       };
-
-      // Only return tasks from incomplete subcategories
-      const taskDetails = incompleteSubcategories.map(task => ({
-        id: task.id,
-        title: task.career_task_templates?.title || 'Unknown Task',
-        description: task.career_task_templates?.description || '',
-        status: task.status,
-        sub_category_id: task.career_task_templates?.sub_category_id,
-        points_reward: task.career_task_templates?.points_reward || 0,
-        points_earned: task.points_earned || 0,
-        assigned_at: task.assigned_at,
-        submitted_at: task.submitted_at,
-        verified_at: task.verified_at,
-        due_date: task.due_date,
-      }));
 
       return {
         progress_percentage: progressPercentage,
@@ -252,14 +253,12 @@ const handler = async (req: Request): Promise<Response> => {
         total_tasks: totalTasks,
         completed_tasks: verifiedTasks,
         pending_tasks: pendingTasks,
-        completed_subcategories_count: completedSubcategories.length,
-        incomplete_tasks_count: incompleteSubcategories.length,
+        subcategories: subcategoryDetails,
         tasks: {
           total: totalTasks,
           verified: verifiedTasks,
           pending: pendingTasks,
           breakdown: tasksByStatus,
-          details: taskDetails,
         }
       };
     };
