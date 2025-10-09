@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Upload, FileText, Sparkles, AlertCircle, CheckCircle, XCircle } from "lucide-react";
+import { Upload, FileText, Sparkles, AlertCircle, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export default function ResumeAnalyzer() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -321,24 +323,119 @@ export default function ResumeAnalyzer() {
 
         {/* Analysis Results */}
         {analysisResult && (
-          <Card className="mt-8 shadow-xl border-2 border-primary/20">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-2xl">
-                <CheckCircle className="h-6 w-6 text-success" />
-                Analysis Results
-              </CardTitle>
-              <CardDescription>
-                AI-powered resume analysis based on your job description
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="prose prose-sm max-w-none dark:prose-invert">
-                <div className="whitespace-pre-wrap bg-accent/30 p-6 rounded-lg">
-                  {analysisResult}
+          <div className="mt-8 space-y-6">
+            <Card className="shadow-2xl border-2 border-primary/30 overflow-hidden">
+              <div className="bg-gradient-to-r from-primary to-primary-light p-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                    <CheckCircle className="h-8 w-8 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-2xl text-white font-bold">
+                      Resume Analysis Report
+                    </CardTitle>
+                    <CardDescription className="text-white/90 text-base mt-1">
+                      AI-powered insights to optimize your resume
+                    </CardDescription>
+                  </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+
+              <CardContent className="p-8">
+                <div className="prose prose-lg max-w-none dark:prose-invert">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      h2: ({node, ...props}) => <h2 className="text-2xl font-bold text-foreground mt-8 mb-4 pb-2 border-b-2 border-primary/20" {...props} />,
+                      h3: ({node, ...props}) => <h3 className="text-xl font-semibold text-foreground mt-6 mb-3" {...props} />,
+                      p: ({node, ...props}) => <p className="text-muted-foreground leading-relaxed my-3" {...props} />,
+                      ul: ({node, ...props}) => <ul className="space-y-2 my-4" {...props} />,
+                      ol: ({node, ...props}) => <ol className="space-y-2 my-4 list-decimal" {...props} />,
+                      li: ({node, ...props}) => <li className="ml-4 text-muted-foreground leading-relaxed" {...props} />,
+                      strong: ({node, ...props}) => <strong className="font-semibold text-foreground" {...props} />,
+                      code: ({node, ...props}) => <code className="bg-accent px-2 py-1 rounded text-sm" {...props} />,
+                    }}
+                  >
+                    {analysisResult}
+                  </ReactMarkdown>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-4 mt-8 pt-6 border-t border-border">
+                  <Button
+                    onClick={() => {
+                      const element = document.createElement('a');
+                      const file = new Blob([analysisResult], { type: 'text/plain' });
+                      element.href = URL.createObjectURL(file);
+                      element.download = 'resume-analysis-report.txt';
+                      document.body.appendChild(element);
+                      element.click();
+                      document.body.removeChild(element);
+                    }}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Download Report
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setAnalysisResult(null);
+                      setSelectedFile(null);
+                      setJobDescription('');
+                      toast({
+                        title: "Ready for new analysis",
+                        description: "Upload another resume to analyze.",
+                      });
+                    }}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Analyze Another Resume
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Stats */}
+            <div className="grid md:grid-cols-3 gap-4">
+              <Card className="border-2 border-success/20 bg-success/5">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="h-8 w-8 text-success" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Analysis</p>
+                      <p className="text-xl font-bold text-success">Complete</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="border-2 border-info/20 bg-info/5">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-3">
+                    <Sparkles className="h-8 w-8 text-info" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Powered by</p>
+                      <p className="text-xl font-bold text-info">AI</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="border-2 border-primary/20 bg-primary/5">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-8 w-8 text-primary" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Document</p>
+                      <p className="text-xl font-bold text-primary">Analyzed</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         )}
 
         {/* Features Grid */}

@@ -42,24 +42,38 @@ serve(async (req) => {
       throw new Error('Could not extract text from document or document is too short');
     }
 
-    // Prepare the analysis prompt with extracted text
-    const userPrompt = `You are an expert resume analyzer and career coach. Analyze the following resume text against the provided job description.
+    // Prepare the analysis prompt - don't include resume text in response
+    const systemPrompt = `You are an expert resume analyzer and career coach. Provide a comprehensive analysis in a structured format with clear sections. Use markdown formatting for better readability.`;
 
-Resume Content:
-${resumeText}
+    const userPrompt = `Analyze this resume against the job description below.
 
-Job Description:
+**Job Description:**
 ${jobDescription}
 
-Please provide a comprehensive analysis including:
-1. Overall Match Score (out of 100) - Be specific and justify the score
-2. Key Strengths that align with the job requirements
-3. Gaps or missing qualifications compared to the job description
-4. Specific optimization suggestions to improve the resume for this role
-5. Recommended keywords from the job description that should be added
-6. Formatting and presentation feedback
+**Resume Content:**
+${resumeText}
 
-Format your response in a clear, structured way with sections and bullet points.`;
+Provide your analysis in the following structure:
+
+## Match Score
+Provide an overall match score out of 100 with a brief justification.
+
+## Key Strengths
+List the top 3-5 strengths that align well with the job requirements.
+
+## Gaps & Missing Qualifications
+Identify what's missing or could be improved to better match the job description.
+
+## Optimization Suggestions
+Provide 5-7 specific, actionable recommendations to improve the resume for this role.
+
+## Recommended Keywords
+List important keywords from the job description that should be incorporated into the resume.
+
+## Overall Recommendation
+Provide a brief summary and next steps.
+
+Keep the analysis focused, actionable, and professional. Do NOT repeat the resume content in your response.`;
 
     console.log('Sending request to Gemini...');
 
@@ -72,10 +86,8 @@ Format your response in a clear, structured way with sections and bullet points.
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { 
-            role: "user", 
-            content: userPrompt
-          },
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
         ],
         max_tokens: 2000,
         temperature: 0.7,
