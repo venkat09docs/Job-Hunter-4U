@@ -395,27 +395,16 @@ export default function AICareerLevelUp() {
               </div>
               
               {/* Stats Grid - Below */}
-              <div className="hidden lg:grid grid-cols-2 gap-4 mt-8">
+              <div className="grid grid-cols-2 gap-4 mt-8">
                 {stats.map((stat, index) => (
-                  <div key={index} className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/30 hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
-                    <stat.icon className={`h-6 w-6 ${stat.color} mx-auto mb-2`} />
-                    <div className="text-lg font-bold text-white mb-1 text-center">{stat.value}</div>
-                    <div className="text-xs text-white/90 text-center">{stat.label}</div>
+                  <div key={index} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/30 hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
+                    <stat.icon className={`h-8 w-8 ${stat.color} mx-auto mb-3`} />
+                    <div className="text-2xl font-bold text-white mb-1 text-center">{stat.value}</div>
+                    <div className="text-sm text-white/90 text-center">{stat.label}</div>
                   </div>
                 ))}
               </div>
             </div>
-          </div>
-
-          {/* Mobile Stats Grid - Show on mobile */}
-          <div className="lg:hidden grid grid-cols-2 md:grid-cols-4 gap-4 mt-12 max-w-4xl mx-auto">
-            {stats.map((stat, index) => (
-              <div key={index} className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/30 hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
-                <stat.icon className={`h-6 w-6 ${stat.color} mx-auto mb-2`} />
-                <div className="text-lg font-bold text-white mb-1 text-center">{stat.value}</div>
-                <div className="text-xs text-white/90 text-center">{stat.label}</div>
-              </div>
-            ))}
           </div>
 
           {/* Scroll Indicator */}
