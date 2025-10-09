@@ -205,15 +205,24 @@ const handler = async (req: Request): Promise<Response> => {
         subcategoryMap.get(subCategoryId).push(task);
       });
 
-      // Build subcategory details with all tasks
+      // Build subcategory details - exclude assigned tasks
       const subcategoryDetails = [];
       
       subcategoryMap.forEach((tasks, subCategoryId) => {
-        const totalTasks = tasks.length;
-        const verifiedTasks = tasks.filter(t => t.status === 'verified').length;
+        // Filter out "assigned" tasks
+        const activeTasks = tasks.filter(t => t.status !== 'assigned');
+        
+        if (activeTasks.length === 0) return; // Skip subcategories with no active tasks
+        
+        const totalTasks = activeTasks.length;
+        const verifiedTasks = activeTasks.filter(t => t.status === 'verified').length;
         const percentage = totalTasks > 0 ? Math.round((verifiedTasks / totalTasks) * 100) : 0;
         
-        const taskDetails = tasks.map(task => ({
+        // Calculate total points earned in this subcategory
+        const pointsEarned = activeTasks.reduce((sum, task) => sum + (task.points_earned || 0), 0);
+        const maxPoints = activeTasks.reduce((sum, task) => sum + (task.career_task_templates?.points_reward || 0), 0);
+        
+        const taskDetails = activeTasks.map(task => ({
           id: task.id,
           title: task.career_task_templates?.title || 'Unknown Task',
           description: task.career_task_templates?.description || '',
@@ -233,13 +242,16 @@ const handler = async (req: Request): Promise<Response> => {
           pending_tasks: totalTasks - verifiedTasks,
           completion_percentage: percentage,
           is_complete: percentage === 100,
+          points_earned: pointsEarned,
+          max_points: maxPoints,
           tasks: taskDetails
         });
       });
 
-      // Calculate overall stats
-      const totalTasks = moduleTasks.length;
-      const verifiedTasks = moduleTasks.filter(a => a.status === 'verified').length;
+      // Calculate overall stats - exclude assigned tasks
+      const activeTasks = moduleTasks.filter(a => a.status !== 'assigned');
+      const totalTasks = activeTasks.length;
+      const verifiedTasks = activeTasks.filter(a => a.status === 'verified').length;
       const pendingTasks = totalTasks - verifiedTasks;
 
       const progressPercentage = totalTasks > 0 
@@ -254,12 +266,15 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       const tasksByStatus = {
-        assigned: moduleTasks.filter(a => a.status === 'assigned').length,
-        in_progress: moduleTasks.filter(a => a.status === 'in_progress').length,
-        submitted: moduleTasks.filter(a => a.status === 'submitted').length,
-        completed: moduleTasks.filter(a => a.status === 'completed').length,
+        in_progress: activeTasks.filter(a => a.status === 'in_progress').length,
+        submitted: activeTasks.filter(a => a.status === 'submitted').length,
+        completed: activeTasks.filter(a => a.status === 'completed').length,
         verified: verifiedTasks,
       };
+
+      // Calculate total points earned across all subcategories
+      const totalPointsEarned = activeTasks.reduce((sum, task) => sum + (task.points_earned || 0), 0);
+      const totalMaxPoints = activeTasks.reduce((sum, task) => sum + (task.career_task_templates?.points_reward || 0), 0);
 
       return {
         progress_percentage: progressPercentage,
@@ -267,6 +282,8 @@ const handler = async (req: Request): Promise<Response> => {
         total_tasks: totalTasks,
         completed_tasks: verifiedTasks,
         pending_tasks: pendingTasks,
+        points_earned: totalPointsEarned,
+        max_points: totalMaxPoints,
         subcategories: subcategoryDetails,
         tasks: {
           total: totalTasks,
@@ -285,8 +302,10 @@ const handler = async (req: Request): Promise<Response> => {
 
       console.log(`[LINKEDIN] Found ${moduleTasks.length} tasks`);
 
-      const totalTasks = moduleTasks.length;
-      const verifiedTasks = moduleTasks.filter(a => a.status === 'verified').length;
+      // Filter out assigned tasks
+      const activeTasks = moduleTasks.filter(a => a.status !== 'assigned');
+      const totalTasks = activeTasks.length;
+      const verifiedTasks = activeTasks.filter(a => a.status === 'verified').length;
       const pendingTasks = totalTasks - verifiedTasks;
 
       const progressPercentage = totalTasks > 0 
@@ -301,14 +320,13 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       const tasksByStatus = {
-        assigned: moduleTasks.filter(a => a.status === 'assigned').length,
-        in_progress: moduleTasks.filter(a => a.status === 'in_progress').length,
-        submitted: moduleTasks.filter(a => a.status === 'submitted').length,
-        completed: moduleTasks.filter(a => a.status === 'completed').length,
+        in_progress: activeTasks.filter(a => a.status === 'in_progress').length,
+        submitted: activeTasks.filter(a => a.status === 'submitted').length,
+        completed: activeTasks.filter(a => a.status === 'completed').length,
         verified: verifiedTasks,
       };
 
-      const taskDetails = moduleTasks.map(task => ({
+      const taskDetails = activeTasks.map(task => ({
         id: task.id,
         title: task.career_task_templates?.title || 'Unknown Task',
         description: task.career_task_templates?.description || '',
@@ -321,12 +339,18 @@ const handler = async (req: Request): Promise<Response> => {
         due_date: task.due_date,
       }));
 
+      // Calculate total points
+      const totalPointsEarned = activeTasks.reduce((sum, task) => sum + (task.points_earned || 0), 0);
+      const totalMaxPoints = activeTasks.reduce((sum, task) => sum + (task.career_task_templates?.points_reward || 0), 0);
+
       return {
         progress_percentage: progressPercentage,
         status: status,
         total_tasks: totalTasks,
         completed_tasks: verifiedTasks,
         pending_tasks: pendingTasks,
+        points_earned: totalPointsEarned,
+        max_points: totalMaxPoints,
         tasks: {
           total: totalTasks,
           verified: verifiedTasks,
@@ -345,8 +369,10 @@ const handler = async (req: Request): Promise<Response> => {
 
       console.log(`[GITHUB] Found ${moduleTasks.length} tasks`);
 
-      const totalTasks = moduleTasks.length;
-      const verifiedTasks = moduleTasks.filter(a => a.status === 'verified').length;
+      // Filter out assigned tasks
+      const activeTasks = moduleTasks.filter(a => a.status !== 'assigned');
+      const totalTasks = activeTasks.length;
+      const verifiedTasks = activeTasks.filter(a => a.status === 'verified').length;
       const pendingTasks = totalTasks - verifiedTasks;
 
       const progressPercentage = totalTasks > 0 
@@ -361,14 +387,13 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       const tasksByStatus = {
-        assigned: moduleTasks.filter(a => a.status === 'assigned').length,
-        in_progress: moduleTasks.filter(a => a.status === 'in_progress').length,
-        submitted: moduleTasks.filter(a => a.status === 'submitted').length,
-        completed: moduleTasks.filter(a => a.status === 'completed').length,
+        in_progress: activeTasks.filter(a => a.status === 'in_progress').length,
+        submitted: activeTasks.filter(a => a.status === 'submitted').length,
+        completed: activeTasks.filter(a => a.status === 'completed').length,
         verified: verifiedTasks,
       };
 
-      const taskDetails = moduleTasks.map(task => ({
+      const taskDetails = activeTasks.map(task => ({
         id: task.id,
         title: task.career_task_templates?.title || 'Unknown Task',
         description: task.career_task_templates?.description || '',
@@ -381,12 +406,18 @@ const handler = async (req: Request): Promise<Response> => {
         due_date: task.due_date,
       }));
 
+      // Calculate total points
+      const totalPointsEarned = activeTasks.reduce((sum, task) => sum + (task.points_earned || 0), 0);
+      const totalMaxPoints = activeTasks.reduce((sum, task) => sum + (task.career_task_templates?.points_reward || 0), 0);
+
       return {
         progress_percentage: progressPercentage,
         status: status,
         total_tasks: totalTasks,
         completed_tasks: verifiedTasks,
         pending_tasks: pendingTasks,
+        points_earned: totalPointsEarned,
+        max_points: totalMaxPoints,
         tasks: {
           total: totalTasks,
           verified: verifiedTasks,
@@ -405,8 +436,10 @@ const handler = async (req: Request): Promise<Response> => {
 
       console.log(`[PORTFOLIO] Found ${moduleTasks.length} tasks`);
 
-      const totalTasks = moduleTasks.length;
-      const verifiedTasks = moduleTasks.filter(a => a.status === 'verified').length;
+      // Filter out assigned tasks
+      const activeTasks = moduleTasks.filter(a => a.status !== 'assigned');
+      const totalTasks = activeTasks.length;
+      const verifiedTasks = activeTasks.filter(a => a.status === 'verified').length;
       const pendingTasks = totalTasks - verifiedTasks;
 
       const progressPercentage = totalTasks > 0 
@@ -421,14 +454,13 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       const tasksByStatus = {
-        assigned: moduleTasks.filter(a => a.status === 'assigned').length,
-        in_progress: moduleTasks.filter(a => a.status === 'in_progress').length,
-        submitted: moduleTasks.filter(a => a.status === 'submitted').length,
-        completed: moduleTasks.filter(a => a.status === 'completed').length,
+        in_progress: activeTasks.filter(a => a.status === 'in_progress').length,
+        submitted: activeTasks.filter(a => a.status === 'submitted').length,
+        completed: activeTasks.filter(a => a.status === 'completed').length,
         verified: verifiedTasks,
       };
 
-      const taskDetails = moduleTasks.map(task => ({
+      const taskDetails = activeTasks.map(task => ({
         id: task.id,
         title: task.career_task_templates?.title || 'Unknown Task',
         description: task.career_task_templates?.description || '',
@@ -441,12 +473,18 @@ const handler = async (req: Request): Promise<Response> => {
         due_date: task.due_date,
       }));
 
+      // Calculate total points
+      const totalPointsEarned = activeTasks.reduce((sum, task) => sum + (task.points_earned || 0), 0);
+      const totalMaxPoints = activeTasks.reduce((sum, task) => sum + (task.career_task_templates?.points_reward || 0), 0);
+
       return {
         progress_percentage: progressPercentage,
         status: status,
         total_tasks: totalTasks,
         completed_tasks: verifiedTasks,
         pending_tasks: pendingTasks,
+        points_earned: totalPointsEarned,
+        max_points: totalMaxPoints,
         tasks: {
           total: totalTasks,
           verified: verifiedTasks,
