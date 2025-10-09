@@ -21,6 +21,12 @@ export const ResumeTemplateRenderer = ({ template, resumeData }: ResumeTemplateR
         {resumeData.personalDetails.location && (
           <div className="text-gray-600 text-[6px]">{resumeData.personalDetails.location}</div>
         )}
+        {resumeData.personalDetails.linkedIn && (
+          <div className="text-gray-600 text-[6px]">{resumeData.personalDetails.linkedIn}</div>
+        )}
+        {resumeData.personalDetails.github && (
+          <div className="text-gray-600 text-[6px]">{resumeData.personalDetails.github}</div>
+        )}
       </div>
 
       {resumeData.professionalSummary && (
@@ -241,9 +247,11 @@ export const ResumeTemplateRenderer = ({ template, resumeData }: ResumeTemplateR
         {resumeData.experience[0]?.role && (
           <div className="text-[8px] mt-1">{resumeData.experience[0].role.toUpperCase()}</div>
         )}
-        <div className="text-[6.5px] mt-1">
-          {resumeData.personalDetails.email && `${resumeData.personalDetails.email}`}
-          {resumeData.personalDetails.phone && ` | ${resumeData.personalDetails.phone}`}
+        <div className="text-[6.5px] mt-1 space-y-0.5">
+          {resumeData.personalDetails.email && <div>{resumeData.personalDetails.email}</div>}
+          {resumeData.personalDetails.phone && <div>{resumeData.personalDetails.phone}</div>}
+          {resumeData.personalDetails.linkedIn && <div>{resumeData.personalDetails.linkedIn}</div>}
+          {resumeData.personalDetails.github && <div>{resumeData.personalDetails.github}</div>}
         </div>
       </div>
 
@@ -317,6 +325,12 @@ export const ResumeTemplateRenderer = ({ template, resumeData }: ResumeTemplateR
         {resumeData.personalDetails.location && (
           <div className="text-gray-700 text-[6.5px]">Location: {resumeData.personalDetails.location}</div>
         )}
+        {resumeData.personalDetails.linkedIn && (
+          <div className="text-gray-700 text-[6.5px]">LinkedIn: {resumeData.personalDetails.linkedIn}</div>
+        )}
+        {resumeData.personalDetails.github && (
+          <div className="text-gray-700 text-[6.5px]">GitHub: {resumeData.personalDetails.github}</div>
+        )}
       </div>
 
       {resumeData.professionalSummary && (
@@ -385,6 +399,7 @@ export const ResumeTemplateRenderer = ({ template, resumeData }: ResumeTemplateR
             {resumeData.personalDetails.email && <div>✉️ {resumeData.personalDetails.email}</div>}
             {resumeData.personalDetails.phone && <div>📱 {resumeData.personalDetails.phone}</div>}
             {resumeData.personalDetails.linkedIn && <div>🌐 {resumeData.personalDetails.linkedIn}</div>}
+            {resumeData.personalDetails.github && <div>💻 {resumeData.personalDetails.github}</div>}
           </div>
         </div>
 
