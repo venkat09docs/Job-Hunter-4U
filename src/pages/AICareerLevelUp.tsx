@@ -219,8 +219,8 @@ export default function AICareerLevelUp() {
   const steps = [
     { title: "Learn", description: "Master AI fundamentals and tools", icon: Brain, color: "bg-purple-500" },
     { title: "Build", description: "Create your digital portfolio", icon: Award, color: "bg-blue-500" },
-    { title: "Apply", description: "Land your dream job", icon: Target, color: "bg-orange-500" },
-    { title: "Launch", description: "Start your solopreneur journey", icon: Rocket, color: "bg-green-500" }
+    { title: "Apply", description: "Automate Job Hunting", icon: Target, color: "bg-orange-500" },
+    { title: "Get Hired", description: "Land Your Dream Job", icon: Rocket, color: "bg-green-500" }
   ];
 
   const testimonials = [
@@ -677,7 +677,7 @@ export default function AICareerLevelUp() {
               How It Works
             </h2>
             <p className="text-xl text-gray-700 max-w-3xl mx-auto">
-              Simple 4-step journey to AI mastery
+              Simple 4-step journey to Land Your Dream Job
             </p>
           </div>
           
