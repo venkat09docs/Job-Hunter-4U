@@ -101,6 +101,22 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Fetched assignments count:', assignments?.length || 0);
 
+    // Fetch LinkedIn progress tasks
+    const { data: linkedinTasks, error: linkedinError } = await supabaseClient
+      .from('linkedin_progress')
+      .select('*')
+      .eq('user_id', profile.user_id);
+
+    console.log('Fetched LinkedIn tasks count:', linkedinTasks?.length || 0);
+
+    // Fetch GitHub progress tasks
+    const { data: githubTasks, error: githubError } = await supabaseClient
+      .from('github_progress')
+      .select('*')
+      .eq('user_id', profile.user_id);
+
+    console.log('Fetched GitHub tasks count:', githubTasks?.length || 0);
+
     if (assignmentsError) {
       console.error('Error fetching assignments:', assignmentsError);
       return new Response(
@@ -167,10 +183,102 @@ const handler = async (req: Request): Promise<Response> => {
       };
     };
 
+    // Helper function to calculate LinkedIn status from linkedin_progress table
+    const calculateLinkedInStatus = () => {
+      const totalTasks = linkedinTasks?.length || 0;
+      const completedTasks = linkedinTasks?.filter(t => t.completed === true).length || 0;
+      const pendingTasks = totalTasks - completedTasks;
+      
+      const progressPercentage = totalTasks > 0 
+        ? Math.round((completedTasks / totalTasks) * 100) 
+        : 0;
+
+      let status = 'Getting Started';
+      if (progressPercentage >= 100) {
+        status = 'Complete';
+      } else if (progressPercentage >= 50) {
+        status = 'In Progress';
+      }
+
+      const taskDetails = linkedinTasks?.map(task => ({
+        id: task.id,
+        task_id: task.task_id,
+        title: task.task_id?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'LinkedIn Task',
+        status: task.completed ? 'completed' : 'pending',
+        completed: task.completed,
+        completed_at: task.completed_at,
+        created_at: task.created_at,
+      })) || [];
+
+      return {
+        progress_percentage: progressPercentage,
+        status: status,
+        total_tasks: totalTasks,
+        completed_tasks: completedTasks,
+        pending_tasks: pendingTasks,
+        tasks: {
+          total: totalTasks,
+          verified: completedTasks,
+          pending: pendingTasks,
+          breakdown: {
+            completed: completedTasks,
+            pending: pendingTasks,
+          },
+          details: taskDetails,
+        }
+      };
+    };
+
+    // Helper function to calculate GitHub status from github_progress table
+    const calculateGitHubStatus = () => {
+      const totalTasks = githubTasks?.length || 0;
+      const completedTasks = githubTasks?.filter(t => t.completed === true).length || 0;
+      const pendingTasks = totalTasks - completedTasks;
+      
+      const progressPercentage = totalTasks > 0 
+        ? Math.round((completedTasks / totalTasks) * 100) 
+        : 0;
+
+      let status = 'Getting Started';
+      if (progressPercentage >= 100) {
+        status = 'Complete';
+      } else if (progressPercentage >= 50) {
+        status = 'In Progress';
+      }
+
+      const taskDetails = githubTasks?.map(task => ({
+        id: task.id,
+        task_id: task.task_id,
+        title: task.task_id?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'GitHub Task',
+        status: task.completed ? 'completed' : 'pending',
+        completed: task.completed,
+        completed_at: task.completed_at,
+        created_at: task.created_at,
+      })) || [];
+
+      return {
+        progress_percentage: progressPercentage,
+        status: status,
+        total_tasks: totalTasks,
+        completed_tasks: completedTasks,
+        pending_tasks: pendingTasks,
+        tasks: {
+          total: totalTasks,
+          verified: completedTasks,
+          pending: pendingTasks,
+          breakdown: {
+            completed: completedTasks,
+            pending: pendingTasks,
+          },
+          details: taskDetails,
+        }
+      };
+    };
+
     // Calculate status for all modules
     const resumeStatus = calculateModuleStatus('RESUME');
-    const linkedinStatus = calculateModuleStatus('LINKEDIN');
-    const githubStatus = calculateModuleStatus('GITHUB');
+    const linkedinStatus = calculateLinkedInStatus();
+    const githubStatus = calculateGitHubStatus();
     const portfolioStatus = calculateModuleStatus('PORTFOLIO');
 
     const responseData = {
