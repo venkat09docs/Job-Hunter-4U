@@ -290,12 +290,20 @@ export default function AICareerLevelUp() {
                 🚀 Transform Your Career Today
               </Badge>
               
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-8 leading-tight animate-fade-in">
-                Your Complete Career Success Platform
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-8 leading-tight animate-fade-in">
+                <span className="bg-gradient-to-r from-yellow-300 via-pink-300 to-cyan-300 bg-clip-text text-transparent animate-pulse">
+                  Your Complete Career Success Platform
+                </span>
               </h1>
               
-              <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-white/90 mb-6 animate-fade-in">
-                Create stunning portfolios, track job applications with smart Kanban boards, and get AI-powered career insights - all in one powerful platform.
+              <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold mb-6 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                <span className="text-white/90">Create </span>
+                <span className="text-yellow-300 font-bold">stunning portfolios</span>
+                <span className="text-white/90">, track job applications with </span>
+                <span className="text-pink-300 font-bold">smart Kanban boards</span>
+                <span className="text-white/90">, and get </span>
+                <span className="text-cyan-300 font-bold">AI-powered career insights</span>
+                <span className="text-white/90"> - all in one powerful platform.</span>
               </h2>
               
               <div className="flex flex-col sm:flex-row gap-6 justify-center lg:justify-start items-center animate-fade-in">
