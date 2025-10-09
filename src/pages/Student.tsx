@@ -1225,23 +1225,6 @@ export default function Student() {
         </div>
       </section>
 
-      {/* Sticky Footer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-pink-500 to-purple-600 text-white p-4 z-50 shadow-lg">
-        <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-center sm:text-left">
-            <div className="font-bold text-lg">Ready to Transform Your Career?</div>
-            <div className="text-sm text-white/90">Join 6,000+ students already on their AI journey</div>
-          </div>
-          <Button 
-            className="bg-white text-purple-600 hover:bg-gray-100 font-semibold px-8 py-3 shadow-lg"
-            onClick={() => scrollToSection('investment-plans')}
-          >
-            Get Started Today
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
-        </div>
-      </div>
-
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-16 px-4 mb-20">
         <div className="container mx-auto max-w-7xl">

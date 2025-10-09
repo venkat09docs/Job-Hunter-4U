@@ -8,13 +8,13 @@ const Footer = () => {
     product: [
       { name: "Features", href: "#features" },
       { name: "Pricing", href: "#pricing" },
-      { name: "Contact", href: "#testimonials" },
       { name: "Blog", href: "#blog" }
     ],
     legal: [
       { name: "Privacy Policy", href: "/privacy-policy" },
       { name: "Terms of Service", href: "/terms-of-service" },
-      { name: "Cookie Policy", href: "/cookie-policy" }      
+      { name: "Cookie Policy", href: "/cookie-policy" },
+      { name: "Contact", href: "#testimonials" }
     ]
   };
 

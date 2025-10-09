@@ -1719,26 +1719,6 @@ const CareerLevelUp = () => {
         </div>
       </section>
 
-      {/* Sticky Footer CTA */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-orange to-amber text-white shadow-2xl border-t">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
-            <div className="text-center sm:text-left">
-              <p className="font-semibold text-sm sm:text-base">
-                🚀 Join Now — Early Bird ₹5,000 Off | Limited to First 25 Seats
-              </p>
-            </div>
-            <div className="flex items-center gap-4 text-xs sm:text-sm">
-              <Link to="/privacy-policy" className="hover:underline">Privacy Policy</Link>
-              <span className="text-white/60">•</span>
-              <Link to="/terms-of-service" className="hover:underline">Terms</Link>
-              <span className="text-white/60">•</span>
-              <Link to="/contact" className="hover:underline">Contact</Link>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Add bottom padding to account for sticky footer */}
       <div className="h-16"></div>
 
