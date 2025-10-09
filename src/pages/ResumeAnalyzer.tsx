@@ -1,15 +1,18 @@
 import { useState } from "react";
-import { Upload, FileText, Sparkles, AlertCircle } from "lucide-react";
+import { Upload, FileText, Sparkles, AlertCircle, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function ResumeAnalyzer() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [jobDescription, setJobDescription] = useState("");
   const [isDragging, setIsDragging] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleFileSelect = (file: File) => {
@@ -64,7 +67,7 @@ export default function ResumeAnalyzer() {
     }
   };
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     if (!selectedFile) {
       toast({
         variant: "destructive",
@@ -83,11 +86,53 @@ export default function ResumeAnalyzer() {
       return;
     }
 
-    // Backend functionality will be implemented later
-    toast({
-      title: "Analysis started",
-      description: "Your resume is being analyzed...",
-    });
+    setIsAnalyzing(true);
+    setAnalysisResult(null);
+
+    try {
+      // Convert PDF to base64
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        reader.onload = () => {
+          const base64 = reader.result?.toString().split(',')[1];
+          if (base64) resolve(base64);
+          else reject(new Error('Failed to read file'));
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(selectedFile);
+      });
+
+      const resumeBase64 = await base64Promise;
+
+      // Call the edge function
+      const { data, error } = await supabase.functions.invoke('analyze-resume', {
+        body: {
+          resumeBase64,
+          jobDescription: jobDescription.trim(),
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setAnalysisResult(data.analysis);
+      toast({
+        title: "Analysis complete!",
+        description: "Your resume has been analyzed successfully.",
+      });
+    } catch (error) {
+      console.error('Analysis error:', error);
+      toast({
+        variant: "destructive",
+        title: "Analysis failed",
+        description: error instanceof Error ? error.message : "Failed to analyze resume. Please try again.",
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const removeFile = () => {
@@ -257,16 +302,39 @@ export default function ResumeAnalyzer() {
           <Button
             size="lg"
             onClick={handleAnalyze}
+            disabled={isAnalyzing}
             className="px-12 h-14 text-lg font-semibold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all"
             variant="premium"
           >
             <Sparkles className="h-5 w-5 mr-2" />
-            Analyze Resume
+            {isAnalyzing ? "Analyzing..." : "Analyze Resume"}
           </Button>
           <p className="mt-4 text-sm text-muted-foreground">
             Get instant AI-powered feedback on your resume match
           </p>
         </div>
+
+        {/* Analysis Results */}
+        {analysisResult && (
+          <Card className="mt-8 shadow-xl border-2 border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-2xl">
+                <CheckCircle className="h-6 w-6 text-success" />
+                Analysis Results
+              </CardTitle>
+              <CardDescription>
+                AI-powered resume analysis based on your job description
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="prose prose-sm max-w-none dark:prose-invert">
+                <div className="whitespace-pre-wrap bg-accent/30 p-6 rounded-lg">
+                  {analysisResult}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Features Grid */}
         <div className="mt-16 grid md:grid-cols-3 gap-6">
