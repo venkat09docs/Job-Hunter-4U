@@ -328,38 +328,55 @@ export default function AICareerLevelUp() {
 
             {/* Right side - Career Level Up with Labels */}
             <div className="flex flex-col justify-center">
-              <div className="relative bg-gradient-to-br from-purple-900/40 to-pink-900/40 backdrop-blur-sm rounded-3xl p-12 border-2 border-white/30 shadow-2xl">
+              <div className="relative bg-gradient-to-br from-purple-900/50 via-pink-900/40 to-indigo-900/50 backdrop-blur-md rounded-3xl p-12 border-2 border-white/30 shadow-2xl overflow-hidden">
+                {/* Animated Background Pattern */}
+                <div className="absolute inset-0 opacity-20">
+                  <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-yellow-400/20 via-transparent to-transparent"></div>
+                  <div className="absolute top-1/4 right-0 w-64 h-64 bg-pink-500/30 rounded-full blur-3xl animate-pulse"></div>
+                  <div className="absolute bottom-1/4 left-0 w-48 h-48 bg-cyan-500/30 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                </div>
+                
+                {/* Grid Pattern Overlay */}
+                <div className="absolute inset-0 opacity-10" style={{
+                  backgroundImage: `
+                    linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)
+                  `,
+                  backgroundSize: '50px 50px'
+                }}></div>
+                
                 {/* Main Text */}
-                <div className="text-center mb-8">
-                  <h3 className="text-5xl md:text-6xl lg:text-7xl font-black text-white mb-4 animate-pulse">
+                <div className="text-center mb-8 relative z-10">
+                  <h3 className="text-5xl md:text-6xl lg:text-7xl font-black text-white mb-4 animate-pulse drop-shadow-2xl">
                     Career Level Up
                   </h3>
                 </div>
                 
                 {/* Labels Grid */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl p-4 transform hover:scale-105 transition-all duration-300 shadow-lg">
+                <div className="grid grid-cols-2 gap-4 relative z-10">
+                  <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl p-4 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl">
                     <div className="flex items-center justify-center gap-2">
                       <FileText className="h-5 w-5 text-white" />
                       <span className="text-white font-bold text-sm md:text-base">ATS Resume</span>
                     </div>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl p-4 transform hover:scale-105 transition-all duration-300 shadow-lg">
+                  <div className="bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl p-4 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl">
                     <div className="flex items-center justify-center gap-2">
                       <Brain className="h-5 w-5 text-white" />
                       <span className="text-white font-bold text-sm md:text-base">AI Generalist</span>
                     </div>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl p-4 transform hover:scale-105 transition-all duration-300 shadow-lg">
+                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl p-4 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl">
                     <div className="flex items-center justify-center gap-2">
                       <Briefcase className="h-5 w-5 text-white" />
                       <span className="text-white font-bold text-sm md:text-base">Job Hunting</span>
                     </div>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-green-500 to-teal-500 rounded-xl p-4 transform hover:scale-105 transition-all duration-300 shadow-lg">
+                  <div className="bg-gradient-to-r from-green-500 to-teal-500 rounded-xl p-4 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl">
                     <div className="flex items-center justify-center gap-2">
                       <Users className="h-5 w-5 text-white" />
                       <span className="text-white font-bold text-sm md:text-base">LinkedIn Optimization</span>
@@ -368,8 +385,9 @@ export default function AICareerLevelUp() {
                 </div>
                 
                 {/* Decorative Elements */}
-                <div className="absolute -top-4 -right-4 w-24 h-24 bg-yellow-400/30 rounded-full blur-xl animate-pulse"></div>
-                <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-pink-400/30 rounded-full blur-xl animate-pulse delay-500"></div>
+                <div className="absolute -top-6 -right-6 w-32 h-32 bg-yellow-400/40 rounded-full blur-2xl animate-pulse"></div>
+                <div className="absolute -bottom-6 -left-6 w-40 h-40 bg-pink-400/40 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                <div className="absolute top-1/2 right-0 w-20 h-20 bg-cyan-400/30 rounded-full blur-xl animate-pulse" style={{ animationDelay: '1s' }}></div>
               </div>
               
               {/* Stats Grid - Below */}
