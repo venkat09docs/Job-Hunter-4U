@@ -512,11 +512,25 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
             <Card key={category.id} className="shadow-elegant border-primary/20 overflow-hidden">
               <CardContent className="p-6">
                 {/* Category Header */}
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <CategoryIcon className="h-6 w-6 text-primary" />
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <CategoryIcon className="h-6 w-6 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-semibold">{category.title}</h3>
                   </div>
-                  <h3 className="text-xl font-semibold">{category.title}</h3>
+                  
+                  {/* Build Profile Button - Only show for Profile Build category */}
+                  {category.id === 'profile' && (
+                    <Button 
+                      onClick={() => navigate('/dashboard/build-my-profile')}
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                      size="sm"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      Build Profile
+                    </Button>
+                  )}
                 </div>
 
                 {/* Badge Grid */}
