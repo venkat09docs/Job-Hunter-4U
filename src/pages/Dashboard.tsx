@@ -1216,7 +1216,7 @@ const Dashboard = () => {
                     </Card>
 
                     {/* JobHunter Status */}
-                    <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/20 dark:to-amber-900/20 border-amber-200 dark:border-amber-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/job-tracker')}>
+                    <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/20 dark:to-amber-900/20 border-amber-200 dark:border-amber-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/dashboard/job-tracker')}>
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-3">
                           <div>
