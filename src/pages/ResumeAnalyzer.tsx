@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Upload, FileText, Sparkles, AlertCircle, CheckCircle, TrendingUp, AlertTriangle, Lightbulb, Target, Award, Zap, RefreshCw } from "lucide-react";
+import { Upload, FileText, Sparkles, AlertCircle, CheckCircle, TrendingUp, AlertTriangle, Lightbulb, Target, Award, Zap, RefreshCw, Download } from "lucide-react";
+import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "docx";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -29,6 +30,7 @@ export default function ResumeAnalyzer() {
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
   const [showPricingDialog, setShowPricingDialog] = useState(false);
   const [isRedefining, setIsRedefining] = useState(false);
+  const [showResultsDialog, setShowResultsDialog] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -168,6 +170,7 @@ export default function ResumeAnalyzer() {
       const usageResult = await incrementUsage();
       
       setAnalysisResult(data.analysis);
+      setShowResultsDialog(true);
       
       // Show appropriate toast based on usage
       if (usageResult.limitReached) {
@@ -273,6 +276,110 @@ export default function ResumeAnalyzer() {
       });
     } finally {
       setIsRedefining(false);
+    }
+  };
+
+  const handleDownloadWordReport = async () => {
+    if (!analysisResult || !analysis) return;
+
+    try {
+      const doc = new Document({
+        sections: [{
+          children: [
+            new Paragraph({
+              text: "Resume Analysis Report",
+              heading: HeadingLevel.HEADING_1,
+            }),
+            new Paragraph({ text: "" }),
+            new Paragraph({
+              text: "Match Score",
+              heading: HeadingLevel.HEADING_2,
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `${analysis.score}/100 - ${analysis.scoreText}`,
+                  bold: true,
+                }),
+              ],
+            }),
+            new Paragraph({ text: "" }),
+            new Paragraph({
+              text: "Key Strengths",
+              heading: HeadingLevel.HEADING_2,
+            }),
+            ...analysis.strengths.map((strength: string) => 
+              new Paragraph({
+                text: `• ${strength}`,
+                bullet: { level: 0 },
+              })
+            ),
+            new Paragraph({ text: "" }),
+            new Paragraph({
+              text: "Gaps & Missing Qualifications",
+              heading: HeadingLevel.HEADING_2,
+            }),
+            ...analysis.gaps.map((gap: string) => 
+              new Paragraph({
+                text: `• ${gap}`,
+                bullet: { level: 0 },
+              })
+            ),
+            new Paragraph({ text: "" }),
+            new Paragraph({
+              text: "Optimization Suggestions",
+              heading: HeadingLevel.HEADING_2,
+            }),
+            ...analysis.suggestions.map((suggestion: string) => 
+              new Paragraph({
+                text: `• ${suggestion}`,
+                bullet: { level: 0 },
+              })
+            ),
+            new Paragraph({ text: "" }),
+            new Paragraph({
+              text: "Recommended Keywords",
+              heading: HeadingLevel.HEADING_2,
+            }),
+            ...analysis.keywords.map((keyword: string) => 
+              new Paragraph({
+                text: `• ${keyword}`,
+                bullet: { level: 0 },
+              })
+            ),
+            new Paragraph({ text: "" }),
+            new Paragraph({
+              text: "Overall Recommendation",
+              heading: HeadingLevel.HEADING_2,
+            }),
+            new Paragraph({
+              text: analysis.recommendation,
+            }),
+          ],
+        }],
+      });
+
+      const blob = await Packer.toBlob(doc);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'resume-analysis-report.docx';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Report downloaded",
+        description: "Your analysis report has been downloaded as a Word document.",
+      });
+    } catch (error) {
+      console.error('Error downloading report:', error);
+      toast({
+        variant: "destructive",
+        title: "Download failed",
+        description: "Failed to download the report. Please try again.",
+      });
     }
   };
 
@@ -534,8 +641,17 @@ export default function ResumeAnalyzer() {
           )}
         </div>
 
-        {/* Analysis Results - Visual Report */}
-        {analysisResult && analysis && (
+        {/* Analysis Results Dialog */}
+        <Dialog open={showResultsDialog} onOpenChange={setShowResultsDialog}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold">Resume Analysis Report</DialogTitle>
+              <DialogDescription>
+                Detailed analysis of your resume against the job description
+              </DialogDescription>
+            </DialogHeader>
+
+            {analysisResult && analysis && (
           <div className="mt-8 space-y-6 animate-fade-in">
             {/* Header Card with Score */}
             <Card className="shadow-2xl border-2 border-primary/30 overflow-hidden">
@@ -694,25 +810,17 @@ export default function ResumeAnalyzer() {
             )}
 
             {/* Action Buttons */}
-            <Card className="border-2 border-border">
+            <Card className="border-2 border-border mt-6">
               <CardContent className="pt-6">
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button
-                    onClick={() => {
-                      const element = document.createElement('a');
-                      const file = new Blob([analysisResult], { type: 'text/plain' });
-                      element.href = URL.createObjectURL(file);
-                      element.download = 'resume-analysis-report.txt';
-                      document.body.appendChild(element);
-                      element.click();
-                      document.body.removeChild(element);
-                    }}
+                    onClick={handleDownloadWordReport}
                     variant="outline"
                     size="lg"
                     className="flex-1"
                   >
-                    <FileText className="h-5 w-5 mr-2" />
-                    Download Report
+                    <Download className="h-5 w-5 mr-2" />
+                    Download Word Report
                   </Button>
                   <Button
                     onClick={handleRedefineResume}
@@ -731,7 +839,9 @@ export default function ResumeAnalyzer() {
               </CardContent>
             </Card>
           </div>
-        )}
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Features Grid */}
         <div className="mt-16 grid md:grid-cols-3 gap-6">
