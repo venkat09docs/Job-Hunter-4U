@@ -40,6 +40,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
 const formSchema = z.object({
   companyName: z.string().min(1, "Company name is required"),
@@ -77,6 +79,82 @@ const AutomateJobHunting = () => {
   const [gmailId, setGmailId] = useState("");
   const [appPassword, setAppPassword] = useState("");
   const [acceptConsent, setAcceptConsent] = useState(false);
+  const [isSavingSmtp, setIsSavingSmtp] = useState(false);
+
+  // Load existing SMTP configuration
+  useEffect(() => {
+    const loadSmtpConfig = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('smtp_configurations')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (data) {
+        setGmailId(data.gmail_id);
+        setAppPassword(data.app_password);
+        setAcceptConsent(data.consent_given);
+      }
+    };
+
+    loadSmtpConfig();
+  }, []);
+
+  const handleSaveSmtpConfig = async () => {
+    if (!gmailId || !appPassword || !acceptConsent) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill all fields and accept the consent",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSavingSmtp(true);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to save SMTP configuration",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('smtp_configurations')
+        .upsert({
+          user_id: user.id,
+          gmail_id: gmailId,
+          app_password: appPassword,
+          consent_given: acceptConsent,
+        }, {
+          onConflict: 'user_id'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Gmail Server Configured",
+        description: "Your email server has been configured successfully",
+      });
+      setIsSmtpDialogOpen(false);
+    } catch (error) {
+      console.error('Error saving SMTP config:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save SMTP configuration. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingSmtp(false);
+    }
+  };
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -453,7 +531,7 @@ const AutomateJobHunting = () => {
         <Dialog open={isSmtpDialogOpen} onOpenChange={setIsSmtpDialogOpen}>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>Configure Email Server</DialogTitle>
+              <DialogTitle>Configure Gmail Server</DialogTitle>
               <DialogDescription>
                 Set up your Gmail credentials to enable automated email sending
               </DialogDescription>
@@ -461,7 +539,7 @@ const AutomateJobHunting = () => {
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <label htmlFor="gmail-id" className="text-sm font-medium">
-                  Gmail Id
+                  Gmail Id <span className="text-muted-foreground">(your resume email ID)</span>
                 </label>
                 <Input
                   id="gmail-id"
@@ -499,24 +577,10 @@ const AutomateJobHunting = () => {
             </div>
             <DialogFooter>
               <Button
-                onClick={() => {
-                  if (!gmailId || !appPassword || !acceptConsent) {
-                    toast({
-                      title: "Missing Information",
-                      description: "Please fill all fields and accept the consent",
-                      variant: "destructive",
-                    });
-                    return;
-                  }
-                  toast({
-                    title: "Gmail Server Configured",
-                    description: "Your email server has been configured successfully",
-                  });
-                  setIsSmtpDialogOpen(false);
-                }}
-                disabled={!acceptConsent}
+                onClick={handleSaveSmtpConfig}
+                disabled={!acceptConsent || isSavingSmtp}
               >
-                Configure Gmail Server
+                {isSavingSmtp ? "Saving..." : "Configure Gmail Server"}
               </Button>
             </DialogFooter>
           </DialogContent>

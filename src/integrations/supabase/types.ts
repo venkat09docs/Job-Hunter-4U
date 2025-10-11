@@ -4777,6 +4777,36 @@ export type Database = {
         }
         Relationships: []
       }
+      smtp_configurations: {
+        Row: {
+          app_password: string
+          consent_given: boolean
+          created_at: string
+          gmail_id: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          app_password: string
+          consent_given?: boolean
+          created_at?: string
+          gmail_id: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          app_password?: string
+          consent_given?: boolean
+          created_at?: string
+          gmail_id?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       social_proof_config: {
         Row: {
           created_at: string
