@@ -609,7 +609,7 @@ const AutomateJobHunting = () => {
                     Clear Form
                   </Button>
                   <Button type="submit" className="min-w-[150px]">
-                    Automate Job
+                    Add HR Details
                   </Button>
                 </div>
               </form>
