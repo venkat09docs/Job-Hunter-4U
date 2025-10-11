@@ -305,7 +305,7 @@ const AutomateJobHunting = () => {
               <div className="p-3 bg-primary/10 border-2 border-primary/20 rounded-xl">
                 <Zap className="h-8 w-8 text-primary stroke-[2.5]" />
               </div>
-              <h1 className="text-4xl font-bold">Automate Job Hunting</h1>
+              <h1 className="text-4xl font-bold">Add HR Details</h1>
             </div>
             <Button
               variant="outline"
