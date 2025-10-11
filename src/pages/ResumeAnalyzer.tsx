@@ -205,6 +205,17 @@ export default function ResumeAnalyzer() {
   };
 
   const handleRedefineResume = async () => {
+    // Check if user is premium
+    if (!usageInfo?.isPremium) {
+      setShowPricingDialog(true);
+      toast({
+        title: "Premium Feature",
+        description: "Redefine Resume is available only for subscribed users. Please upgrade to continue.",
+        variant: "default",
+      });
+      return;
+    }
+
     if (!selectedFile) {
       toast({
         variant: "destructive",
@@ -849,6 +860,7 @@ export default function ResumeAnalyzer() {
                     disabled={isRedefining}
                     size="lg"
                     className="flex-1"
+                    variant={usageInfo?.isPremium ? "default" : "outline"}
                   >
                     {isRedefining ? (
                       <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
@@ -856,6 +868,9 @@ export default function ResumeAnalyzer() {
                       <RefreshCw className="h-5 w-5 mr-2" />
                     )}
                     {isRedefining ? "Redefining..." : "Redefine Resume"}
+                    {!usageInfo?.isPremium && (
+                      <Zap className="h-4 w-4 ml-2 text-warning" />
+                    )}
                   </Button>
                 </div>
               </CardContent>
