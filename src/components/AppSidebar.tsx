@@ -67,6 +67,7 @@ const getMainItems = (isAdmin: boolean, isInstituteAdmin: boolean, isRecruiter: 
 ];
 
 const jobHunterItems = [
+  { title: "JobHunter LevelUp", url: "/job-hunter-level-up", icon: Trophy, featureKey: null },
   { title: "Find Your Next Role", url: "/dashboard/find-your-next-role", icon: Search, featureKey: "page_find_your_next_role" },
   { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText, featureKey: "page_job_tracker" },
   { title: "Job Search History", url: "/dashboard/job-search", icon: Search, featureKey: "page_job_search" },

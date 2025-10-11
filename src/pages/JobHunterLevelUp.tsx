@@ -14,7 +14,7 @@ const JobHunterLevelUp = () => {
       title: "Find Your Next Role",
       description: "Discover opportunities that match your skills",
       icon: Search,
-      route: "/find-your-next-role",
+      route: "/dashboard/find-your-next-role",
       color: "text-primary",
     },
     {
@@ -22,7 +22,7 @@ const JobHunterLevelUp = () => {
       title: "Job Tracker",
       description: "Track your applications and interviews",
       icon: ClipboardList,
-      route: "/job-tracker",
+      route: "/dashboard/job-tracker",
       color: "text-secondary",
     },
     {
@@ -30,7 +30,7 @@ const JobHunterLevelUp = () => {
       title: "Automate Job Hunting",
       description: "Streamline your job search process",
       icon: Zap,
-      route: "/job-hunting-assignments",
+      route: "/dashboard/job-hunting-assignments",
       color: "text-accent",
     },
     {
@@ -38,7 +38,7 @@ const JobHunterLevelUp = () => {
       title: "Job Search History",
       description: "Review your past applications",
       icon: History,
-      route: "#",
+      route: "/dashboard/job-search",
       color: "text-muted-foreground",
     },
   ];
