@@ -76,7 +76,11 @@ const AutomateJobHunting = () => {
   const [gmailId, setGmailId] = useState("");
   const [appPassword, setAppPassword] = useState("");
   const [acceptConsent, setAcceptConsent] = useState(false);
+  const [acceptOneMonthRestriction, setAcceptOneMonthRestriction] = useState(false);
+  const [confirmResumeEmail, setConfirmResumeEmail] = useState(false);
   const [isSavingSmtp, setIsSavingSmtp] = useState(false);
+  const [canEditSmtp, setCanEditSmtp] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
   // Load existing SMTP configuration
   useEffect(() => {
@@ -94,6 +98,14 @@ const AutomateJobHunting = () => {
         setGmailId(data.gmail_id);
         setAppPassword(data.app_password);
         setAcceptConsent(data.consent_given);
+        setLastUpdated(data.updated_at);
+        
+        // Check if last update was more than 30 days ago
+        const lastUpdateDate = new Date(data.updated_at);
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        
+        setCanEditSmtp(lastUpdateDate <= thirtyDaysAgo);
       }
     };
 
@@ -101,10 +113,10 @@ const AutomateJobHunting = () => {
   }, []);
 
   const handleSaveSmtpConfig = async () => {
-    if (!gmailId || !appPassword || !acceptConsent) {
+    if (!gmailId || !appPassword || !acceptConsent || !acceptOneMonthRestriction || !confirmResumeEmail) {
       toast({
         title: "Missing Information",
-        description: "Please fill all fields and accept the consent",
+        description: "Please fill all fields and accept all confirmations",
         variant: "destructive",
       });
       return;
@@ -138,9 +150,10 @@ const AutomateJobHunting = () => {
 
       toast({
         title: "Gmail Server Configured",
-        description: "Your email server has been configured successfully",
+        description: "Within 24 hours, your Gmail server will be activated to automate your job hunting process.",
       });
       setIsSmtpDialogOpen(false);
+      setCanEditSmtp(false);
     } catch (error) {
       console.error('Error saving SMTP config:', error);
       toast({
@@ -523,7 +536,9 @@ const AutomateJobHunting = () => {
             <DialogHeader>
               <DialogTitle>Configure Gmail Server</DialogTitle>
               <DialogDescription>
-                Set up your Gmail credentials to enable automated email sending
+                {canEditSmtp 
+                  ? "Set up your Gmail credentials to enable automated email sending"
+                  : "Your Gmail server configuration is locked. You can update it after 30 days from the last update."}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
@@ -537,6 +552,7 @@ const AutomateJobHunting = () => {
                   placeholder="your-email@gmail.com"
                   value={gmailId}
                   onChange={(e) => setGmailId(e.target.value)}
+                  disabled={!canEditSmtp}
                 />
               </div>
               <div className="space-y-2">
@@ -549,6 +565,7 @@ const AutomateJobHunting = () => {
                   placeholder="Enter your app password"
                   value={appPassword}
                   onChange={(e) => setAppPassword(e.target.value)}
+                  disabled={!canEditSmtp}
                 />
               </div>
               <div className="flex items-start space-x-2">
@@ -556,6 +573,7 @@ const AutomateJobHunting = () => {
                   id="consent"
                   checked={acceptConsent}
                   onCheckedChange={(checked) => setAcceptConsent(checked as boolean)}
+                  disabled={!canEditSmtp}
                 />
                 <label
                   htmlFor="consent"
@@ -564,11 +582,44 @@ const AutomateJobHunting = () => {
                   I consent to use my Gmail server credentials for automated email sending
                 </label>
               </div>
+              <div className="flex items-start space-x-2">
+                <Checkbox
+                  id="one-month-restriction"
+                  checked={acceptOneMonthRestriction}
+                  onCheckedChange={(checked) => setAcceptOneMonthRestriction(checked as boolean)}
+                  disabled={!canEditSmtp}
+                />
+                <label
+                  htmlFor="one-month-restriction"
+                  className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  I understand that once updated, I cannot change this Gmail server configuration for the next one month
+                </label>
+              </div>
+              <div className="flex items-start space-x-2">
+                <Checkbox
+                  id="resume-email"
+                  checked={confirmResumeEmail}
+                  onCheckedChange={(checked) => setConfirmResumeEmail(checked as boolean)}
+                  disabled={!canEditSmtp}
+                />
+                <label
+                  htmlFor="resume-email"
+                  className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  I confirm that this Gmail ID is related to my resume email and not a personal email
+                </label>
+              </div>
+              {lastUpdated && !canEditSmtp && (
+                <p className="text-sm text-muted-foreground">
+                  Last updated: {new Date(lastUpdated).toLocaleDateString()}
+                </p>
+              )}
             </div>
             <DialogFooter>
               <Button
                 onClick={handleSaveSmtpConfig}
-                disabled={!acceptConsent || isSavingSmtp}
+                disabled={!canEditSmtp || !acceptConsent || !acceptOneMonthRestriction || !confirmResumeEmail || isSavingSmtp}
               >
                 {isSavingSmtp ? "Saving..." : "Configure Gmail Server"}
               </Button>
