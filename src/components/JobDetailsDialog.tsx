@@ -40,6 +40,7 @@ export const JobDetailsDialog = ({
   const [existingReport, setExistingReport] = useState<any>(null);
   const [loadingReport, setLoadingReport] = useState(false);
   const [showExistingReport, setShowExistingReport] = useState(false);
+  const [addingToWishlist, setAddingToWishlist] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -72,6 +73,79 @@ export const JobDetailsDialog = ({
   const handleViewExistingReport = () => {
     if (existingReport) {
       setShowExistingReport(true);
+    }
+  };
+
+  const handleAddToWishlist = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please login to add jobs to your wishlist.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!jobDetails) return;
+
+      setAddingToWishlist(true);
+
+      // Check if job already exists in wishlist
+      const { data: existingJob, error: checkError } = await supabase
+        .from('job_tracker')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('company_name', jobDetails.companyDetails)
+        .eq('job_title', jobTitle)
+        .eq('status', 'wishlist')
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Error checking existing job:', checkError);
+        throw checkError;
+      }
+
+      if (existingJob) {
+        toast({
+          title: "Already in wishlist",
+          description: `${jobTitle} is already in your wishlist.`,
+        });
+        return;
+      }
+
+      // Add to wishlist
+      const { error: insertError } = await supabase
+        .from('job_tracker')
+        .insert({
+          user_id: user.id,
+          company_name: jobDetails.companyDetails || 'Unknown Company',
+          job_title: jobTitle || 'Unknown Position',
+          status: 'wishlist',
+          application_date: new Date().toISOString().split('T')[0],
+          job_url: jobDetails.url || '',
+          location: jobDetails.location || '',
+          notes: jobDetails.jobDescription ? jobDetails.jobDescription.substring(0, 500) + (jobDetails.jobDescription.length > 500 ? '...' : '') : '',
+        });
+
+      if (insertError) {
+        throw insertError;
+      }
+
+      toast({
+        title: "Added to Wishlist",
+        description: `${jobTitle} has been added to your job tracker.`,
+      });
+    } catch (error) {
+      console.error('Error adding to wishlist:', error);
+      toast({
+        title: "Error adding to wishlist",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setAddingToWishlist(false);
     }
   };
 
@@ -321,12 +395,14 @@ export const JobDetailsDialog = ({
               <Button
                 variant="outline"
                 className="flex-1"
-                onClick={() => {
-                  // Add to Wishlist functionality to be implemented
-                  console.log('Add to Wishlist clicked');
-                }}
+                onClick={handleAddToWishlist}
+                disabled={addingToWishlist}
               >
-                <Heart className="h-4 w-4 mr-2" />
+                {addingToWishlist ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Heart className="h-4 w-4 mr-2" />
+                )}
                 Add to Wishlist
               </Button>
             </div>
