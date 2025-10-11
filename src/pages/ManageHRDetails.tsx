@@ -395,62 +395,46 @@ const ManageHRDetails = () => {
           <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
+                <div className="p-3 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl border border-primary/20">
                   <Building2 className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <div>{selectedHR?.company_name}</div>
-                  <div className="text-sm font-normal text-muted-foreground mt-1">
+                  <div className="text-xl">{selectedHR?.company_name}</div>
+                  <div className="text-sm font-normal text-muted-foreground mt-1 flex items-center gap-2">
+                    <Briefcase className="h-3.5 w-3.5" />
                     {selectedHR?.job_title}
                   </div>
                 </div>
               </DialogTitle>
+              <DialogDescription>
+                Complete details about this job opportunity
+              </DialogDescription>
             </DialogHeader>
 
             {selectedHR && (
-              <div className="space-y-6 mt-4">
-                {/* Action Buttons */}
-                <div className="flex gap-3">
-                  <Button
-                    onClick={() => {
-                      setIsDetailDialogOpen(false);
-                      navigate("/dashboard/resume-builder");
-                    }}
-                    className="flex-1"
-                  >
-                    Resume Analyzer
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setIsDetailDialogOpen(false);
-                      navigate("/dashboard/automate-job-hunting");
-                    }}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    Automate Job
-                  </Button>
-                </div>
-
+              <div className="space-y-6 mt-4 animate-fade-in">
                 {/* Company Information */}
-                <div>
-                  <h3 className="text-sm font-semibold mb-3 text-muted-foreground">Company Information</h3>
+                <div className="p-4 bg-gradient-to-br from-blue-50/50 to-cyan-50/50 dark:from-blue-950/20 dark:to-cyan-950/20 rounded-xl border border-blue-200/50 dark:border-blue-800/50">
+                  <h3 className="text-sm font-semibold mb-4 text-blue-900 dark:text-blue-100 flex items-center gap-2">
+                    <Building2 className="h-4 w-4" />
+                    Company Information
+                  </h3>
                   <div className="grid grid-cols-2 gap-4">
                     {selectedHR.company_employees && (
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Employees</p>
+                      <div className="p-3 bg-white/50 dark:bg-gray-900/50 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1.5">Employees</p>
                         <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{selectedHR.company_employees}</span>
+                          <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                          <span className="text-sm font-medium">{selectedHR.company_employees}</span>
                         </div>
                       </div>
                     )}
                     {selectedHR.company_founded_year && (
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Founded</p>
+                      <div className="p-3 bg-white/50 dark:bg-gray-900/50 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1.5">Founded</p>
                         <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{selectedHR.company_founded_year}</span>
+                          <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                          <span className="text-sm font-medium">{selectedHR.company_founded_year}</span>
                         </div>
                       </div>
                     )}
@@ -459,10 +443,13 @@ const ManageHRDetails = () => {
 
                 {/* HR Contact */}
                 {selectedHR.hr_name && (
-                  <div>
-                    <h3 className="text-sm font-semibold mb-3 text-muted-foreground">HR Contact</h3>
-                    <div className="p-4 bg-muted/50 rounded-lg">
-                      <p className="font-medium mb-1">{selectedHR.hr_name}</p>
+                  <div className="p-4 bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-xl border border-purple-200/50 dark:border-purple-800/50">
+                    <h3 className="text-sm font-semibold mb-3 text-purple-900 dark:text-purple-100 flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      HR Contact
+                    </h3>
+                    <div className="p-3 bg-white/50 dark:bg-gray-900/50 rounded-lg">
+                      <p className="font-medium text-base mb-1">{selectedHR.hr_name}</p>
                       <p className="text-sm text-muted-foreground">{selectedHR.hr_email}</p>
                     </div>
                   </div>
@@ -470,29 +457,61 @@ const ManageHRDetails = () => {
 
                 {/* Job Description */}
                 {selectedHR.job_description && (
-                  <div>
-                    <h3 className="text-sm font-semibold mb-3 text-muted-foreground">Job Description</h3>
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{selectedHR.job_description}</p>
+                  <div className="p-4 bg-gradient-to-br from-green-50/50 to-emerald-50/50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-xl border border-green-200/50 dark:border-green-800/50">
+                    <h3 className="text-sm font-semibold mb-3 text-green-900 dark:text-green-100 flex items-center gap-2">
+                      <Briefcase className="h-4 w-4" />
+                      Job Description
+                    </h3>
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap p-3 bg-white/50 dark:bg-gray-900/50 rounded-lg">{selectedHR.job_description}</p>
                   </div>
                 )}
 
                 {/* Key Skills */}
                 {selectedHR.key_skills && (
-                  <div>
-                    <h3 className="text-sm font-semibold mb-3 text-muted-foreground">Key Skills Required</h3>
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{selectedHR.key_skills}</p>
+                  <div className="p-4 bg-gradient-to-br from-amber-50/50 to-orange-50/50 dark:from-amber-950/20 dark:to-orange-950/20 rounded-xl border border-amber-200/50 dark:border-amber-800/50">
+                    <h3 className="text-sm font-semibold mb-3 text-amber-900 dark:text-amber-100 flex items-center gap-2">
+                      <span className="text-base">⚡</span>
+                      Key Skills Required
+                    </h3>
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap p-3 bg-white/50 dark:bg-gray-900/50 rounded-lg">{selectedHR.key_skills}</p>
                   </div>
                 )}
 
                 {/* Date Added */}
-                <div className="pt-4 border-t">
-                  <p className="text-xs text-muted-foreground">
+                <div className="pt-4 border-t flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground flex items-center gap-2">
+                    <Calendar className="h-3.5 w-3.5" />
                     Added on {new Date(selectedHR.created_at).toLocaleDateString('en-US', { 
                       year: 'numeric', 
                       month: 'long', 
                       day: 'numeric' 
                     })}
                   </p>
+                </div>
+
+                {/* Action Buttons - At Bottom */}
+                <div className="flex gap-3 pt-4 border-t">
+                  <Button
+                    onClick={() => {
+                      setIsDetailDialogOpen(false);
+                      navigate("/dashboard/resume-builder");
+                    }}
+                    className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300 hover-scale"
+                  >
+                    <span className="mr-2">📄</span>
+                    Resume Analyzer
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setIsDetailDialogOpen(false);
+                      navigate("/dashboard/automate-job-hunting");
+                    }}
+                    variant="outline"
+                    className="flex-1 h-12 text-base font-semibold border-2 hover:bg-gradient-to-r hover:from-primary/10 hover:to-secondary/10 transition-all duration-300 hover-scale"
+                  >
+                    <span className="mr-2">🤖</span>
+                    Automate Job
+                  </Button>
                 </div>
               </div>
             )}
