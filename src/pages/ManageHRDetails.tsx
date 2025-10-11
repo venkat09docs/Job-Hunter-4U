@@ -11,10 +11,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
-import { ArrowLeft, Building2, Users, Calendar, Briefcase, Trash2, Search, Filter, X } from "lucide-react";
+import { ArrowLeft, Building2, Users, Calendar, Briefcase, Trash2, Search, Filter, X, Edit, Eye } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface HRDetail {
   id: string;
@@ -37,6 +44,8 @@ const ManageHRDetails = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBy, setFilterBy] = useState<"all" | "company" | "job_title" | "hr_name">("all");
+  const [selectedHR, setSelectedHR] = useState<HRDetail | null>(null);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchHRDetails();
@@ -134,6 +143,11 @@ const ManageHRDetails = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleViewDetails = (hr: HRDetail) => {
+    setSelectedHR(hr);
+    setIsDetailDialogOpen(true);
   };
 
   return (
@@ -296,7 +310,7 @@ const ManageHRDetails = () => {
             {filteredHrDetails.map((hr) => (
               <Card key={hr.id} className="hover:shadow-md transition-all border-l-4 border-l-primary/40 hover:border-l-primary">
                 <CardContent className="p-4">
-                  {/* Line 1: Company, Job Title, Delete Button */}
+                  {/* Line 1: Company, Job Title, Action Buttons */}
                   <div className="flex items-center justify-between gap-4 mb-2">
                     <div className="flex items-center gap-3 flex-1">
                       <div className="p-2 bg-primary/10 rounded-lg">
@@ -311,63 +325,156 @@ const ManageHRDetails = () => {
                         </div>
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(hr.id)}
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => navigate("/dashboard/automate-job-hunting")}
+                        className="text-primary hover:text-primary hover:bg-primary/10 h-8 w-8"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(hr.id)}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
 
-                  {/* Line 2: HR Contact, Company Details */}
-                  <div className="flex items-center gap-6 text-sm mb-2 flex-wrap">
-                    {hr.hr_name && (
-                      <>
-                        <span className="font-medium">{hr.hr_name}</span>
-                        <span className="text-muted-foreground">{hr.hr_email}</span>
-                        <span className="text-muted-foreground">•</span>
-                      </>
-                    )}
-                    {hr.company_employees && (
-                      <div className="flex items-center gap-1.5">
-                        <Users className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span>{hr.company_employees}</span>
-                      </div>
-                    )}
-                    {hr.company_founded_year && (
-                      <>
-                        <span className="text-muted-foreground">•</span>
+                  {/* Line 2: HR Contact, Company Details, View More */}
+                  <div className="flex items-center justify-between gap-6 text-sm flex-wrap">
+                    <div className="flex items-center gap-6 flex-wrap">
+                      {hr.hr_name && (
+                        <>
+                          <span className="font-medium">{hr.hr_name}</span>
+                          <span className="text-muted-foreground">{hr.hr_email}</span>
+                          <span className="text-muted-foreground">•</span>
+                        </>
+                      )}
+                      {hr.company_employees && (
                         <div className="flex items-center gap-1.5">
-                          <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span>Est. {hr.company_founded_year}</span>
+                          <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span>{hr.company_employees}</span>
                         </div>
-                      </>
-                    )}
-                    <span className="text-muted-foreground ml-auto text-xs">
-                      {new Date(hr.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </span>
-                  </div>
-
-                  {/* Line 3: Job Description & Skills (compact) */}
-                  <div className="flex items-start gap-4 text-sm text-muted-foreground">
-                    {hr.job_description && (
-                      <p className="line-clamp-1 flex-1">
-                        <span className="font-medium text-foreground">Description:</span> {hr.job_description}
-                      </p>
-                    )}
-                    {hr.key_skills && (
-                      <p className="line-clamp-1 flex-1">
-                        <span className="font-medium text-foreground">Skills:</span> {hr.key_skills}
-                      </p>
-                    )}
+                      )}
+                      {hr.company_founded_year && (
+                        <>
+                          <span className="text-muted-foreground">•</span>
+                          <div className="flex items-center gap-1.5">
+                            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span>Est. {hr.company_founded_year}</span>
+                          </div>
+                        </>
+                      )}
+                      <span className="text-muted-foreground text-xs">
+                        {new Date(hr.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
+                    </div>
+                    <Button
+                      variant="link"
+                      size="sm"
+                      onClick={() => handleViewDetails(hr)}
+                      className="text-primary gap-1.5 h-auto p-0"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                      View More Details
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         )}
+
+        {/* Details Dialog */}
+        <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Building2 className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <div>{selectedHR?.company_name}</div>
+                  <div className="text-sm font-normal text-muted-foreground mt-1">
+                    {selectedHR?.job_title}
+                  </div>
+                </div>
+              </DialogTitle>
+            </DialogHeader>
+
+            {selectedHR && (
+              <div className="space-y-6 mt-4">
+                {/* Company Information */}
+                <div>
+                  <h3 className="text-sm font-semibold mb-3 text-muted-foreground">Company Information</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    {selectedHR.company_employees && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Employees</p>
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">{selectedHR.company_employees}</span>
+                        </div>
+                      </div>
+                    )}
+                    {selectedHR.company_founded_year && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Founded</p>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">{selectedHR.company_founded_year}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* HR Contact */}
+                {selectedHR.hr_name && (
+                  <div>
+                    <h3 className="text-sm font-semibold mb-3 text-muted-foreground">HR Contact</h3>
+                    <div className="p-4 bg-muted/50 rounded-lg">
+                      <p className="font-medium mb-1">{selectedHR.hr_name}</p>
+                      <p className="text-sm text-muted-foreground">{selectedHR.hr_email}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Job Description */}
+                {selectedHR.job_description && (
+                  <div>
+                    <h3 className="text-sm font-semibold mb-3 text-muted-foreground">Job Description</h3>
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{selectedHR.job_description}</p>
+                  </div>
+                )}
+
+                {/* Key Skills */}
+                {selectedHR.key_skills && (
+                  <div>
+                    <h3 className="text-sm font-semibold mb-3 text-muted-foreground">Key Skills Required</h3>
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{selectedHR.key_skills}</p>
+                  </div>
+                )}
+
+                {/* Date Added */}
+                <div className="pt-4 border-t">
+                  <p className="text-xs text-muted-foreground">
+                    Added on {new Date(selectedHR.created_at).toLocaleDateString('en-US', { 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}
+                  </p>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
