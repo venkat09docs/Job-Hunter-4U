@@ -100,6 +100,7 @@ import InstitutesSubscriptionPlan from "./pages/InstitutesSubscriptionPlan";
 import AWSCerts from "./pages/AWSCerts";
 import AWSCertsAssistants from "./pages/AWSCertsAssistants";
 import ResumeAnalyzer from "./pages/ResumeAnalyzer";
+import JobHunterLevelUp from "./pages/JobHunterLevelUp";
 
 const queryClient = new QueryClient();
 
@@ -441,6 +442,14 @@ const AppContent = () => {
               <PremiumProtectedRoute featureKey="job_hunting_assignments">
                 <JobHuntingAssignments />
               </PremiumProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/job-hunter-level-up" 
+            element={
+              <ProtectedRoute>
+                <JobHunterLevelUp />
+              </ProtectedRoute>
             } 
           />
           <Route 
