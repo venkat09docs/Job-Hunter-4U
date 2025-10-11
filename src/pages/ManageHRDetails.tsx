@@ -409,6 +409,29 @@ const ManageHRDetails = () => {
 
             {selectedHR && (
               <div className="space-y-6 mt-4">
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  <Button
+                    onClick={() => {
+                      setIsDetailDialogOpen(false);
+                      navigate("/dashboard/resume-builder");
+                    }}
+                    className="flex-1"
+                  >
+                    Resume Analyzer
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setIsDetailDialogOpen(false);
+                      navigate("/dashboard/automate-job-hunting");
+                    }}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Automate Job
+                  </Button>
+                </div>
+
                 {/* Company Information */}
                 <div>
                   <h3 className="text-sm font-semibold mb-3 text-muted-foreground">Company Information</h3>
