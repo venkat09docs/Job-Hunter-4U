@@ -329,8 +329,53 @@ const ManageHRDetails = () => {
         throw new Error(data.error);
       }
 
-      // Store the redefined resume content and show in dialog
-      setRedefinedResumeContent(data.redefinedResume);
+      // Clean the resume content - remove any analysis or explanatory sections
+      let cleanedResume = data.redefinedResume;
+      
+      // Remove common analysis headers and their content
+      const analysisPatterns = [
+        /\*\*Analysis:?\*\*/gi,
+        /\*\*Recommendations?:?\*\*/gi,
+        /\*\*Notes?:?\*\*/gi,
+        /\*\*Summary:?\*\*/gi,
+        /Analysis:?\s*\n/gi,
+        /Recommendations?:?\s*\n/gi,
+        /Notes?:?\s*\n/gi,
+        /---+\s*Analysis[\s\S]*?---+/gi,
+        /---+\s*Recommendations?[\s\S]*?---+/gi,
+        /\[Analysis[\s\S]*?\]/gi,
+        /\(Analysis[\s\S]*?\)/gi,
+      ];
+
+      analysisPatterns.forEach(pattern => {
+        cleanedResume = cleanedResume.replace(pattern, '');
+      });
+
+      // Remove any lines that look like explanatory comments (starting with common markers)
+      const lines = cleanedResume.split('\n');
+      const filteredLines = lines.filter(line => {
+        const trimmed = line.trim().toLowerCase();
+        // Remove lines that are clearly analysis/explanations
+        return !(
+          trimmed.startsWith('analysis:') ||
+          trimmed.startsWith('note:') ||
+          trimmed.startsWith('recommendation:') ||
+          trimmed.startsWith('explanation:') ||
+          trimmed.startsWith('this resume') ||
+          trimmed.startsWith('the above') ||
+          trimmed.includes('has been optimized') ||
+          trimmed.includes('keyword optimization') ||
+          (trimmed.startsWith('**') && trimmed.includes('analysis'))
+        );
+      });
+
+      cleanedResume = filteredLines.join('\n');
+
+      // Remove excessive blank lines
+      cleanedResume = cleanedResume.replace(/\n{4,}/g, '\n\n\n');
+      
+      // Store the cleaned redefined resume content and show in dialog
+      setRedefinedResumeContent(cleanedResume.trim());
       setIsAnalysisDialogOpen(false);
       setIsRedefinedResumeDialogOpen(true);
 
