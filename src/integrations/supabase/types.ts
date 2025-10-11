@@ -2250,6 +2250,7 @@ export type Database = {
           id: string
           job_description: string
           job_title: string
+          key_skills: string | null
           resume_url: string | null
           updated_at: string
           user_id: string
@@ -2269,6 +2270,7 @@ export type Database = {
           id?: string
           job_description: string
           job_title: string
+          key_skills?: string | null
           resume_url?: string | null
           updated_at?: string
           user_id: string
@@ -2288,6 +2290,7 @@ export type Database = {
           id?: string
           job_description?: string
           job_title?: string
+          key_skills?: string | null
           resume_url?: string | null
           updated_at?: string
           user_id?: string

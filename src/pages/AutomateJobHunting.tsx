@@ -55,6 +55,7 @@ const formSchema = z.object({
   contactSource: z.string().min(1, "Contact source is required"),
   jobTitle: z.string().min(1, "Job title is required"),
   jobDescription: z.string().min(1, "Job description is required"),
+  keySkills: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -166,6 +167,7 @@ const AutomateJobHunting = () => {
       contactSource: "",
       jobTitle: "",
       jobDescription: "",
+      keySkills: "",
     },
   });
 
@@ -197,6 +199,7 @@ const AutomateJobHunting = () => {
           contact_source: data.contactSource,
           job_title: data.jobTitle,
           job_description: data.jobDescription,
+          key_skills: data.keySkills || null,
           cover_letter_url: null,
           resume_url: null,
         });
@@ -468,6 +471,24 @@ const AutomateJobHunting = () => {
                           <Textarea
                             placeholder="Enter job description, requirements, and responsibilities"
                             className="min-h-[150px]"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="keySkills"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Key Skills</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Enter key skills required for this position (optional)"
+                            className="min-h-[100px]"
                             {...field}
                           />
                         </FormControl>
