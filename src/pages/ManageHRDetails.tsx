@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
-import { ArrowLeft, Building2, Users, Calendar, Briefcase, Trash2, Search, Filter, X, Edit, Eye } from "lucide-react";
+import { ArrowLeft, Building2, Users, Calendar, Briefcase, Trash2, Search, Filter, X, Edit, Eye, Upload, FileText, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import ReactMarkdown from "react-markdown";
 
 interface HRDetail {
   id: string;
@@ -46,6 +47,11 @@ const ManageHRDetails = () => {
   const [filterBy, setFilterBy] = useState<"all" | "company" | "job_title" | "hr_name">("all");
   const [selectedHR, setSelectedHR] = useState<HRDetail | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [isAnalysisDialogOpen, setIsAnalysisDialogOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<string>("");
 
   useEffect(() => {
     fetchHRDetails();
@@ -148,6 +154,110 @@ const ManageHRDetails = () => {
   const handleViewDetails = (hr: HRDetail) => {
     setSelectedHR(hr);
     setIsDetailDialogOpen(true);
+  };
+
+  const handleResumeAnalyzerClick = () => {
+    setIsDetailDialogOpen(false);
+    setIsUploadDialogOpen(true);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
+      if (!validTypes.includes(file.type)) {
+        toast({
+          title: "Invalid File Type",
+          description: "Please upload a Word document (.doc or .docx)",
+          variant: "destructive",
+        });
+        return;
+      }
+      setSelectedFile(file);
+    }
+  };
+
+  const handleAnalyzeResume = async () => {
+    if (!selectedFile || !selectedHR) return;
+
+    setIsAnalyzing(true);
+    try {
+      // Convert file to base64
+      const reader = new FileReader();
+      reader.readAsDataURL(selectedFile);
+      
+      await new Promise((resolve, reject) => {
+        reader.onload = resolve;
+        reader.onerror = reject;
+      });
+
+      const base64 = (reader.result as string).split(',')[1];
+      
+      // Combine job description and key skills
+      const jobDescription = `${selectedHR.job_description}${selectedHR.key_skills ? '\n\nKey Skills Required:\n' + selectedHR.key_skills : ''}`;
+
+      // Call the analyze-resume edge function
+      const { data, error } = await supabase.functions.invoke('analyze-resume', {
+        body: {
+          resumeBase64: base64,
+          jobDescription: jobDescription
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setAnalysisResult(data.analysis);
+      setIsUploadDialogOpen(false);
+      setIsAnalysisDialogOpen(true);
+
+      toast({
+        title: "Analysis Complete",
+        description: "Your resume has been analyzed successfully.",
+      });
+    } catch (error) {
+      console.error('Error analyzing resume:', error);
+      toast({
+        title: "Analysis Failed",
+        description: error instanceof Error ? error.message : "Failed to analyze resume. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleSaveReport = async () => {
+    if (!analysisResult || !selectedHR) return;
+
+    try {
+      // Create a text file with the analysis
+      const blob = new Blob([analysisResult], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Resume_Analysis_${selectedHR.company_name.replace(/\s+/g, '_')}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Report Saved",
+        description: "Analysis report has been downloaded successfully.",
+      });
+    } catch (error) {
+      console.error('Error saving report:', error);
+      toast({
+        title: "Save Failed",
+        description: "Failed to save the report. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -492,10 +602,7 @@ const ManageHRDetails = () => {
                 {/* Action Buttons - At Bottom */}
                 <div className="flex gap-3 pt-4 border-t">
                   <Button
-                    onClick={() => {
-                      setIsDetailDialogOpen(false);
-                      navigate("/dashboard/resume-builder");
-                    }}
+                    onClick={handleResumeAnalyzerClick}
                     className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300 hover-scale"
                   >
                     <span className="mr-2">📄</span>
@@ -515,6 +622,138 @@ const ManageHRDetails = () => {
                 </div>
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Resume Upload Dialog */}
+        <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl">
+                  <Upload className="h-6 w-6 text-primary" />
+                </div>
+                Upload Your Resume
+              </DialogTitle>
+              <DialogDescription>
+                Upload your resume to analyze it against {selectedHR?.company_name}'s job requirements
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6 mt-4">
+              {/* Job Info Preview */}
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="text-sm font-semibold mb-2">Analyzing for:</p>
+                <p className="text-base font-bold">{selectedHR?.company_name}</p>
+                <p className="text-sm text-muted-foreground">{selectedHR?.job_title}</p>
+              </div>
+
+              {/* File Upload */}
+              <div className="space-y-3">
+                <label htmlFor="resume-upload" className="block">
+                  <div className="border-2 border-dashed border-primary/40 rounded-xl p-8 text-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-all duration-300">
+                    {selectedFile ? (
+                      <div className="space-y-2">
+                        <FileText className="h-12 w-12 text-primary mx-auto" />
+                        <p className="text-sm font-medium">{selectedFile.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(selectedFile.size / 1024).toFixed(1)} KB
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Upload className="h-12 w-12 text-muted-foreground mx-auto" />
+                        <p className="text-sm font-medium">Click to upload resume</p>
+                        <p className="text-xs text-muted-foreground">
+                          Supported: .doc, .docx (Max 10MB)
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <Input
+                    id="resume-upload"
+                    type="file"
+                    accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsUploadDialogOpen(false)}
+                  className="flex-1"
+                  disabled={isAnalyzing}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleAnalyzeResume}
+                  disabled={!selectedFile || isAnalyzing}
+                  className="flex-1 bg-gradient-to-r from-primary to-primary/80"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="mr-2 h-4 w-4" />
+                      Analyze Resume
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Analysis Result Dialog */}
+        <Dialog open={isAnalysisDialogOpen} onOpenChange={setIsAnalysisDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-xl border border-green-500/30">
+                  <FileText className="h-6 w-6 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <div>Resume Analysis Report</div>
+                  <div className="text-sm font-normal text-muted-foreground mt-1">
+                    {selectedHR?.company_name} - {selectedHR?.job_title}
+                  </div>
+                </div>
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-6 mt-4 animate-fade-in">
+              {/* Analysis Content */}
+              <div className="prose prose-sm dark:prose-invert max-w-none p-6 bg-gradient-to-br from-slate-50/50 to-gray-50/50 dark:from-slate-900/50 dark:to-gray-900/50 rounded-xl border">
+                <ReactMarkdown>{analysisResult}</ReactMarkdown>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4 border-t">
+                <Button
+                  onClick={() => navigate("/dashboard/resume-builder")}
+                  className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <Edit className="mr-2 h-5 w-5" />
+                  Redefine Resume
+                </Button>
+                <Button
+                  onClick={handleSaveReport}
+                  variant="outline"
+                  className="flex-1 h-12 text-base font-semibold border-2 hover:bg-gradient-to-r hover:from-primary/10 hover:to-secondary/10 transition-all duration-300"
+                >
+                  <FileText className="mr-2 h-5 w-5" />
+                  Save Report
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
