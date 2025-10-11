@@ -368,6 +368,7 @@ const FindYourNextRole = () => {
 
       // Fetch default resume PDF from resources library
       let defaultResumePdfUrl = null;
+      let resumePdfBase64 = null;
       try {
         const { data: resumeData, error: resumeError } = await supabase
           .from('saved_resumes')
@@ -379,6 +380,18 @@ const FindYourNextRole = () => {
         if (!resumeError && resumeData?.pdf_url) {
           defaultResumePdfUrl = resumeData.pdf_url;
           console.log('Found default resume PDF:', defaultResumePdfUrl);
+
+          // Fetch the blob and convert to base64
+          try {
+            const response = await fetch(defaultResumePdfUrl);
+            const blob = await response.blob();
+            const arrayBuffer = await blob.arrayBuffer();
+            const uint8Array = new Uint8Array(arrayBuffer);
+            resumePdfBase64 = btoa(String.fromCharCode(...uint8Array));
+            console.log('Converted resume to base64, size:', resumePdfBase64.length);
+          } catch (blobError) {
+            console.error('Error converting PDF to base64:', blobError);
+          }
         }
       } catch (resumeError) {
         console.log('No default resume found or error fetching it:', resumeError);
@@ -394,7 +407,8 @@ const FindYourNextRole = () => {
           language: "en",
           job_requirements: formData.job_requirements,
           employment_type: formData.employment_type === "ALL" ? "FULLTIME,CONTRACTOR,PARTTIME,INTERN" : formData.employment_type,
-          resume_pdf_url: defaultResumePdfUrl
+          resume_pdf_url: defaultResumePdfUrl,
+          resume_pdf_base64: resumePdfBase64
         }
       });
 
