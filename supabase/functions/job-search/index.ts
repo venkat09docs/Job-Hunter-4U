@@ -13,6 +13,7 @@ interface JobSearchRequest {
   language: string;
   job_requirements: string;
   employment_type: string;
+  resume_pdf_url?: string;
 }
 
 Deno.serve(async (req) => {
@@ -50,6 +51,7 @@ Deno.serve(async (req) => {
     let language: string;
     let job_requirements: string;
     let employment_type: string;
+    let resume_pdf_url: string | null;
 
     if (req.method === 'GET') {
       const url = new URL(req.url);
@@ -60,6 +62,7 @@ Deno.serve(async (req) => {
       language = url.searchParams.get('language') || 'en';
       job_requirements = url.searchParams.get('job_requirements') || 'under_3_years_experience';
       employment_type = url.searchParams.get('employment_type') || 'FULLTIME';
+      resume_pdf_url = url.searchParams.get('resume_pdf_url') || null;
     } else {
       const body = await req.json();
       query = body.query;
@@ -69,13 +72,14 @@ Deno.serve(async (req) => {
       language = body.language;
       job_requirements = body.job_requirements;
       employment_type = body.employment_type;
+      resume_pdf_url = body.resume_pdf_url || null;
     }
     
     if (!query) {
       throw new Error('Missing required field: query');
     }
 
-    console.log('Job search request:', { query, num_pages, date_posted, country, language, job_requirements, employment_type });
+    console.log('Job search request:', { query, num_pages, date_posted, country, language, job_requirements, employment_type, resume_pdf_url });
 
     // Use the production n8n webhook URL
     const n8nWebhookUrl = 'https://n8n.srv995073.hstgr.cloud/webhook/jsearch';
@@ -99,7 +103,8 @@ Deno.serve(async (req) => {
           country,
           language,
           job_requirements,
-          employment_type
+          employment_type,
+          resume_pdf_url
         }),
       });
 
@@ -159,7 +164,8 @@ Deno.serve(async (req) => {
               country,
               language,
               job_requirements,
-              employment_type
+              employment_type,
+              resume_pdf_url
             },
             results: jobResults,
             results_count: jobResults.length,
@@ -191,7 +197,8 @@ Deno.serve(async (req) => {
             country,
             language,
             job_requirements,
-            employment_type
+            employment_type,
+            resume_pdf_url
           },
           totalResults: jobResults.length
         }

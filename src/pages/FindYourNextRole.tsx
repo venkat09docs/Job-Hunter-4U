@@ -366,6 +366,24 @@ const FindYourNextRole = () => {
       // Track job search analytics
       await incrementAnalytics('job_search');
 
+      // Fetch default resume PDF from resources library
+      let defaultResumePdfUrl = null;
+      try {
+        const { data: resumeData, error: resumeError } = await supabase
+          .from('saved_resumes')
+          .select('pdf_url')
+          .eq('user_id', user?.id)
+          .eq('is_default', true)
+          .single();
+
+        if (!resumeError && resumeData?.pdf_url) {
+          defaultResumePdfUrl = resumeData.pdf_url;
+          console.log('Found default resume PDF:', defaultResumePdfUrl);
+        }
+      } catch (resumeError) {
+        console.log('No default resume found or error fetching it:', resumeError);
+      }
+
       // Call the Supabase edge function for job search
       const { data, error } = await supabase.functions.invoke('job-search', {
         body: {
@@ -375,7 +393,8 @@ const FindYourNextRole = () => {
           country: formData.country,
           language: "en",
           job_requirements: formData.job_requirements,
-          employment_type: formData.employment_type === "ALL" ? "FULLTIME,CONTRACTOR,PARTTIME,INTERN" : formData.employment_type
+          employment_type: formData.employment_type === "ALL" ? "FULLTIME,CONTRACTOR,PARTTIME,INTERN" : formData.employment_type,
+          resume_pdf_url: defaultResumePdfUrl
         }
       });
 
