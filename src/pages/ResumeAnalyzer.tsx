@@ -252,20 +252,39 @@ export default function ResumeAnalyzer() {
       }
 
       // The redefined resume will be in data.redefinedResume
-      // Download it automatically
+      // Download it automatically as Word document
       if (data.redefinedResume) {
-        const element = document.createElement('a');
-        const file = new Blob([data.redefinedResume], { type: 'text/plain' });
-        element.href = URL.createObjectURL(file);
-        element.download = 'redefined-resume.txt';
-        document.body.appendChild(element);
-        element.click();
-        document.body.removeChild(element);
+        // Split the content into paragraphs
+        const paragraphs = data.redefinedResume.split('\n').filter((line: string) => line.trim());
+        
+        // Create Word document
+        const doc = new Document({
+          sections: [{
+            children: paragraphs.map((text: string) => 
+              new Paragraph({
+                children: [new TextRun(text)],
+                spacing: {
+                  after: 200,
+                },
+              })
+            ),
+          }],
+        });
+
+        const blob = await Packer.toBlob(doc);
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'redefined-resume.docx';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
       }
 
       toast({
         title: "Resume redefined successfully!",
-        description: "Your redefined resume has been downloaded.",
+        description: "Your redefined resume has been downloaded as a Word document.",
       });
     } catch (error) {
       console.error('Redefine error:', error);
