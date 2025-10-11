@@ -52,7 +52,6 @@ Deno.serve(async (req) => {
     let job_requirements: string;
     let employment_type: string;
     let resume_pdf_url: string | null;
-    let resume_pdf_base64: string | null;
 
     if (req.method === 'GET') {
       const url = new URL(req.url);
@@ -64,7 +63,6 @@ Deno.serve(async (req) => {
       job_requirements = url.searchParams.get('job_requirements') || 'under_3_years_experience';
       employment_type = url.searchParams.get('employment_type') || 'FULLTIME';
       resume_pdf_url = url.searchParams.get('resume_pdf_url') || null;
-      resume_pdf_base64 = null;
     } else {
       const body = await req.json();
       query = body.query;
@@ -75,7 +73,6 @@ Deno.serve(async (req) => {
       job_requirements = body.job_requirements;
       employment_type = body.employment_type;
       resume_pdf_url = body.resume_pdf_url || null;
-      resume_pdf_base64 = body.resume_pdf_base64 || null;
     }
     
     if (!query) {
@@ -84,10 +81,24 @@ Deno.serve(async (req) => {
 
     console.log('Job search request:', { query, num_pages, date_posted, country, language, job_requirements, employment_type, resume_pdf_url });
 
-    if (resume_pdf_base64) {
-      console.log('Received PDF base64 from frontend, size:', resume_pdf_base64.length);
-    } else {
-      console.log('No PDF base64 received from frontend');
+    // Fetch PDF file content if URL is provided
+    let resumePdfBase64 = null;
+    if (resume_pdf_url) {
+      try {
+        console.log('Fetching PDF from URL:', resume_pdf_url);
+        const pdfResponse = await fetch(resume_pdf_url);
+        if (pdfResponse.ok) {
+          const pdfArrayBuffer = await pdfResponse.arrayBuffer();
+          const pdfUint8Array = new Uint8Array(pdfArrayBuffer);
+          // Convert to base64
+          resumePdfBase64 = btoa(String.fromCharCode(...pdfUint8Array));
+          console.log('PDF file converted to base64, size:', resumePdfBase64.length);
+        } else {
+          console.error('Failed to fetch PDF:', pdfResponse.status);
+        }
+      } catch (pdfError) {
+        console.error('Error fetching PDF file:', pdfError);
+      }
     }
 
     // Use the production n8n webhook URL
@@ -114,7 +125,7 @@ Deno.serve(async (req) => {
           job_requirements,
           employment_type,
           resume_pdf_url,
-          resume_pdf_base64: resume_pdf_base64
+          resume_pdf_base64: resumePdfBase64
         }),
       });
 
@@ -124,18 +135,7 @@ Deno.serve(async (req) => {
       if (!n8nResponse.ok) {
         const errorText = await n8nResponse.text();
         console.error('n8n webhook error response:', errorText);
-        
-        // Parse error details if available
-        let errorMessage = `Webhook returned status ${n8nResponse.status}`;
-        try {
-          const errorJson = JSON.parse(errorText);
-          errorMessage = errorJson.message || errorMessage;
-        } catch {
-          // If not JSON, use the text as is
-          errorMessage = errorText || errorMessage;
-        }
-        
-        throw new Error(`n8n webhook failed: ${errorMessage}. Please ensure the n8n workflow is active.`);
+        throw new Error(`n8n webhook failed: ${n8nResponse.status} ${n8nResponse.statusText} - ${errorText}`);
       }
 
       // Read response as text first to handle empty responses
@@ -158,8 +158,11 @@ Deno.serve(async (req) => {
     } catch (fetchError) {
       console.error('Error calling n8n webhook:', fetchError);
       
-      // Return error information to the user instead of silently failing
-      throw new Error(`Job search webhook failed: ${fetchError.message}. Please check that the n8n workflow is active and the webhook URL is correct.`);
+      // Return empty result when webhook fails
+      console.log('n8n webhook failed, returning empty result');
+      n8nResult = {
+        jobs: []
+      };
     }
 
     // Process the job search results

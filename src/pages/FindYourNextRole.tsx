@@ -368,7 +368,6 @@ const FindYourNextRole = () => {
 
       // Fetch default resume PDF from resources library
       let defaultResumePdfUrl = null;
-      let resumePdfBase64 = null;
       try {
         const { data: resumeData, error: resumeError } = await supabase
           .from('saved_resumes')
@@ -380,25 +379,6 @@ const FindYourNextRole = () => {
         if (!resumeError && resumeData?.pdf_url) {
           defaultResumePdfUrl = resumeData.pdf_url;
           console.log('Found default resume PDF:', defaultResumePdfUrl);
-
-          // Try to fetch and convert to base64 in the browser
-          try {
-            console.log('Attempting to fetch PDF for conversion to base64...');
-            const response = await fetch(defaultResumePdfUrl);
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const blob = await response.blob();
-            const arrayBuffer = await blob.arrayBuffer();
-            const uint8Array = new Uint8Array(arrayBuffer);
-            resumePdfBase64 = btoa(String.fromCharCode(...uint8Array));
-            console.log('Successfully converted resume to base64, size:', resumePdfBase64.length);
-          } catch (fetchError) {
-            console.warn('Could not fetch resume (blob URL may be expired):', fetchError);
-            // Continue without resume - don't block the job search
-            defaultResumePdfUrl = null;
-            resumePdfBase64 = null;
-          }
         }
       } catch (resumeError) {
         console.log('No default resume found or error fetching it:', resumeError);
@@ -414,8 +394,7 @@ const FindYourNextRole = () => {
           language: "en",
           job_requirements: formData.job_requirements,
           employment_type: formData.employment_type === "ALL" ? "FULLTIME,CONTRACTOR,PARTTIME,INTERN" : formData.employment_type,
-          resume_pdf_url: defaultResumePdfUrl,
-          resume_pdf_base64: resumePdfBase64
+          resume_pdf_url: defaultResumePdfUrl
         }
       });
 
@@ -673,13 +652,9 @@ const FindYourNextRole = () => {
 
     } catch (error) {
       console.error('Error searching jobs:', error);
-      
-      // Display the actual error message if available
-      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
-      
       toast({
-        title: "Job Search Failed",
-        description: errorMessage,
+        title: "Search Error",
+        description: "Please try again later.",
         variant: "destructive",
       });
     } finally {

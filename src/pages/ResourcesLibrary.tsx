@@ -449,7 +449,7 @@ const ResourcesLibrary = () => {
     }
   };
 
-  const downloadFile = async (url: string, filename: string) => {
+  const downloadFile = (url: string, filename: string) => {
     if (url.startsWith('#')) {
       toast({
         title: 'Download not available',
@@ -459,62 +459,12 @@ const ResourcesLibrary = () => {
       return;
     }
     
-    // Check if it's an expired blob URL
-    if (url.startsWith('blob:')) {
-      toast({
-        title: 'Download not available',
-        description: 'This file is no longer available. Please regenerate your resume from the Resume Builder.',
-        variant: 'destructive'
-      });
-      return;
-    }
-    
-    try {
-      // If it's a Supabase storage URL, fetch it properly
-      if (url.includes('supabase.co/storage')) {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Failed to fetch file');
-        
-        const blob = await response.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Clean up
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-        
-        toast({
-          title: 'Download started',
-          description: `${filename} is being downloaded.`,
-        });
-      } else {
-        // Regular URL download
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        link.target = '_blank';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        toast({
-          title: 'Download started',
-          description: `${filename} is being downloaded.`,
-        });
-      }
-    } catch (error) {
-      console.error('Error downloading file:', error);
-      toast({
-        title: 'Download failed',
-        description: 'Could not download the file. Please try regenerating your resume from the Resume Builder.',
-        variant: 'destructive'
-      });
-    }
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const downloadCoverLetterTXT = (coverLetter: SavedCoverLetter) => {
