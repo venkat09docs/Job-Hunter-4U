@@ -23,7 +23,7 @@ const JobHunterLevelUp = () => {
       description: "Track your applications and interviews",
       icon: ClipboardList,
       route: "/dashboard/job-tracker",
-      color: "text-secondary",
+      color: "text-emerald",
     },
     {
       id: 3,
@@ -31,7 +31,7 @@ const JobHunterLevelUp = () => {
       description: "Streamline your job search process",
       icon: Zap,
       route: "/dashboard/job-hunting-assignments",
-      color: "text-accent",
+      color: "text-warning",
     },
     {
       id: 4,
@@ -39,7 +39,7 @@ const JobHunterLevelUp = () => {
       description: "Review your past applications",
       icon: History,
       route: "/dashboard/job-search",
-      color: "text-muted-foreground",
+      color: "text-violet",
     },
   ];
 
