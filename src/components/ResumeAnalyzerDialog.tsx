@@ -15,13 +15,17 @@ interface ResumeAnalyzerDialogProps {
   onOpenChange: (open: boolean) => void;
   jobDescription: string;
   keySkills: string[];
+  jobTitle: string;
+  companyName?: string;
 }
 
 export const ResumeAnalyzerDialog = ({
   open,
   onOpenChange,
   jobDescription,
-  keySkills
+  keySkills,
+  jobTitle,
+  companyName
 }: ResumeAnalyzerDialogProps) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -302,23 +306,53 @@ export const ResumeAnalyzerDialog = ({
     }
   };
 
-  const handleSaveReport = () => {
+  const handleSaveReport = async () => {
     if (!analysisResult) return;
     
-    const blob = new Blob([analysisResult], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `resume-analysis-report-${new Date().getTime()}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    toast({
-      title: "Report saved",
-      description: "Analysis report has been downloaded",
-    });
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          variant: "destructive",
+          title: "Authentication required",
+          description: "Please sign in to save the report",
+        });
+        return;
+      }
+
+      // Parse the analysis to save as structured data
+      const parsedAnalysis = parseAnalysis(analysisResult);
+
+      // Save to database
+      const { error } = await supabase
+        .from('resume_analysis_reports')
+        .insert({
+          user_id: user.id,
+          job_title: jobTitle,
+          company_name: companyName || 'Unknown Company',
+          job_description: jobDescription,
+          key_skills: keySkills,
+          analysis_result: {
+            raw: analysisResult,
+            parsed: parsedAnalysis
+          },
+          resume_file_name: selectedFile?.name || 'resume.docx'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Report saved successfully",
+        description: "Analysis report has been saved to your account",
+      });
+    } catch (error) {
+      console.error('Error saving report:', error);
+      toast({
+        variant: "destructive",
+        title: "Failed to save report",
+        description: error instanceof Error ? error.message : "Please try again",
+      });
+    }
   };
 
   const parseAnalysis = (text: string) => {

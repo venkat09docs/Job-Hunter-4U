@@ -4382,6 +4382,45 @@ export type Database = {
         }
         Relationships: []
       }
+      resume_analysis_reports: {
+        Row: {
+          analysis_result: Json
+          company_name: string | null
+          created_at: string
+          id: string
+          job_description: string
+          job_title: string
+          key_skills: string[]
+          resume_file_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          analysis_result?: Json
+          company_name?: string | null
+          created_at?: string
+          id?: string
+          job_description: string
+          job_title: string
+          key_skills?: string[]
+          resume_file_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          analysis_result?: Json
+          company_name?: string | null
+          created_at?: string
+          id?: string
+          job_description?: string
+          job_title?: string
+          key_skills?: string[]
+          resume_file_name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       resume_analysis_usage: {
         Row: {
           analysis_count: number
