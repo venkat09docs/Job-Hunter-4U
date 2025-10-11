@@ -80,7 +80,9 @@ export const JobDetailsDialog = ({
     
     let highlightedText = text;
     keywords.forEach(keyword => {
-      const regex = new RegExp(`\\b(${keyword})\\b`, 'gi');
+      // Escape special regex characters to prevent regex errors
+      const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`\\b(${escapedKeyword})\\b`, 'gi');
       highlightedText = highlightedText.replace(
         regex,
         '<mark class="bg-primary/20 font-semibold">$1</mark>'
