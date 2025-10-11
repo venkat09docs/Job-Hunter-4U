@@ -28,10 +28,18 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Zap, Building2, Briefcase, ArrowLeft } from "lucide-react";
+import { Zap, Building2, Briefcase, ArrowLeft, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
-import { NotificationBell } from "@/components/NotificationBell";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const formSchema = z.object({
   companyName: z.string().min(1, "Company name is required"),
@@ -65,6 +73,10 @@ const AutomateJobHunting = () => {
   const navigate = useNavigate();
   const [coverLetterFile, setCoverLetterFile] = useState<File | null>(null);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [isSmtpDialogOpen, setIsSmtpDialogOpen] = useState(false);
+  const [gmailId, setGmailId] = useState("");
+  const [appPassword, setAppPassword] = useState("");
+  const [acceptConsent, setAcceptConsent] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -113,7 +125,6 @@ const AutomateJobHunting = () => {
             Go Back to Job Dashboard
           </Button>
           <div className="flex items-center gap-4">
-            <NotificationBell />
             <UserProfileDropdown />
           </div>
         </div>
@@ -121,11 +132,21 @@ const AutomateJobHunting = () => {
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-3 bg-primary/10 border-2 border-primary/20 rounded-xl">
-              <Zap className="h-8 w-8 text-primary stroke-[2.5]" />
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-primary/10 border-2 border-primary/20 rounded-xl">
+                <Zap className="h-8 w-8 text-primary stroke-[2.5]" />
+              </div>
+              <h1 className="text-4xl font-bold">Automate Job Hunting</h1>
             </div>
-            <h1 className="text-4xl font-bold">Automate Job Hunting</h1>
+            <Button
+              variant="outline"
+              onClick={() => setIsSmtpDialogOpen(true)}
+              className="gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              Configure SMTP Server
+            </Button>
           </div>
           <p className="text-muted-foreground text-lg">
             Streamline your job application process by filling in the details below
@@ -427,6 +448,79 @@ const AutomateJobHunting = () => {
             </Form>
           </CardContent>
         </Card>
+
+        {/* SMTP Configuration Dialog */}
+        <Dialog open={isSmtpDialogOpen} onOpenChange={setIsSmtpDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Configure Email Server</DialogTitle>
+              <DialogDescription>
+                Set up your Gmail credentials to enable automated email sending
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <label htmlFor="gmail-id" className="text-sm font-medium">
+                  Gmail Id
+                </label>
+                <Input
+                  id="gmail-id"
+                  type="email"
+                  placeholder="your-email@gmail.com"
+                  value={gmailId}
+                  onChange={(e) => setGmailId(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="app-password" className="text-sm font-medium">
+                  App Password
+                </label>
+                <Input
+                  id="app-password"
+                  type="password"
+                  placeholder="Enter your app password"
+                  value={appPassword}
+                  onChange={(e) => setAppPassword(e.target.value)}
+                />
+              </div>
+              <div className="flex items-start space-x-2">
+                <Checkbox
+                  id="consent"
+                  checked={acceptConsent}
+                  onCheckedChange={(checked) => setAcceptConsent(checked as boolean)}
+                />
+                <label
+                  htmlFor="consent"
+                  className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  I consent to use my Gmail server credentials for automated email sending
+                </label>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                onClick={() => {
+                  if (!gmailId || !appPassword || !acceptConsent) {
+                    toast({
+                      title: "Missing Information",
+                      description: "Please fill all fields and accept the consent",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                  toast({
+                    title: "Gmail Server Configured",
+                    description: "Your email server has been configured successfully",
+                  });
+                  setIsSmtpDialogOpen(false);
+                }}
+                disabled={!acceptConsent}
+              >
+                Configure Gmail Server
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
