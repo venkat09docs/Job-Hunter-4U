@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Upload, FileText, Sparkles, AlertCircle, CheckCircle, TrendingUp, AlertTriangle, Lightbulb, Target } from "lucide-react";
+import { Upload, FileText, Sparkles, AlertCircle, CheckCircle, TrendingUp, AlertTriangle, Lightbulb, Target, Download, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { CircularScoreIndicator } from "@/components/CircularScoreIndicator";
@@ -417,16 +417,24 @@ export const ResumeAnalyzerDialog = ({
                   <Button
                     variant="outline"
                     className="flex-1"
-                    onClick={resetDialog}
+                    onClick={() => {
+                      // Redefine Resume functionality to be implemented
+                      console.log('Redefine Resume clicked');
+                    }}
                   >
-                    Analyze Another Resume
+                    <Edit className="h-4 w-4 mr-2" />
+                    Redefine Your Resume
                   </Button>
                   <Button
                     variant="default"
                     className="flex-1"
-                    onClick={() => onOpenChange(false)}
+                    onClick={() => {
+                      // Save Report functionality to be implemented
+                      console.log('Save Report clicked');
+                    }}
                   >
-                    Close
+                    <Download className="h-4 w-4 mr-2" />
+                    Save This Report
                   </Button>
                 </div>
               </>
