@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
     if (resume_pdf_base64) {
       console.log('Received PDF base64 from frontend, size:', resume_pdf_base64.length);
     } else {
-      console.log('No PDF base64 received');
+      console.log('No PDF base64 received from frontend');
     }
 
     // Use the production n8n webhook URL
@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
           job_requirements,
           employment_type,
           resume_pdf_url,
-          resume_pdf_base64: resumePdfBase64
+          resume_pdf_base64: resume_pdf_base64
         }),
       });
 
