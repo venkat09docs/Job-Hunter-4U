@@ -76,13 +76,18 @@ ${keySkillsList}
 INSTRUCTIONS:
 1. Rewrite the Professional Summary to align with the job requirements and emphasize relevant experience
 2. Update the Skills section to prominently feature the key skills mentioned in the job description
-3. Modify the Experience section:
-   - Reframe roles and responsibilities to highlight relevant achievements
+3. Modify the Experience section - CRITICAL RULES:
+   - DO NOT change company names, job titles, or dates
+   - DO NOT modify any factual information about where or when the person worked
+   - ONLY rewrite the achievements, roles and responsibilities bullet points
    - Use action verbs and quantifiable results
    - Emphasize experiences that match the job requirements
-4. Update the Education section if needed to highlight relevant qualifications
+   - Focus on highlighting transferable skills relevant to the target job
+4. Update the Education section - IMPORTANT:
+   - DO NOT change institution names, degree names, or graduation dates
+   - ONLY add relevant coursework or highlights if they match the job description
 5. Maintain the original structure and format
-6. Keep all dates, company names, and factual information accurate
+6. Keep ALL dates, company names, institution names, and factual information EXACTLY as provided
 7. Make the resume ATS-friendly by incorporating keywords from the job description naturally
 8. Ensure the total length is appropriate (1-2 pages)
 

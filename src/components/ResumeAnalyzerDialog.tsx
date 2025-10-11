@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Upload, FileText, Sparkles, AlertCircle, CheckCircle, TrendingUp, AlertTriangle, Lightbulb, Target, Download, Edit, Loader2 } from "lucide-react";
+import { Upload, FileText, Sparkles, AlertCircle, CheckCircle, TrendingUp, AlertTriangle, Lightbulb, Target, Download, Edit, Loader2, FileDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { CircularScoreIndicator } from "@/components/CircularScoreIndicator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Document, Paragraph, TextRun, Packer } from "docx";
+import jsPDF from "jspdf";
 
 interface ResumeAnalyzerDialogProps {
   open: boolean;
@@ -218,25 +220,104 @@ export const ResumeAnalyzerDialog = ({
     }
   };
 
-  const handleDownloadResume = () => {
+  const handleDownloadWord = async () => {
     if (!redefinedResume) return;
-
-    // Create a blob with the redefined resume content
-    const blob = new Blob([redefinedResume], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
     
-    // Create a temporary link and trigger download
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `redefined-resume-${new Date().getTime()}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    try {
+      // Split resume into paragraphs
+      const paragraphs = redefinedResume.split('\n').filter(p => p.trim());
+      
+      // Create document with paragraphs
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: paragraphs.map(text => 
+            new Paragraph({
+              children: [new TextRun(text)],
+              spacing: { after: 200 }
+            })
+          )
+        }]
+      });
 
+      const blob = await Packer.toBlob(doc);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'redefined-resume.docx';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Word document downloaded",
+        description: "Your redefined resume has been downloaded as .docx",
+      });
+    } catch (error) {
+      console.error('Error generating Word document:', error);
+      toast({
+        variant: "destructive",
+        title: "Download failed",
+        description: "Failed to generate Word document",
+      });
+    }
+  };
+
+  const handleDownloadPDF = () => {
+    if (!redefinedResume) return;
+    
+    try {
+      const pdf = new jsPDF();
+      const lines = redefinedResume.split('\n');
+      
+      let yPosition = 15;
+      const lineHeight = 7;
+      const margin = 15;
+      const maxWidth = 180;
+      
+      lines.forEach(line => {
+        if (yPosition > 280) {
+          pdf.addPage();
+          yPosition = 15;
+        }
+        
+        const wrappedLines = pdf.splitTextToSize(line || ' ', maxWidth);
+        pdf.text(wrappedLines, margin, yPosition);
+        yPosition += wrappedLines.length * lineHeight;
+      });
+      
+      pdf.save('redefined-resume.pdf');
+      toast({
+        title: "PDF downloaded",
+        description: "Your redefined resume has been downloaded as PDF",
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        variant: "destructive",
+        title: "Download failed",
+        description: "Failed to generate PDF",
+      });
+    }
+  };
+
+  const handleSaveReport = () => {
+    if (!analysisResult) return;
+    
+    const blob = new Blob([analysisResult], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `resume-analysis-report-${new Date().getTime()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
     toast({
-      title: "Download started",
-      description: "Your redefined resume has been downloaded.",
+      title: "Report saved",
+      description: "Analysis report has been downloaded",
     });
   };
 
@@ -404,18 +485,23 @@ export const ResumeAnalyzerDialog = ({
             <div className="flex gap-3 pt-4">
               <Button
                 variant="outline"
-                className="flex-1"
                 onClick={resetDialog}
               >
                 Start Over
               </Button>
               <Button
                 variant="default"
-                className="flex-1"
-                onClick={handleDownloadResume}
+                onClick={handleDownloadWord}
+              >
+                <FileDown className="h-4 w-4 mr-2" />
+                Download Word
+              </Button>
+              <Button
+                variant="default"
+                onClick={handleDownloadPDF}
               >
                 <Download className="h-4 w-4 mr-2" />
-                Download Resume
+                Download PDF
               </Button>
             </div>
           </div>
@@ -556,22 +642,7 @@ export const ResumeAnalyzerDialog = ({
                   <Button
                     variant="default"
                     className="flex-1"
-                    onClick={() => {
-                      // Save Report functionality - download analysis as text
-                      const blob = new Blob([analysisResult || ''], { type: 'text/plain' });
-                      const url = URL.createObjectURL(blob);
-                      const link = document.createElement('a');
-                      link.href = url;
-                      link.download = `resume-analysis-${new Date().getTime()}.txt`;
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                      URL.revokeObjectURL(url);
-                      toast({
-                        title: "Report saved",
-                        description: "Your analysis report has been downloaded.",
-                      });
-                    }}
+                    onClick={handleSaveReport}
                   >
                     <Download className="h-4 w-4 mr-2" />
                     Save This Report
