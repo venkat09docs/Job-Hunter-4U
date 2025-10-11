@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
-import { ArrowLeft, Building2, Users, Calendar, Briefcase, Trash2, Search, Filter, X, Edit, Eye, Upload, FileText, Loader2 } from "lucide-react";
+import { ArrowLeft, Building2, Users, Calendar, Briefcase, Trash2, Search, Filter, X, Edit, Eye, Upload, FileText, Loader2, CheckCircle2, AlertCircle, Lightbulb, Target, TrendingUp } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
 import ReactMarkdown from "react-markdown";
 
 interface HRDetail {
@@ -52,6 +53,14 @@ const ManageHRDetails = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<string>("");
+  const [parsedAnalysis, setParsedAnalysis] = useState<{
+    score: number;
+    strengths: string[];
+    gaps: string[];
+    suggestions: string[];
+    keywords: string[];
+    recommendation: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchHRDetails();
@@ -212,6 +221,11 @@ const ManageHRDetails = () => {
       }
 
       setAnalysisResult(data.analysis);
+      
+      // Parse the analysis to extract structured data
+      const analysis = parseAnalysis(data.analysis);
+      setParsedAnalysis(analysis);
+      
       setIsUploadDialogOpen(false);
       setIsAnalysisDialogOpen(true);
 
@@ -229,6 +243,47 @@ const ManageHRDetails = () => {
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  const parseAnalysis = (text: string) => {
+    const lines = text.split('\n');
+    let score = 0;
+    const strengths: string[] = [];
+    const gaps: string[] = [];
+    const suggestions: string[] = [];
+    const keywords: string[] = [];
+    let recommendation = '';
+    let currentSection = '';
+
+    lines.forEach(line => {
+      const trimmed = line.trim();
+      
+      if (trimmed.includes('Match Score') || trimmed.includes('Score')) {
+        const scoreMatch = trimmed.match(/(\d+)/);
+        if (scoreMatch) score = parseInt(scoreMatch[1]);
+        currentSection = 'score';
+      } else if (trimmed.includes('Key Strengths')) {
+        currentSection = 'strengths';
+      } else if (trimmed.includes('Gaps') || trimmed.includes('Missing')) {
+        currentSection = 'gaps';
+      } else if (trimmed.includes('Optimization') || trimmed.includes('Suggestions')) {
+        currentSection = 'suggestions';
+      } else if (trimmed.includes('Keywords')) {
+        currentSection = 'keywords';
+      } else if (trimmed.includes('Overall Recommendation')) {
+        currentSection = 'recommendation';
+      } else if (trimmed.startsWith('-') && trimmed.length > 2) {
+        const item = trimmed.substring(1).trim();
+        if (currentSection === 'strengths') strengths.push(item);
+        else if (currentSection === 'gaps') gaps.push(item);
+        else if (currentSection === 'suggestions') suggestions.push(item);
+        else if (currentSection === 'keywords') keywords.push(item);
+      } else if (currentSection === 'recommendation' && trimmed.length > 10) {
+        recommendation += trimmed + ' ';
+      }
+    });
+
+    return { score, strengths, gaps, suggestions, keywords, recommendation: recommendation.trim() };
   };
 
   const handleSaveReport = async () => {
@@ -714,14 +769,14 @@ const ManageHRDetails = () => {
 
         {/* Analysis Result Dialog */}
         <Dialog open={isAnalysisDialogOpen} onOpenChange={setIsAnalysisDialogOpen}>
-          <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
-            <DialogHeader>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader className="border-b pb-4">
               <DialogTitle className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-xl border border-green-500/30">
-                  <FileText className="h-6 w-6 text-green-600 dark:text-green-400" />
+                <div className="p-3 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-xl border border-green-500/30">
+                  <FileText className="h-7 w-7 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                  <div>Resume Analysis Report</div>
+                  <div className="text-2xl font-bold">Resume Analysis Report</div>
                   <div className="text-sm font-normal text-muted-foreground mt-1">
                     {selectedHR?.company_name} - {selectedHR?.job_title}
                   </div>
@@ -729,31 +784,143 @@ const ManageHRDetails = () => {
               </DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-6 mt-4 animate-fade-in">
-              {/* Analysis Content */}
-              <div className="prose prose-sm dark:prose-invert max-w-none p-6 bg-gradient-to-br from-slate-50/50 to-gray-50/50 dark:from-slate-900/50 dark:to-gray-900/50 rounded-xl border">
-                <ReactMarkdown>{analysisResult}</ReactMarkdown>
-              </div>
+            {parsedAnalysis && (
+              <div className="space-y-6 mt-6 animate-fade-in">
+                {/* Match Score Section */}
+                <div className="relative overflow-hidden p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-2xl border-2 border-blue-200 dark:border-blue-800">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400/10 rounded-full -translate-y-32 translate-x-32" />
+                  <div className="relative">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="text-xl font-bold text-blue-900 dark:text-blue-100 flex items-center gap-2 mb-2">
+                          <Target className="h-6 w-6" />
+                          Overall Match Score
+                        </h3>
+                        <p className="text-sm text-blue-700 dark:text-blue-300">
+                          How well your resume aligns with the job requirements
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-6xl font-bold text-blue-600 dark:text-blue-400">
+                          {parsedAnalysis.score}
+                        </div>
+                        <div className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                          out of 100
+                        </div>
+                      </div>
+                    </div>
+                    <Progress value={parsedAnalysis.score} className="h-3" />
+                  </div>
+                </div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-3 pt-4 border-t">
-                <Button
-                  onClick={() => navigate("/dashboard/resume-builder")}
-                  className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                  <Edit className="mr-2 h-5 w-5" />
-                  Redefine Resume
-                </Button>
-                <Button
-                  onClick={handleSaveReport}
-                  variant="outline"
-                  className="flex-1 h-12 text-base font-semibold border-2 hover:bg-gradient-to-r hover:from-primary/10 hover:to-secondary/10 transition-all duration-300"
-                >
-                  <FileText className="mr-2 h-5 w-5" />
-                  Save Report
-                </Button>
+                {/* Two Column Layout */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Key Strengths */}
+                  <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-2xl border-2 border-green-200 dark:border-green-800">
+                    <h3 className="text-lg font-bold text-green-900 dark:text-green-100 flex items-center gap-2 mb-4">
+                      <CheckCircle2 className="h-5 w-5" />
+                      Key Strengths
+                    </h3>
+                    <div className="space-y-3">
+                      {parsedAnalysis.strengths.map((strength, idx) => (
+                        <div key={idx} className="flex items-start gap-3 p-3 bg-white/60 dark:bg-gray-900/60 rounded-lg hover:bg-white dark:hover:bg-gray-900 transition-all">
+                          <div className="mt-0.5 h-6 w-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                            <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                          </div>
+                          <p className="text-sm leading-relaxed">{strength}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Gaps & Missing */}
+                  <div className="p-6 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 rounded-2xl border-2 border-orange-200 dark:border-orange-800">
+                    <h3 className="text-lg font-bold text-orange-900 dark:text-orange-100 flex items-center gap-2 mb-4">
+                      <AlertCircle className="h-5 w-5" />
+                      Areas for Improvement
+                    </h3>
+                    <div className="space-y-3">
+                      {parsedAnalysis.gaps.map((gap, idx) => (
+                        <div key={idx} className="flex items-start gap-3 p-3 bg-white/60 dark:bg-gray-900/60 rounded-lg hover:bg-white dark:hover:bg-gray-900 transition-all">
+                          <div className="mt-0.5 h-6 w-6 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0">
+                            <AlertCircle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                          </div>
+                          <p className="text-sm leading-relaxed">{gap}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Optimization Suggestions */}
+                <div className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-2xl border-2 border-purple-200 dark:border-purple-800">
+                  <h3 className="text-lg font-bold text-purple-900 dark:text-purple-100 flex items-center gap-2 mb-4">
+                    <Lightbulb className="h-5 w-5" />
+                    Optimization Suggestions
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {parsedAnalysis.suggestions.map((suggestion, idx) => (
+                      <div key={idx} className="flex items-start gap-3 p-4 bg-white/60 dark:bg-gray-900/60 rounded-xl hover:bg-white dark:hover:bg-gray-900 transition-all group">
+                        <div className="mt-0.5 h-8 w-8 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                          <span className="text-lg font-bold text-purple-600 dark:text-purple-400">{idx + 1}</span>
+                        </div>
+                        <p className="text-sm leading-relaxed">{suggestion}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Recommended Keywords */}
+                <div className="p-6 bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30 rounded-2xl border-2 border-cyan-200 dark:border-cyan-800">
+                  <h3 className="text-lg font-bold text-cyan-900 dark:text-cyan-100 flex items-center gap-2 mb-4">
+                    <TrendingUp className="h-5 w-5" />
+                    Recommended Keywords
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {parsedAnalysis.keywords.map((keyword, idx) => (
+                      <Badge 
+                        key={idx} 
+                        className="px-4 py-2 text-sm bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-600 cursor-default"
+                      >
+                        {keyword}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Overall Recommendation */}
+                {parsedAnalysis.recommendation && (
+                  <div className="p-6 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 rounded-2xl border-2 border-amber-200 dark:border-amber-800">
+                    <h3 className="text-lg font-bold text-amber-900 dark:text-amber-100 flex items-center gap-2 mb-4">
+                      <Target className="h-5 w-5" />
+                      Overall Recommendation
+                    </h3>
+                    <p className="text-base leading-relaxed p-4 bg-white/60 dark:bg-gray-900/60 rounded-xl">
+                      {parsedAnalysis.recommendation}
+                    </p>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex gap-4 pt-6 border-t-2">
+                  <Button
+                    onClick={() => navigate("/dashboard/resume-builder")}
+                    className="flex-1 h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300"
+                  >
+                    <Edit className="mr-2 h-5 w-5" />
+                    Redefine Resume
+                  </Button>
+                  <Button
+                    onClick={handleSaveReport}
+                    variant="outline"
+                    className="flex-1 h-14 text-lg font-semibold border-2 hover:bg-gradient-to-r hover:from-primary/10 hover:to-secondary/10 transition-all duration-300"
+                  >
+                    <FileText className="mr-2 h-5 w-5" />
+                    Save Report
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>
