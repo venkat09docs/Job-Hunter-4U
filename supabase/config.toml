@@ -3,6 +3,9 @@ project_id = "moirryvajzyriagqihbe"
 [functions.analyze-resume]
 verify_jwt = false
 
+[functions.redefine-resume]
+verify_jwt = false
+
 [functions.get-subscription-plans]
 verify_jwt = false
 
@@ -85,4 +88,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.scrape-job-details]
+verify_jwt = false
+
+[functions.job-search]
 verify_jwt = false

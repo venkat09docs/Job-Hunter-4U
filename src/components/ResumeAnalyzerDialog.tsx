@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Upload, FileText, Sparkles, AlertCircle, CheckCircle, TrendingUp, AlertTriangle, Lightbulb, Target, Download, Edit } from "lucide-react";
+import { Upload, FileText, Sparkles, AlertCircle, CheckCircle, TrendingUp, AlertTriangle, Lightbulb, Target, Download, Edit, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { CircularScoreIndicator } from "@/components/CircularScoreIndicator";
@@ -25,6 +25,8 @@ export const ResumeAnalyzerDialog = ({
   const [isDragging, setIsDragging] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
+  const [isRedefining, setIsRedefining] = useState(false);
+  const [redefinedResume, setRedefinedResume] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleFileSelect = (file: File) => {
@@ -152,6 +154,90 @@ export const ResumeAnalyzerDialog = ({
     setSelectedFile(null);
     setAnalysisResult(null);
     setIsAnalyzing(false);
+    setRedefinedResume(null);
+    setIsRedefining(false);
+  };
+
+  const handleRedefineResume = async () => {
+    if (!selectedFile) {
+      toast({
+        variant: "destructive",
+        title: "Resume required",
+        description: "Please upload your resume first.",
+      });
+      return;
+    }
+
+    setIsRedefining(true);
+
+    try {
+      // Convert file to base64
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        reader.onload = () => {
+          const base64 = reader.result?.toString().split(',')[1];
+          if (base64) resolve(base64);
+          else reject(new Error('Failed to read file'));
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(selectedFile);
+      });
+
+      const resumeBase64 = await base64Promise;
+
+      // Call the edge function
+      const { data, error } = await supabase.functions.invoke('redefine-resume', {
+        body: {
+          resumeBase64,
+          jobDescription: jobDescription.trim(),
+          keySkills: keySkills,
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setRedefinedResume(data.redefinedResume);
+      
+      toast({
+        title: "Resume redefined!",
+        description: "Your resume has been optimized for this job description.",
+      });
+    } catch (error) {
+      console.error('Redefine error:', error);
+      toast({
+        variant: "destructive",
+        title: "Redefinition failed",
+        description: error instanceof Error ? error.message : "Failed to redefine resume. Please try again.",
+      });
+    } finally {
+      setIsRedefining(false);
+    }
+  };
+
+  const handleDownloadResume = () => {
+    if (!redefinedResume) return;
+
+    // Create a blob with the redefined resume content
+    const blob = new Blob([redefinedResume], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    
+    // Create a temporary link and trigger download
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `redefined-resume-${new Date().getTime()}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Download started",
+      description: "Your redefined resume has been downloaded.",
+    });
   };
 
   const parseAnalysis = (text: string) => {
@@ -204,7 +290,7 @@ export const ResumeAnalyzerDialog = ({
           </DialogTitle>
         </DialogHeader>
 
-        {!analysisResult ? (
+        {!analysisResult && !redefinedResume ? (
           <div className="space-y-6">
             {/* Job Info */}
             <div className="p-4 bg-muted/50 rounded-lg space-y-2">
@@ -297,6 +383,41 @@ export const ResumeAnalyzerDialog = ({
               <Sparkles className="h-5 w-5 mr-2" />
               {isAnalyzing ? "Analyzing..." : "Analyze Resume"}
             </Button>
+          </div>
+        ) : redefinedResume ? (
+          <div className="space-y-6">
+            {/* Redefined Resume Display */}
+            <div className="p-4 bg-muted/50 rounded-lg">
+              <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-success" />
+                Redefined Resume
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Your resume has been optimized to match the job description with highlighted key skills.
+              </p>
+              <div className="bg-background p-4 rounded border max-h-[400px] overflow-y-auto">
+                <pre className="whitespace-pre-wrap text-sm font-mono">{redefinedResume}</pre>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 pt-4">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={resetDialog}
+              >
+                Start Over
+              </Button>
+              <Button
+                variant="default"
+                className="flex-1"
+                onClick={handleDownloadResume}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download Resume
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="space-y-6">
@@ -417,20 +538,39 @@ export const ResumeAnalyzerDialog = ({
                   <Button
                     variant="outline"
                     className="flex-1"
-                    onClick={() => {
-                      // Redefine Resume functionality to be implemented
-                      console.log('Redefine Resume clicked');
-                    }}
+                    onClick={handleRedefineResume}
+                    disabled={isRedefining || !selectedFile}
                   >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Redefine Your Resume
+                    {isRedefining ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Redefining...
+                      </>
+                    ) : (
+                      <>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Redefine Your Resume
+                      </>
+                    )}
                   </Button>
                   <Button
                     variant="default"
                     className="flex-1"
                     onClick={() => {
-                      // Save Report functionality to be implemented
-                      console.log('Save Report clicked');
+                      // Save Report functionality - download analysis as text
+                      const blob = new Blob([analysisResult || ''], { type: 'text/plain' });
+                      const url = URL.createObjectURL(blob);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.download = `resume-analysis-${new Date().getTime()}.txt`;
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                      URL.revokeObjectURL(url);
+                      toast({
+                        title: "Report saved",
+                        description: "Your analysis report has been downloaded.",
+                      });
                     }}
                   >
                     <Download className="h-4 w-4 mr-2" />
