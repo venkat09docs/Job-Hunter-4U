@@ -28,7 +28,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Zap, Building2, Briefcase } from "lucide-react";
+import { Zap, Building2, Briefcase, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { UserProfileDropdown } from "@/components/UserProfileDropdown";
+import { NotificationBell } from "@/components/NotificationBell";
 
 const formSchema = z.object({
   companyName: z.string().min(1, "Company name is required"),
@@ -59,6 +62,7 @@ const contactSources = [
 
 const AutomateJobHunting = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [coverLetterFile, setCoverLetterFile] = useState<File | null>(null);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
 
@@ -97,11 +101,29 @@ const AutomateJobHunting = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Top Navigation */}
+      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/dashboard/job-hunter-level-up")}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Go Back to Job Dashboard
+          </Button>
+          <div className="flex items-center gap-4">
+            <NotificationBell />
+            <UserProfileDropdown />
+          </div>
+        </div>
+      </div>
+
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-3 bg-warning/10 border-2 border-warning/20 rounded-xl">
-              <Zap className="h-8 w-8 text-warning stroke-[2.5]" />
+            <div className="p-3 bg-primary/10 border-2 border-primary/20 rounded-xl">
+              <Zap className="h-8 w-8 text-primary stroke-[2.5]" />
             </div>
             <h1 className="text-4xl font-bold">Automate Job Hunting</h1>
           </div>
@@ -398,7 +420,7 @@ const AutomateJobHunting = () => {
                     Clear Form
                   </Button>
                   <Button type="submit" className="min-w-[150px]">
-                    Start Job Hunting
+                    Automate Job
                   </Button>
                 </div>
               </form>
