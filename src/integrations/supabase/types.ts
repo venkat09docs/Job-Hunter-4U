@@ -2236,6 +2236,7 @@ export type Database = {
       }
       hr_details: {
         Row: {
+          analysis_report: string | null
           company_employees: string | null
           company_founded_year: string | null
           company_linkedin: string | null
@@ -2256,6 +2257,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          analysis_report?: string | null
           company_employees?: string | null
           company_founded_year?: string | null
           company_linkedin?: string | null
@@ -2276,6 +2278,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          analysis_report?: string | null
           company_employees?: string | null
           company_founded_year?: string | null
           company_linkedin?: string | null

@@ -11,8 +11,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
-import { ArrowLeft, Building2, Users, Calendar, Briefcase, Trash2, Search, Filter, X, Edit, Eye, Upload, FileText, Loader2, CheckCircle2, AlertCircle, Lightbulb, Target, TrendingUp } from "lucide-react";
+import { ArrowLeft, Building2, Users, Calendar, Briefcase, Trash2, Search, Filter, X, Edit, Eye, Upload, FileText, Loader2, CheckCircle2, AlertCircle, Lightbulb, Target, TrendingUp, Download } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "docx";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -35,6 +36,7 @@ interface HRDetail {
   hr_email: string;
   job_description: string;
   key_skills: string | null;
+  analysis_report: string | null;
   created_at: string;
 }
 
@@ -50,8 +52,11 @@ const ManageHRDetails = () => {
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [isAnalysisDialogOpen, setIsAnalysisDialogOpen] = useState(false);
+  const [isViewReportDialogOpen, setIsViewReportDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isRedefining, setIsRedefining] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<string>("");
   const [parsedAnalysis, setParsedAnalysis] = useState<{
     score: number;
@@ -286,24 +291,151 @@ const ManageHRDetails = () => {
     return { score, strengths, gaps, suggestions, keywords, recommendation: recommendation.trim() };
   };
 
-  const handleSaveReport = async () => {
-    if (!analysisResult || !selectedHR) return;
+  const handleRedefineResume = async () => {
+    if (!selectedFile || !selectedHR) return;
 
     try {
-      // Create a text file with the analysis
-      const blob = new Blob([analysisResult], { type: 'text/markdown' });
+      setIsRedefining(true);
+
+      // Convert file to base64
+      const reader = new FileReader();
+      reader.readAsDataURL(selectedFile);
+      
+      await new Promise((resolve, reject) => {
+        reader.onload = resolve;
+        reader.onerror = reject;
+      });
+
+      const base64 = (reader.result as string).split(',')[1];
+      
+      // Parse key skills into array
+      const keySkills = selectedHR.key_skills?.split(',').map(skill => skill.trim()) || [];
+
+      // Call the redefine-resume edge function
+      const { data, error } = await supabase.functions.invoke('redefine-resume', {
+        body: {
+          resumeBase64: base64,
+          jobDescription: selectedHR.job_description,
+          keySkills: keySkills
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      // Convert the redefined resume text to a Word document
+      const resumeText = data.redefinedResume;
+      const sections = resumeText.split('\n\n');
+      
+      const paragraphs: Paragraph[] = [];
+      
+      sections.forEach((section: string) => {
+        const lines = section.split('\n');
+        lines.forEach((line: string, index: number) => {
+          if (line.trim()) {
+            // Check if it's a heading (all caps or starts with specific keywords)
+            const isHeading = /^[A-Z\s]{3,}$/.test(line.trim()) || 
+                            ['PROFESSIONAL SUMMARY', 'KEY SKILLS', 'PROFESSIONAL EXPERIENCE', 
+                             'EDUCATION', 'CERTIFICATIONS', 'PROJECTS'].some(h => line.includes(h));
+            
+            if (isHeading) {
+              paragraphs.push(
+                new Paragraph({
+                  text: line.trim(),
+                  heading: HeadingLevel.HEADING_1,
+                  spacing: { before: 240, after: 120 },
+                })
+              );
+            } else if (line.startsWith('•')) {
+              paragraphs.push(
+                new Paragraph({
+                  text: line.substring(1).trim(),
+                  bullet: { level: 0 },
+                  spacing: { before: 80, after: 80 },
+                })
+              );
+            } else {
+              paragraphs.push(
+                new Paragraph({
+                  text: line,
+                  spacing: { before: 80, after: 80 },
+                })
+              );
+            }
+          }
+        });
+      });
+
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: paragraphs,
+        }],
+      });
+
+      // Generate and download the Word document
+      const blob = await Packer.toBlob(doc);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Resume_Analysis_${selectedHR.company_name.replace(/\s+/g, '_')}.md`;
+      a.download = `Redefined_Resume_${selectedHR.company_name.replace(/\s+/g, '_')}.docx`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
       toast({
+        title: "Resume Redefined",
+        description: "Your optimized resume has been downloaded successfully.",
+      });
+    } catch (error) {
+      console.error('Error redefining resume:', error);
+      toast({
+        title: "Redefinition Failed",
+        description: error instanceof Error ? error.message : "Failed to redefine resume. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRedefining(false);
+    }
+  };
+
+  const handleSaveReport = async () => {
+    if (!analysisResult || !selectedHR) return;
+
+    try {
+      setIsSaving(true);
+
+      // Save the analysis report to the database
+      const { error } = await supabase
+        .from('hr_details')
+        .update({ analysis_report: analysisResult })
+        .eq('id', selectedHR.id);
+
+      if (error) throw error;
+
+      // Update the local state
+      setHrDetails(prevDetails =>
+        prevDetails.map(hr =>
+          hr.id === selectedHR.id
+            ? { ...hr, analysis_report: analysisResult }
+            : hr
+        )
+      );
+      setFilteredHrDetails(prevDetails =>
+        prevDetails.map(hr =>
+          hr.id === selectedHR.id
+            ? { ...hr, analysis_report: analysisResult }
+            : hr
+        )
+      );
+
+      toast({
         title: "Report Saved",
-        description: "Analysis report has been downloaded successfully.",
+        description: "Analysis report has been saved successfully.",
       });
     } catch (error) {
       console.error('Error saving report:', error);
@@ -312,7 +444,19 @@ const ManageHRDetails = () => {
         description: "Failed to save the report. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
+  };
+
+  const handleViewSavedReport = (hr: HRDetail) => {
+    if (!hr.analysis_report) return;
+    
+    setSelectedHR(hr);
+    setAnalysisResult(hr.analysis_report);
+    const analysis = parseAnalysis(hr.analysis_report);
+    setParsedAnalysis(analysis);
+    setIsViewReportDialogOpen(true);
   };
 
   return (
@@ -491,6 +635,17 @@ const ManageHRDetails = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
+                      {hr.analysis_report && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleViewSavedReport(hr)}
+                          className="text-cyan-600 hover:text-cyan-700 hover:bg-cyan-50 dark:text-cyan-400 dark:hover:bg-cyan-950 h-8 w-8"
+                          title="View Analysis Report"
+                        >
+                          <FileText className="h-4 w-4" />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="icon"
@@ -904,19 +1059,237 @@ const ManageHRDetails = () => {
                 {/* Action Buttons */}
                 <div className="flex gap-4 pt-6 border-t-2">
                   <Button
-                    onClick={() => navigate("/dashboard/resume-builder")}
+                    onClick={handleRedefineResume}
+                    disabled={isRedefining || !selectedFile}
                     className="flex-1 h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300"
                   >
-                    <Edit className="mr-2 h-5 w-5" />
-                    Redefine Resume
+                    {isRedefining ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Redefining...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="mr-2 h-5 w-5" />
+                        Redefine Resume
+                      </>
+                    )}
                   </Button>
                   <Button
                     onClick={handleSaveReport}
+                    disabled={isSaving}
                     variant="outline"
                     className="flex-1 h-14 text-lg font-semibold border-2 hover:bg-gradient-to-r hover:from-primary/10 hover:to-secondary/10 transition-all duration-300"
                   >
-                    <FileText className="mr-2 h-5 w-5" />
-                    Save Report
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="mr-2 h-5 w-5" />
+                        Save Report
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* View Saved Report Dialog */}
+        <Dialog open={isViewReportDialogOpen} onOpenChange={setIsViewReportDialogOpen}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader className="border-b pb-4">
+              <DialogTitle className="flex items-center gap-3">
+                <div className="p-3 bg-gradient-to-br from-cyan-500/20 to-teal-500/20 rounded-xl border border-cyan-500/30">
+                  <FileText className="h-7 w-7 text-cyan-600 dark:text-cyan-400" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">Saved Analysis Report</div>
+                  <div className="text-sm font-normal text-muted-foreground mt-1">
+                    {selectedHR?.company_name} - {selectedHR?.job_title}
+                  </div>
+                </div>
+              </DialogTitle>
+            </DialogHeader>
+
+            {parsedAnalysis && (
+              <div className="space-y-6 mt-6 animate-fade-in">
+                {/* Match Score Section */}
+                <div className="relative overflow-hidden p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-2xl border-2 border-blue-200 dark:border-blue-800">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400/10 rounded-full -translate-y-32 translate-x-32" />
+                  <div className="relative">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="text-xl font-bold text-blue-900 dark:text-blue-100 flex items-center gap-2 mb-2">
+                          <Target className="h-6 w-6" />
+                          Overall Match Score
+                        </h3>
+                        <p className="text-sm text-blue-700 dark:text-blue-300">
+                          How well your resume matches the job requirements
+                        </p>
+                      </div>
+                      <div className="text-6xl font-black text-blue-600 dark:text-blue-400">
+                        {parsedAnalysis.score}%
+                      </div>
+                    </div>
+                    <Progress value={parsedAnalysis.score} className="h-3" />
+                  </div>
+                </div>
+
+                {/* Key Strengths & Gaps Grid */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Key Strengths */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="p-2 bg-green-500/10 rounded-lg">
+                        <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      </div>
+                      <h3 className="text-lg font-bold text-green-900 dark:text-green-100">
+                        Key Strengths
+                      </h3>
+                    </div>
+                    <div className="space-y-3">
+                      {parsedAnalysis.strengths.length > 0 ? (
+                        parsedAnalysis.strengths.map((strength, index) => (
+                          <div
+                            key={index}
+                            className="p-4 bg-green-50 dark:bg-green-950/30 rounded-xl border border-green-200 dark:border-green-800 hover:shadow-md transition-all"
+                          >
+                            <div className="flex gap-3">
+                              <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                              <p className="text-sm text-green-900 dark:text-green-100">
+                                {strength}
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-muted-foreground italic">No specific strengths identified</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Areas for Improvement */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="p-2 bg-orange-500/10 rounded-lg">
+                        <AlertCircle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                      </div>
+                      <h3 className="text-lg font-bold text-orange-900 dark:text-orange-100">
+                        Areas for Improvement
+                      </h3>
+                    </div>
+                    <div className="space-y-3">
+                      {parsedAnalysis.gaps.length > 0 ? (
+                        parsedAnalysis.gaps.map((gap, index) => (
+                          <div
+                            key={index}
+                            className="p-4 bg-orange-50 dark:bg-orange-950/30 rounded-xl border border-orange-200 dark:border-orange-800 hover:shadow-md transition-all"
+                          >
+                            <div className="flex gap-3">
+                              <AlertCircle className="h-5 w-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+                              <p className="text-sm text-orange-900 dark:text-orange-100">
+                                {gap}
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-muted-foreground italic">No gaps identified</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Optimization Suggestions */}
+                {parsedAnalysis.suggestions.length > 0 && (
+                  <div className="space-y-4 p-6 bg-purple-50 dark:bg-purple-950/20 rounded-2xl border-2 border-purple-200 dark:border-purple-800">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="p-2 bg-purple-500/10 rounded-lg">
+                        <Lightbulb className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                      </div>
+                      <h3 className="text-lg font-bold text-purple-900 dark:text-purple-100">
+                        Optimization Suggestions
+                      </h3>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {parsedAnalysis.suggestions.map((suggestion, index) => (
+                        <div
+                          key={index}
+                          className="p-4 bg-white dark:bg-purple-950/40 rounded-xl border border-purple-200 dark:border-purple-700 hover:shadow-md transition-all"
+                        >
+                          <div className="flex gap-3">
+                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
+                              <span className="text-sm font-bold text-purple-700 dark:text-purple-300">
+                                {index + 1}
+                              </span>
+                            </div>
+                            <p className="text-sm text-purple-900 dark:text-purple-100 pt-1">
+                              {suggestion}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Recommended Keywords */}
+                {parsedAnalysis.keywords.length > 0 && (
+                  <div className="space-y-4 p-6 bg-cyan-50 dark:bg-cyan-950/20 rounded-2xl border-2 border-cyan-200 dark:border-cyan-800">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="p-2 bg-cyan-500/10 rounded-lg">
+                        <TrendingUp className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
+                      </div>
+                      <h3 className="text-lg font-bold text-cyan-900 dark:text-cyan-100">
+                        Recommended Keywords
+                      </h3>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {parsedAnalysis.keywords.map((keyword, index) => (
+                        <Badge
+                          key={index}
+                          className="px-4 py-2 text-sm bg-cyan-100 dark:bg-cyan-900/50 text-cyan-900 dark:text-cyan-100 border-cyan-300 dark:border-cyan-700 hover:bg-cyan-200 dark:hover:bg-cyan-900/70"
+                          variant="outline"
+                        >
+                          {keyword}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Overall Recommendation */}
+                {parsedAnalysis.recommendation && (
+                  <div className="p-6 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 rounded-2xl border-2 border-amber-200 dark:border-amber-800">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-amber-500/10 rounded-lg flex-shrink-0">
+                        <Lightbulb className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-amber-900 dark:text-amber-100 mb-2">
+                          Overall Recommendation
+                        </h3>
+                        <p className="text-sm text-amber-900 dark:text-amber-100 leading-relaxed">
+                          {parsedAnalysis.recommendation}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Close Button */}
+                <div className="flex pt-6 border-t-2">
+                  <Button
+                    onClick={() => setIsViewReportDialogOpen(false)}
+                    variant="outline"
+                    className="w-full h-14 text-lg font-semibold border-2"
+                  >
+                    Close
                   </Button>
                 </div>
               </div>
