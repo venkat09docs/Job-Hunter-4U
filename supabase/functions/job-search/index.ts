@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
     }
 
     // Use the production n8n webhook URL
-    const n8nWebhookUrl = 'https://n8n.srv995073.hstgr.cloud/webhook-test/jsearch';
+    const n8nWebhookUrl = 'https://n8n.srv995073.hstgr.cloud/webhook/jsearch';
 
     // Send job search request to n8n
     console.log('📤 Sending to n8n webhook:', n8nWebhookUrl);
