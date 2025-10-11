@@ -30,7 +30,7 @@ const JobHunterLevelUp = () => {
       title: "Automate Job Hunting",
       description: "Streamline your job search process",
       icon: Zap,
-      route: "/dashboard/job-hunting-assignments",
+      route: "/dashboard/automate-job-hunting",
       color: "text-warning",
     },
     {

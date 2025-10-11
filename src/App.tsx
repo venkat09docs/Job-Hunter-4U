@@ -101,6 +101,7 @@ import AWSCerts from "./pages/AWSCerts";
 import AWSCertsAssistants from "./pages/AWSCertsAssistants";
 import ResumeAnalyzer from "./pages/ResumeAnalyzer";
 import JobHunterLevelUp from "./pages/JobHunterLevelUp";
+import AutomateJobHunting from "./pages/AutomateJobHunting";
 
 const queryClient = new QueryClient();
 
@@ -450,6 +451,14 @@ const AppContent = () => {
               <ProtectedRoute>
                 <JobHunterLevelUp />
               </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/automate-job-hunting" 
+            element={
+              <PremiumProtectedRoute featureKey="page_automate_job_hunting">
+                <AutomateJobHunting />
+              </PremiumProtectedRoute>
             } 
           />
           <Route 
