@@ -11,8 +11,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
-import { ArrowLeft, Building2, Users, Calendar, Briefcase, Trash2 } from "lucide-react";
+import { ArrowLeft, Building2, Users, Calendar, Briefcase, Trash2, Search, Filter, X } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 interface HRDetail {
   id: string;
@@ -31,7 +33,10 @@ const ManageHRDetails = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [hrDetails, setHrDetails] = useState<HRDetail[]>([]);
+  const [filteredHrDetails, setFilteredHrDetails] = useState<HRDetail[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterBy, setFilterBy] = useState<"all" | "company" | "job_title" | "hr_name">("all");
 
   useEffect(() => {
     fetchHRDetails();
@@ -59,6 +64,7 @@ const ManageHRDetails = () => {
       if (error) throw error;
 
       setHrDetails(data || []);
+      setFilteredHrDetails(data || []);
     } catch (error) {
       console.error('Error fetching HR details:', error);
       toast({
@@ -70,6 +76,39 @@ const ManageHRDetails = () => {
       setLoading(false);
     }
   };
+
+  // Filter HR details based on search term and filter type
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredHrDetails(hrDetails);
+      return;
+    }
+
+    const filtered = hrDetails.filter((hr) => {
+      const term = searchTerm.toLowerCase();
+      
+      switch (filterBy) {
+        case "company":
+          return hr.company_name.toLowerCase().includes(term);
+        case "job_title":
+          return hr.job_title.toLowerCase().includes(term);
+        case "hr_name":
+          return hr.hr_name?.toLowerCase().includes(term) || false;
+        case "all":
+        default:
+          return (
+            hr.company_name.toLowerCase().includes(term) ||
+            hr.job_title.toLowerCase().includes(term) ||
+            hr.hr_name?.toLowerCase().includes(term) ||
+            hr.hr_email.toLowerCase().includes(term) ||
+            hr.job_description.toLowerCase().includes(term) ||
+            hr.key_skills?.toLowerCase().includes(term)
+          );
+      }
+    });
+
+    setFilteredHrDetails(filtered);
+  }, [searchTerm, filterBy, hrDetails]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -137,6 +176,79 @@ const ManageHRDetails = () => {
           </p>
         </div>
 
+        {/* Search and Filter Section */}
+        <Card className="mb-6 border-2">
+          <CardContent className="pt-6">
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* Search Input */}
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search HR details..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-10"
+                />
+                {searchTerm && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7"
+                    onClick={() => setSearchTerm("")}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+
+              {/* Filter Options */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Filter by:</span>
+                <div className="flex gap-2 flex-wrap">
+                  <Badge
+                    variant={filterBy === "all" ? "default" : "outline"}
+                    className="cursor-pointer hover:bg-primary/10"
+                    onClick={() => setFilterBy("all")}
+                  >
+                    All
+                  </Badge>
+                  <Badge
+                    variant={filterBy === "company" ? "default" : "outline"}
+                    className="cursor-pointer hover:bg-primary/10"
+                    onClick={() => setFilterBy("company")}
+                  >
+                    Company
+                  </Badge>
+                  <Badge
+                    variant={filterBy === "job_title" ? "default" : "outline"}
+                    className="cursor-pointer hover:bg-primary/10"
+                    onClick={() => setFilterBy("job_title")}
+                  >
+                    Job Title
+                  </Badge>
+                  <Badge
+                    variant={filterBy === "hr_name" ? "default" : "outline"}
+                    className="cursor-pointer hover:bg-primary/10"
+                    onClick={() => setFilterBy("hr_name")}
+                  >
+                    HR Name
+                  </Badge>
+                </div>
+              </div>
+            </div>
+
+            {/* Search Results Info */}
+            {searchTerm && (
+              <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                <span>
+                  Found {filteredHrDetails.length} result{filteredHrDetails.length !== 1 ? 's' : ''} for "{searchTerm}"
+                </span>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[1, 2, 3, 4].map((i) => (
@@ -153,6 +265,19 @@ const ManageHRDetails = () => {
               </Card>
             ))}
           </div>
+        ) : filteredHrDetails.length === 0 && searchTerm ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Search className="h-16 w-16 text-muted-foreground mb-4" />
+              <h3 className="text-xl font-semibold mb-2">No Results Found</h3>
+              <p className="text-muted-foreground text-center mb-4">
+                No HR details match your search criteria. Try adjusting your filters.
+              </p>
+              <Button variant="outline" onClick={() => setSearchTerm("")}>
+                Clear Search
+              </Button>
+            </CardContent>
+          </Card>
         ) : hrDetails.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
@@ -168,7 +293,7 @@ const ManageHRDetails = () => {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {hrDetails.map((hr) => (
+            {filteredHrDetails.map((hr) => (
               <Card key={hr.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-start justify-between">
