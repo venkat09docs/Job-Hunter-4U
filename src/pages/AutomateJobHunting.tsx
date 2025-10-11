@@ -196,11 +196,11 @@ const AutomateJobHunting = () => {
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Button
             variant="ghost"
-            onClick={() => navigate("/dashboard/job-hunter-level-up")}
+            onClick={() => navigate("/job-hunter-level-up")}
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Go Back to Job Dashboard
+            Go to Job Dashboard
           </Button>
           <div className="flex items-center gap-4">
             <UserProfileDropdown />
