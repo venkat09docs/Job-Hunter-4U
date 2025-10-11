@@ -381,16 +381,32 @@ const FindYourNextRole = () => {
           defaultResumePdfUrl = resumeData.pdf_url;
           console.log('Found default resume PDF:', defaultResumePdfUrl);
 
-          // Fetch the blob and convert to base64
-          try {
-            const response = await fetch(defaultResumePdfUrl);
-            const blob = await response.blob();
-            const arrayBuffer = await blob.arrayBuffer();
-            const uint8Array = new Uint8Array(arrayBuffer);
-            resumePdfBase64 = btoa(String.fromCharCode(...uint8Array));
-            console.log('Converted resume to base64, size:', resumePdfBase64.length);
-          } catch (blobError) {
-            console.error('Error converting PDF to base64:', blobError);
+          // Only process if it's a Supabase Storage URL, not a blob URL
+          if (defaultResumePdfUrl.startsWith('blob:')) {
+            console.warn('Resume is stored as blob URL, cannot be sent to job search. Please re-save your resume.');
+            defaultResumePdfUrl = null;
+            resumePdfBase64 = null;
+          } else if (defaultResumePdfUrl.includes('supabase.co/storage/')) {
+            // It's a real Supabase Storage URL, fetch and convert to base64
+            try {
+              const response = await fetch(defaultResumePdfUrl);
+              if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              const blob = await response.blob();
+              const arrayBuffer = await blob.arrayBuffer();
+              const uint8Array = new Uint8Array(arrayBuffer);
+              resumePdfBase64 = btoa(String.fromCharCode(...uint8Array));
+              console.log('Converted resume to base64, size:', resumePdfBase64.length);
+            } catch (fetchError) {
+              console.error('Error fetching/converting PDF to base64:', fetchError);
+              defaultResumePdfUrl = null;
+              resumePdfBase64 = null;
+            }
+          } else {
+            console.warn('Resume URL format not recognized:', defaultResumePdfUrl);
+            defaultResumePdfUrl = null;
+            resumePdfBase64 = null;
           }
         }
       } catch (resumeError) {
