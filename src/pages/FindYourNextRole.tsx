@@ -381,10 +381,9 @@ const FindYourNextRole = () => {
           defaultResumePdfUrl = resumeData.pdf_url;
           console.log('Found default resume PDF:', defaultResumePdfUrl);
 
-          // Always try to fetch and convert to base64 in the browser
-          // This works for both blob URLs and regular URLs
+          // Try to fetch and convert to base64 in the browser
           try {
-            console.log('Fetching PDF in browser to convert to base64...');
+            console.log('Attempting to fetch PDF for conversion to base64...');
             const response = await fetch(defaultResumePdfUrl);
             if (!response.ok) {
               throw new Error(`HTTP error! status: ${response.status}`);
@@ -395,15 +394,10 @@ const FindYourNextRole = () => {
             resumePdfBase64 = btoa(String.fromCharCode(...uint8Array));
             console.log('Successfully converted resume to base64, size:', resumePdfBase64.length);
           } catch (fetchError) {
-            console.error('Error fetching/converting PDF to base64:', fetchError);
-            // If we can't fetch it, don't send either URL or base64
+            console.warn('Could not fetch resume (blob URL may be expired):', fetchError);
+            // Continue without resume - don't block the job search
             defaultResumePdfUrl = null;
             resumePdfBase64 = null;
-            toast({
-              title: "Resume Upload Warning",
-              description: "Unable to include your resume in the job search. Please re-save your resume in the Resources Library.",
-              variant: "destructive",
-            });
           }
         }
       } catch (resumeError) {
