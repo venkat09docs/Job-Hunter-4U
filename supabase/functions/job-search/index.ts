@@ -81,6 +81,26 @@ Deno.serve(async (req) => {
 
     console.log('Job search request:', { query, num_pages, date_posted, country, language, job_requirements, employment_type, resume_pdf_url });
 
+    // Fetch PDF file content if URL is provided
+    let resumePdfBase64 = null;
+    if (resume_pdf_url) {
+      try {
+        console.log('Fetching PDF from URL:', resume_pdf_url);
+        const pdfResponse = await fetch(resume_pdf_url);
+        if (pdfResponse.ok) {
+          const pdfArrayBuffer = await pdfResponse.arrayBuffer();
+          const pdfUint8Array = new Uint8Array(pdfArrayBuffer);
+          // Convert to base64
+          resumePdfBase64 = btoa(String.fromCharCode(...pdfUint8Array));
+          console.log('PDF file converted to base64, size:', resumePdfBase64.length);
+        } else {
+          console.error('Failed to fetch PDF:', pdfResponse.status);
+        }
+      } catch (pdfError) {
+        console.error('Error fetching PDF file:', pdfError);
+      }
+    }
+
     // Use the production n8n webhook URL
     const n8nWebhookUrl = 'https://n8n.srv995073.hstgr.cloud/webhook/jsearch';
 
@@ -104,7 +124,8 @@ Deno.serve(async (req) => {
           language,
           job_requirements,
           employment_type,
-          resume_pdf_url
+          resume_pdf_url,
+          resume_pdf_base64: resumePdfBase64
         }),
       });
 
