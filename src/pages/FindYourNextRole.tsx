@@ -367,45 +367,82 @@ const FindYourNextRole = () => {
       await incrementAnalytics('job_search');
 
       // Fetch default resume PDF from resources library
-      let defaultResumePdfUrl = null;
       let resumePdfBase64 = null;
+      
+      console.log('🔍 Fetching default resume for user:', user?.id);
+      
       try {
         const { data: resumeData, error: resumeError } = await supabase
           .from('saved_resumes')
-          .select('pdf_url, pdf_base64')
+          .select('id, pdf_url, pdf_base64, word_base64, is_default')
           .eq('user_id', user?.id)
           .eq('is_default', true)
-          .single();
+          .maybeSingle();
 
-        if (!resumeError && resumeData) {
-          // Prefer base64 data (persistent), fallback to URL (temporary)
+        console.log('📊 Resume query result:', { 
+          hasData: !!resumeData, 
+          error: resumeError,
+          resumeId: resumeData?.id,
+          hasPdfBase64: !!resumeData?.pdf_base64,
+          pdfBase64Length: resumeData?.pdf_base64?.length,
+          hasPdfUrl: !!resumeData?.pdf_url
+        });
+
+        if (resumeError) {
+          console.error('❌ Error fetching default resume:', resumeError);
+          throw resumeError;
+        }
+
+        if (!resumeData) {
+          console.warn('⚠️ No default resume found. Please set a default resume in Resources Library.');
+          toast({
+            title: "No default resume",
+            description: "Set a default resume in Resources Library to include it with job searches.",
+            variant: "default"
+          });
+        } else {
+          // Prefer base64 data (persistent and reliable)
           if (resumeData.pdf_base64) {
             resumePdfBase64 = resumeData.pdf_base64;
-            console.log('✅ Using persistent base64 resume data, size:', resumePdfBase64.length);
+            console.log('✅ Using persistent base64 resume data from DB');
+            console.log('📏 Base64 length:', resumePdfBase64.length);
           } else if (resumeData.pdf_url) {
             // Fallback: Try to fetch from blob URL (may fail if expired)
-            defaultResumePdfUrl = resumeData.pdf_url;
-            console.log('📄 Fetching resume PDF from temporary URL:', defaultResumePdfUrl);
+            console.warn('⚠️ Resume only has blob URL (temporary), attempting to fetch...');
+            console.log('📄 Blob URL:', resumeData.pdf_url);
             
             try {
-              const response = await fetch(defaultResumePdfUrl);
+              const response = await fetch(resumeData.pdf_url);
               if (!response.ok) {
-                throw new Error(`Failed to fetch PDF: ${response.status}`);
+                throw new Error(`Failed to fetch PDF: ${response.status} ${response.statusText}`);
               }
               const blob = await response.blob();
-              console.log('✅ Fetched PDF blob, size:', blob.size, 'type:', blob.type);
+              console.log('✅ Fetched PDF blob - size:', blob.size, 'type:', blob.type);
+              
               const arrayBuffer = await blob.arrayBuffer();
               const uint8Array = new Uint8Array(arrayBuffer);
               resumePdfBase64 = btoa(String.fromCharCode(...uint8Array));
-              console.log('✅ Converted resume to base64, size:', resumePdfBase64.length);
+              console.log('✅ Converted blob to base64 - length:', resumePdfBase64.length);
             } catch (blobError) {
-              console.error('❌ Error converting PDF to base64:', blobError);
-              console.warn('⚠️ Continuing without resume attachment');
+              console.error('❌ Error converting PDF blob to base64:', blobError);
+              console.warn('⚠️ Blob URL expired or inaccessible. Please re-save your resume in Resume Builder.');
+              toast({
+                title: "Resume unavailable",
+                description: "Please re-save your resume in Resume Builder to include it with job searches.",
+                variant: "destructive"
+              });
             }
+          } else {
+            console.error('❌ Resume record exists but has no PDF data (neither base64 nor URL)');
+            toast({
+              title: "Resume data missing",
+              description: "Please re-save your resume in Resume Builder.",
+              variant: "destructive"
+            });
           }
         }
       } catch (resumeError) {
-        console.log('No default resume found or error fetching it:', resumeError);
+        console.error('❌ Unexpected error fetching resume:', resumeError);
       }
 
       // Call the Supabase edge function for job search
