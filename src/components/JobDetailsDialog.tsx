@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ExternalLink, MapPin, Mail, Phone, Building, FileText, Eye, CheckCircle, AlertTriangle, Lightbulb, Target } from "lucide-react";
+import { Loader2, ExternalLink, MapPin, Mail, Phone, Building, FileText, Eye, CheckCircle, AlertTriangle, Lightbulb, Target, Heart } from "lucide-react";
 import { ResumeAnalyzerDialog } from "./ResumeAnalyzerDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -322,12 +322,12 @@ export const JobDetailsDialog = ({
                 variant="outline"
                 className="flex-1"
                 onClick={() => {
-                  // Redefine Resume functionality to be implemented
-                  console.log('Redefine Resume clicked');
+                  // Add to Wishlist functionality to be implemented
+                  console.log('Add to Wishlist clicked');
                 }}
               >
-                <FileText className="h-4 w-4 mr-2" />
-                Redefine Resume
+                <Heart className="h-4 w-4 mr-2" />
+                Add to Wishlist
               </Button>
             </div>
           </div>
