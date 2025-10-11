@@ -55,8 +55,6 @@ const formSchema = z.object({
   contactSource: z.string().min(1, "Contact source is required"),
   jobTitle: z.string().min(1, "Job title is required"),
   jobDescription: z.string().min(1, "Job description is required"),
-  coverLetter: z.any().optional(),
-  resume: z.any().refine((files) => files?.length > 0, "Resume is required"),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -73,8 +71,6 @@ const contactSources = [
 const AutomateJobHunting = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [coverLetterFile, setCoverLetterFile] = useState<File | null>(null);
-  const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [isSmtpDialogOpen, setIsSmtpDialogOpen] = useState(false);
   const [gmailId, setGmailId] = useState("");
   const [appPassword, setAppPassword] = useState("");
@@ -185,51 +181,6 @@ const AutomateJobHunting = () => {
         return;
       }
 
-      let coverLetterUrl = null;
-      let resumeUrl = null;
-
-      // Upload cover letter if provided
-      if (coverLetterFile) {
-        const fileExt = coverLetterFile.name.split('.').pop();
-        const fileName = `${user.id}/${Date.now()}_cover_letter.${fileExt}`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('job-applications')
-          .upload(fileName, coverLetterFile);
-
-        if (uploadError) {
-          console.error('Cover letter upload error:', uploadError);
-        } else {
-          const { data: { publicUrl } } = supabase.storage
-            .from('job-applications')
-            .getPublicUrl(fileName);
-          coverLetterUrl = publicUrl;
-        }
-      }
-
-      // Upload resume
-      if (resumeFile) {
-        const fileExt = resumeFile.name.split('.').pop();
-        const fileName = `${user.id}/${Date.now()}_resume.${fileExt}`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('job-applications')
-          .upload(fileName, resumeFile);
-
-        if (uploadError) {
-          console.error('Resume upload error:', uploadError);
-          toast({
-            title: "Upload Error",
-            description: "Failed to upload resume. Please try again.",
-            variant: "destructive",
-          });
-          return;
-        } else {
-          const { data: { publicUrl } } = supabase.storage
-            .from('job-applications')
-            .getPublicUrl(fileName);
-          resumeUrl = publicUrl;
-        }
-      }
-
       // Save to hr_details table
       const { error: insertError } = await supabase
         .from('hr_details')
@@ -246,8 +197,8 @@ const AutomateJobHunting = () => {
           contact_source: data.contactSource,
           job_title: data.jobTitle,
           job_description: data.jobDescription,
-          cover_letter_url: coverLetterUrl,
-          resume_url: resumeUrl,
+          cover_letter_url: null,
+          resume_url: null,
         });
 
       if (insertError) {
@@ -261,14 +212,12 @@ const AutomateJobHunting = () => {
       }
 
       toast({
-        title: "Job Hunting Started!",
-        description: "Your automated job hunting process has been initiated.",
+        title: "HR Details Added!",
+        description: "Your HR details have been saved successfully.",
       });
 
       // Reset form
       form.reset();
-      setCoverLetterFile(null);
-      setResumeFile(null);
     } catch (error) {
       console.error('Error submitting form:', error);
       toast({
@@ -526,74 +475,6 @@ const AutomateJobHunting = () => {
                       </FormItem>
                     )}
                   />
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="coverLetter"
-                      render={({ field: { onChange, value, ...field } }) => (
-                        <FormItem>
-                          <FormLabel>Upload Cover Letter</FormLabel>
-                          <FormControl>
-                            <div className="space-y-2">
-                              <Input
-                                type="file"
-                                accept=".pdf"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) {
-                                    setCoverLetterFile(file);
-                                    onChange(e.target.files);
-                                  }
-                                }}
-                                {...field}
-                              />
-                              {coverLetterFile && (
-                                <p className="text-sm text-muted-foreground">
-                                  Selected: {coverLetterFile.name}
-                                </p>
-                              )}
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="resume"
-                      render={({ field: { onChange, value, ...field } }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Upload Resume <span className="text-destructive">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <div className="space-y-2">
-                              <Input
-                                type="file"
-                                accept=".pdf"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) {
-                                    setResumeFile(file);
-                                    onChange(e.target.files);
-                                  }
-                                }}
-                                {...field}
-                              />
-                              {resumeFile && (
-                                <p className="text-sm text-muted-foreground">
-                                  Selected: {resumeFile.name}
-                                </p>
-                              )}
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
                 </div>
 
                 <div className="flex justify-end gap-4 pt-4">
@@ -602,8 +483,6 @@ const AutomateJobHunting = () => {
                     variant="outline"
                     onClick={() => {
                       form.reset();
-                      setCoverLetterFile(null);
-                      setResumeFile(null);
                     }}
                   >
                     Clear Form
