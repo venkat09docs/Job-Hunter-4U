@@ -761,7 +761,16 @@ const ResourcesLibrary = () => {
       // Convert file to base64 for persistent storage
       const arrayBuffer = await selectedFile.arrayBuffer();
       const uint8Array = new Uint8Array(arrayBuffer);
-      const base64String = btoa(String.fromCharCode(...uint8Array));
+      
+      // Convert to base64 in chunks to avoid call stack size exceeded
+      let binary = '';
+      const chunkSize = 8192;
+      for (let i = 0; i < uint8Array.length; i += chunkSize) {
+        const chunk = uint8Array.subarray(i, Math.min(i + chunkSize, uint8Array.length));
+        binary += String.fromCharCode.apply(null, Array.from(chunk));
+      }
+      const base64String = btoa(binary);
+      
       console.log('✅ File converted to base64, length:', base64String.length);
 
       // Upload file to Supabase storage (for backward compatibility and direct access)
