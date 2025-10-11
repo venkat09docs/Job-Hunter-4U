@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, ExternalLink, MapPin, Mail, Phone, Building, FileText } from "lucide-react";
+import { ResumeAnalyzerDialog } from "./ResumeAnalyzerDialog";
 
 interface JobDetails {
   companyDetails: string;
@@ -30,6 +32,8 @@ export const JobDetailsDialog = ({
   loading,
   jobTitle
 }: JobDetailsDialogProps) => {
+  const [showResumeAnalyzer, setShowResumeAnalyzer] = useState(false);
+
   const highlightKeywords = (text: string, keywords: string[]) => {
     if (!keywords || keywords.length === 0) return text;
     
@@ -150,10 +154,7 @@ export const JobDetailsDialog = ({
               <Button
                 variant="outline"
                 className="flex-1"
-                onClick={() => {
-                  // Resume Analyzer functionality to be implemented
-                  console.log('Resume Analyzer clicked');
-                }}
+                onClick={() => setShowResumeAnalyzer(true)}
               >
                 <FileText className="h-4 w-4 mr-2" />
                 Resume Analyzer
@@ -177,6 +178,16 @@ export const JobDetailsDialog = ({
           </div>
         )}
       </DialogContent>
+
+      {/* Resume Analyzer Dialog */}
+      {jobDetails && (
+        <ResumeAnalyzerDialog
+          open={showResumeAnalyzer}
+          onOpenChange={setShowResumeAnalyzer}
+          jobDescription={jobDetails.jobDescription}
+          keySkills={jobDetails.keySkills}
+        />
+      )}
     </Dialog>
   );
 };
