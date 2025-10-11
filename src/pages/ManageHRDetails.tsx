@@ -53,11 +53,14 @@ const ManageHRDetails = () => {
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [isAnalysisDialogOpen, setIsAnalysisDialogOpen] = useState(false);
   const [isViewReportDialogOpen, setIsViewReportDialogOpen] = useState(false);
+  const [isRedefinedResumeDialogOpen, setIsRedefinedResumeDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isRedefining, setIsRedefining] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<string>("");
+  const [redefinedResumeContent, setRedefinedResumeContent] = useState<string>("");
   const [parsedAnalysis, setParsedAnalysis] = useState<{
     score: number;
     strengths: string[];
@@ -326,15 +329,41 @@ const ManageHRDetails = () => {
         throw new Error(data.error);
       }
 
+      // Store the redefined resume content and show in dialog
+      setRedefinedResumeContent(data.redefinedResume);
+      setIsAnalysisDialogOpen(false);
+      setIsRedefinedResumeDialogOpen(true);
+
+      toast({
+        title: "Resume Redefined",
+        description: "Your optimized resume is ready for review.",
+      });
+    } catch (error) {
+      console.error('Error redefining resume:', error);
+      toast({
+        title: "Redefinition Failed",
+        description: error instanceof Error ? error.message : "Failed to redefine resume. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRedefining(false);
+    }
+  };
+
+  const handleDownloadRedefinedResume = async () => {
+    if (!redefinedResumeContent || !selectedHR) return;
+
+    try {
+      setIsDownloading(true);
+
       // Convert the redefined resume text to a Word document
-      const resumeText = data.redefinedResume;
-      const sections = resumeText.split('\n\n');
+      const sections = redefinedResumeContent.split('\n\n');
       
       const paragraphs: Paragraph[] = [];
       
       sections.forEach((section: string) => {
         const lines = section.split('\n');
-        lines.forEach((line: string, index: number) => {
+        lines.forEach((line: string) => {
           if (line.trim()) {
             // Check if it's a heading (all caps or starts with specific keywords)
             const isHeading = /^[A-Z\s]{3,}$/.test(line.trim()) || 
@@ -388,18 +417,18 @@ const ManageHRDetails = () => {
       URL.revokeObjectURL(url);
 
       toast({
-        title: "Resume Redefined",
+        title: "Resume Downloaded",
         description: "Your optimized resume has been downloaded successfully.",
       });
     } catch (error) {
-      console.error('Error redefining resume:', error);
+      console.error('Error downloading resume:', error);
       toast({
-        title: "Redefinition Failed",
-        description: error instanceof Error ? error.message : "Failed to redefine resume. Please try again.",
+        title: "Download Failed",
+        description: "Failed to download resume. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setIsRedefining(false);
+      setIsDownloading(false);
     }
   };
 
@@ -1294,6 +1323,67 @@ const ManageHRDetails = () => {
                 </div>
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Redefined Resume Dialog */}
+        <Dialog open={isRedefinedResumeDialogOpen} onOpenChange={setIsRedefinedResumeDialogOpen}>
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader className="border-b pb-4">
+              <DialogTitle className="flex items-center gap-3">
+                <div className="p-3 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-xl border border-emerald-500/30">
+                  <FileText className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">Your Redefined Resume</div>
+                  <div className="text-sm font-normal text-muted-foreground mt-1">
+                    Optimized for {selectedHR?.company_name} - {selectedHR?.job_title}
+                  </div>
+                </div>
+              </DialogTitle>
+              <DialogDescription>
+                Review your optimized resume content below. Click download when ready.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 mt-6">
+              {/* Resume Content Display */}
+              <div className="p-8 bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-inner">
+                <div className="prose prose-slate dark:prose-invert max-w-none">
+                  <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-slate-900 dark:text-slate-100">
+                    {redefinedResumeContent}
+                  </pre>
+                </div>
+              </div>
+
+              {/* Download Button */}
+              <div className="flex gap-4 pt-4 border-t-2">
+                <Button
+                  onClick={() => setIsRedefinedResumeDialogOpen(false)}
+                  variant="outline"
+                  className="flex-1 h-14 text-lg font-semibold border-2"
+                >
+                  Close
+                </Button>
+                <Button
+                  onClick={handleDownloadRedefinedResume}
+                  disabled={isDownloading}
+                  className="flex-1 h-14 text-lg font-semibold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  {isDownloading ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Downloading...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="mr-2 h-5 w-5" />
+                      Download Resume (Word)
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
