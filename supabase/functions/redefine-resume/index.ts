@@ -91,36 +91,53 @@ INSTRUCTIONS:
 7. Make the resume ATS-friendly by incorporating keywords from the job description naturally
 8. Ensure the total length is appropriate (1-2 pages)
 
-OUTPUT FORMAT:
-Provide the redefined resume in a clean, professional format that can be easily copied. Use the following structure:
+OUTPUT FORMAT - CRITICAL REQUIREMENTS:
+1. Output ONLY the resume content - NO analysis, NO commentary, NO explanations
+2. Do NOT include any sections like "Analysis", "Recommendations", or "Notes"
+3. Provide ONLY the following resume sections from the original resume:
+   - Contact Information / Header
+   - Professional Summary (if present in original)
+   - Key Skills / Technical Skills (if present in original)
+   - Professional Experience / Work Experience (if present in original)
+   - Education (if present in original)
+   - Certifications (if present in original)
+   - Projects (if present in original)
+   - Any other sections that were in the ORIGINAL resume
 
+EXACT FORMAT TO FOLLOW:
 [FULL NAME]
-[Contact Information]
+[Contact Information - Email, Phone, LinkedIn, Location]
 
 PROFESSIONAL SUMMARY
-[Optimized professional summary - 3-4 sentences]
+[Optimized 3-4 sentence summary that highlights relevant experience for this role]
 
 KEY SKILLS
-[List of skills, prioritizing those from the job description]
+[Comma-separated list of skills, prioritizing job description keywords]
 
 PROFESSIONAL EXPERIENCE
-[Company Name] - [Job Title]
-[Dates]
-• [Achievement/responsibility that matches job requirements]
-• [Achievement/responsibility that matches job requirements]
-• [Achievement/responsibility that matches job requirements]
+
+[Company Name] | [Job Title]
+[Start Date] – [End Date]
+• [Optimized achievement/responsibility with metrics]
+• [Optimized achievement/responsibility with metrics]
+• [Optimized achievement/responsibility with metrics]
+
+[Repeat for each position]
 
 EDUCATION
-[Degree] - [Institution]
-[Year]
 
-[Additional sections as needed: Certifications, Projects, etc.]
+[Degree Name]
+[Institution Name] | [Graduation Year]
 
-Make sure to:
-- Highlight the key skills: ${keySkillsList}
-- Use industry-standard terminology from the job description
-- Maintain authenticity while optimizing for the role
-- Make it compelling and results-oriented`;
+[Additional resume sections from original if present: Certifications, Projects, etc.]
+
+CRITICAL RULES:
+- Output ONLY resume sections, nothing else
+- NO explanatory text before or after the resume
+- NO analysis or recommendations
+- Match the EXACT section structure from the original resume
+- Highlight key skills: ${keySkillsList}
+- Use ATS-friendly keywords from the job description naturally`;
 
     console.log('Sending request to Gemini...');
 
