@@ -292,70 +292,91 @@ const ManageHRDetails = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
             {filteredHrDetails.map((hr) => (
-              <Card key={hr.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-xl mb-1">{hr.company_name}</CardTitle>
-                      <CardDescription className="flex items-center gap-1">
-                        <Briefcase className="h-3 w-3" />
-                        {hr.job_title}
-                      </CardDescription>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(hr.id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {hr.hr_name && (
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">HR Contact</p>
-                      <p className="text-sm">{hr.hr_name}</p>
-                      <p className="text-sm text-muted-foreground">{hr.hr_email}</p>
-                    </div>
-                  )}
-                  
-                  <div className="flex gap-4">
-                    {hr.company_employees && (
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{hr.company_employees}</span>
+              <Card key={hr.id} className="hover:shadow-md transition-all border-l-4 border-l-primary/40 hover:border-l-primary">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    {/* Left Section - Company & Job Info */}
+                    <div className="flex-1 space-y-4">
+                      {/* Header Row */}
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-4">
+                          <div className="p-3 bg-primary/10 rounded-lg">
+                            <Building2 className="h-6 w-6 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-bold mb-1">{hr.company_name}</h3>
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <Briefcase className="h-4 w-4" />
+                              <span className="font-medium">{hr.job_title}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(hr.id)}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-5 w-5" />
+                        </Button>
                       </div>
-                    )}
-                    {hr.company_founded_year && (
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">Founded {hr.company_founded_year}</span>
+
+                      {/* Company Details Row */}
+                      <div className="flex items-center gap-6 text-sm">
+                        {hr.company_employees && (
+                          <div className="flex items-center gap-2">
+                            <Users className="h-4 w-4 text-muted-foreground" />
+                            <span>{hr.company_employees} employees</span>
+                          </div>
+                        )}
+                        {hr.company_founded_year && (
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <span>Founded {hr.company_founded_year}</span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
 
-                  {hr.job_description && (
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground mb-1">Job Description</p>
-                      <p className="text-sm line-clamp-3">{hr.job_description}</p>
+                      {/* HR Contact Section */}
+                      {hr.hr_name && (
+                        <div className="p-4 bg-muted/50 rounded-lg">
+                          <p className="text-sm font-semibold mb-2 text-muted-foreground">HR Contact</p>
+                          <div className="flex items-center gap-4">
+                            <div>
+                              <p className="font-medium">{hr.hr_name}</p>
+                              <p className="text-sm text-muted-foreground">{hr.hr_email}</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Job Description */}
+                      {hr.job_description && (
+                        <div>
+                          <p className="text-sm font-semibold mb-2 text-muted-foreground">Job Description</p>
+                          <p className="text-sm leading-relaxed line-clamp-3">{hr.job_description}</p>
+                        </div>
+                      )}
+
+                      {/* Key Skills */}
+                      {hr.key_skills && (
+                        <div>
+                          <p className="text-sm font-semibold mb-2 text-muted-foreground">Key Skills Required</p>
+                          <p className="text-sm leading-relaxed">{hr.key_skills}</p>
+                        </div>
+                      )}
+
+                      {/* Footer - Date */}
+                      <div className="pt-3 border-t flex items-center justify-between text-xs text-muted-foreground">
+                        <span>Added on {new Date(hr.created_at).toLocaleDateString('en-US', { 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        })}</span>
+                      </div>
                     </div>
-                  )}
-
-                  {hr.key_skills && (
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground mb-1">Key Skills</p>
-                      <p className="text-sm line-clamp-2">{hr.key_skills}</p>
-                    </div>
-                  )}
-
-                  <div className="pt-2 border-t">
-                    <p className="text-xs text-muted-foreground">
-                      Added on {new Date(hr.created_at).toLocaleDateString()}
-                    </p>
                   </div>
                 </CardContent>
               </Card>
