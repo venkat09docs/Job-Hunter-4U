@@ -67,10 +67,7 @@ const getMainItems = (isAdmin: boolean, isInstituteAdmin: boolean, isRecruiter: 
 ];
 
 const jobHunterItems = [
-  { title: "JobHunter LevelUp", url: "/job-hunter-level-up", icon: Trophy, featureKey: null },
-  { title: "Find Your Next Role", url: "/dashboard/find-your-next-role", icon: Search, featureKey: "page_find_your_next_role" },
-  { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText, featureKey: "page_job_tracker" },
-  { title: "Job Search History", url: "/dashboard/job-search", icon: Search, featureKey: "page_job_search" },
+  // Removed submenu items - JobHunter LevelUp is now a single menu item
 ];
 
 const githubItems = [
@@ -185,7 +182,6 @@ export function AppSidebar() {
   };
 
   const isActive = (path: string) => currentPath === path;
-  const isJobHunterActive = jobHunterItems.some((i) => isActive(i.url));
   const isGitHubActive = githubItems.some((i) => isActive(i.url));
 
   const getInitials = () => {
@@ -571,42 +567,12 @@ export function AppSidebar() {
                   return <MenuItem key={item.title} item={item} isPremium={shouldPassPremium} sectionColor="main" />;
                 })}
 
-                {/* Job Hunter Level Up - moved to top */}
+                {/* Job Hunter Level Up - single menu item */}
                 <div className="mt-4">
-                  <button
-                    onClick={() => setJobHunterOpen(!jobHunterOpen)}
-                    className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 w-full ${
-                      isJobHunterActive ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/20' : 'text-foreground hover:text-accent-foreground hover:bg-green-50/50 dark:hover:bg-green-950/10'
-                    }`}
-                  >
-                    <Target className="h-5 w-5 flex-shrink-0 text-green-500" />
-                    {!isCollapsed && (
-                      <>
-                        <span className="font-medium text-sm">Job Hunter Level Up</span>
-                        {jobHunterOpen ? (
-                          <ChevronDown className="h-4 w-4 ml-auto text-green-500" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4 ml-auto text-green-500" />
-                        )}
-                      </>
-                    )}
-                  </button>
-                  {jobHunterOpen && !isCollapsed && (
-                    <div className="space-y-1 mt-1">
-                      {jobHunterItems.map((item) => {
-                        const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
-                        return <MenuItem key={item.title} item={item} isPremium={isPremium} isSubItem={true} sectionColor="jobhunter" />;
-                      })}
-                    </div>
-                  )}
-                  {isCollapsed && (
-                    <div className="space-y-1">
-                      {jobHunterItems.map((item) => {
-                        const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
-                        return <MenuItem key={item.title} item={item} isPremium={isPremium} sectionColor="jobhunter" />;
-                      })}
-                    </div>
-                  )}
+                  {(() => {
+                    const jobHunterItem = { title: "JobHunter LevelUp", url: "/job-hunter-level-up", icon: Target, featureKey: null };
+                    return <MenuItem key={jobHunterItem.title} item={jobHunterItem} sectionColor="jobhunter" />;
+                  })()}
                 </div>
 
                 {/* Progress Level Up - moved below JobHunter Level Up */}
