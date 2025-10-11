@@ -200,50 +200,118 @@ export function AppSidebar() {
     isSubItem?: boolean,
     sectionColor?: string
   }) => {
-    // Get section-specific colors
+    // Get icon-specific colors using semantic tokens from design system
+    const getIconColor = (title: string) => {
+      switch (title) {
+        case 'Dashboard':
+          return 'text-[hsl(var(--primary))]';
+        case 'Skill Level Up':
+          return 'text-[hsl(var(--violet))]';
+        case 'Profile Level Up':
+          return 'text-[hsl(var(--amber))]';
+        case 'Interview Level Up':
+          return 'text-[hsl(var(--rose))]';
+        case 'AI-Powered Career Tools':
+          return 'text-[hsl(var(--cyan))]';
+        case 'Resource Library':
+          return 'text-[hsl(var(--emerald))]';
+        case 'Knowledge Base':
+          return 'text-[hsl(var(--indigo))]';
+        case 'Affiliate Income Level Up':
+          return 'text-[hsl(var(--teal))]';
+        case 'GitHub Optimization':
+        case 'GitHub Activity Tracker':
+        case 'GitHub Weekly':
+          return 'text-[hsl(var(--success))]';
+        case 'JobHunter LevelUp':
+        case 'Find Your Next Role':
+        case 'Job Tracker':
+        case 'Job Search History':
+          return 'text-[hsl(var(--info))]';
+        case 'Career Growth Activities':
+        case 'Career Growth Report':
+          return 'text-[hsl(var(--purple))]';
+        case 'CLP Dashboard':
+        case 'Manage Questions':
+        case 'Create Assignment':
+        case 'My Assignments':
+          return 'text-[hsl(var(--purple))]';
+        case 'Institute Dashboard':
+        case 'Institute Management':
+        case 'Batch Management':
+          return 'text-[hsl(var(--orange))]';
+        case 'Admin Dashboard':
+        case 'Verify Assignments':
+        case 'User Management':
+          return 'text-[hsl(var(--error))]';
+        case 'Students Management':
+        case 'Students Report':
+          return 'text-[hsl(var(--sky))]';
+        case 'Affiliate Management':
+          return 'text-[hsl(var(--teal))]';
+        case 'Social Proof Management':
+          return 'text-[hsl(var(--pink))]';
+        case 'Notification Analytics':
+        case 'Notification Management':
+          return 'text-[hsl(var(--indigo))]';
+        case 'Skill Assignments':
+          return 'text-[hsl(var(--violet))]';
+        case 'Manage Assignments':
+          return 'text-[hsl(var(--amber))]';
+        case 'Institute Membership Plans':
+        case 'Institutes Subscription Plan':
+          return 'text-[hsl(var(--warning))]';
+        case 'Manage Career Hub':
+        case 'Manage Subscriptions':
+          return 'text-[hsl(var(--slate))]';
+        case 'Recruiter Dashboard':
+        case 'Post Job':
+          return 'text-[hsl(var(--cyan))]';
+        case 'Leader Board Points':
+          return 'text-[hsl(var(--amber))]';
+        default:
+          return 'text-[hsl(var(--primary))]';
+      }
+    };
+
+    // Get section-specific colors for active/hover states
     const getSectionColors = (section: string) => {
       switch (section) {
         case 'admin':
           return {
-            activeColor: 'text-red-600 dark:text-red-400',
-            activeBg: 'bg-red-50 dark:bg-red-950/20',
-            hoverBg: 'hover:bg-red-50/50 dark:hover:bg-red-950/10',
-            icon: 'text-red-500'
+            activeColor: 'text-[hsl(var(--error))]',
+            activeBg: 'bg-[hsl(var(--error))]/10',
+            hoverBg: 'hover:bg-[hsl(var(--error))]/5',
           };
         case 'main':
           return {
-            activeColor: 'text-blue-600 dark:text-blue-400',
-            activeBg: 'bg-blue-50 dark:bg-blue-950/20',
-            hoverBg: 'hover:bg-blue-50/50 dark:hover:bg-blue-950/10',
-            icon: 'text-blue-500'
+            activeColor: 'text-[hsl(var(--primary))]',
+            activeBg: 'bg-[hsl(var(--primary))]/10',
+            hoverBg: 'hover:bg-[hsl(var(--primary))]/5',
           };
         case 'jobhunter':
           return {
-            activeColor: 'text-green-600 dark:text-green-400',
-            activeBg: 'bg-green-50 dark:bg-green-950/20',
-            hoverBg: 'hover:bg-green-50/50 dark:hover:bg-green-950/10',
-            icon: 'text-green-500'
+            activeColor: 'text-[hsl(var(--info))]',
+            activeBg: 'bg-[hsl(var(--info))]/10',
+            hoverBg: 'hover:bg-[hsl(var(--info))]/5',
           };
         case 'github':
           return {
-            activeColor: 'text-orange-600 dark:text-orange-400',
-            activeBg: 'bg-orange-50 dark:bg-orange-950/20',
-            hoverBg: 'hover:bg-orange-50/50 dark:hover:bg-orange-950/10',
-            icon: 'text-orange-500'
+            activeColor: 'text-[hsl(var(--success))]',
+            activeBg: 'bg-[hsl(var(--success))]/10',
+            hoverBg: 'hover:bg-[hsl(var(--success))]/5',
           };
         case 'clp':
           return {
-            activeColor: 'text-purple-600 dark:text-purple-400',
-            activeBg: 'bg-purple-50 dark:bg-purple-950/20',
-            hoverBg: 'hover:bg-purple-50/50 dark:hover:bg-purple-950/10',
-            icon: 'text-purple-500'
+            activeColor: 'text-[hsl(var(--purple))]',
+            activeBg: 'bg-[hsl(var(--purple))]/10',
+            hoverBg: 'hover:bg-[hsl(var(--purple))]/5',
           };
         default:
           return {
             activeColor: 'text-primary',
             activeBg: 'bg-primary/10',
             hoverBg: 'hover:bg-accent/50',
-            icon: 'text-primary'
           };
       }
     };
@@ -330,7 +398,7 @@ export function AppSidebar() {
         onClick={handleAICareerToolsClick}
         className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer text-foreground hover:text-accent-foreground ${colors.hoverBg}`}
       >
-        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 ${colors.icon}`} />
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 ${getIconColor(item.title)}`} />
         {!isCollapsed && (
           <div className="flex items-center justify-between flex-1 min-w-0">
             <span className="text-sm truncate">
@@ -354,7 +422,7 @@ export function AppSidebar() {
             : `text-foreground hover:text-accent-foreground ${colors.hoverBg}`
         }`}
       >
-        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 ${colors.icon}`} />
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 ${getIconColor(item.title)}`} />
         {!isCollapsed && (
           <div className="flex items-center justify-between flex-1 min-w-0">
             <span className="text-sm truncate">
@@ -375,7 +443,7 @@ export function AppSidebar() {
             : `text-foreground hover:text-accent-foreground ${colors.hoverBg}`
         }`}
       >
-        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 ${colors.icon}`} />
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 ${getIconColor(item.title)}`} />
         {!isCollapsed && (
           <div className="flex items-center justify-between flex-1 min-w-0">
             <span className="text-sm truncate">
@@ -394,7 +462,7 @@ export function AppSidebar() {
         onClick={handlePremiumFeatureClick}
         className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer text-foreground hover:text-accent-foreground ${colors.hoverBg}`}
       >
-        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 ${colors.icon}`} />
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 ${getIconColor(item.title)}`} />
         {!isCollapsed && (
           <div className="flex items-center justify-between flex-1 min-w-0">
             <span className="text-sm truncate">
@@ -409,7 +477,7 @@ export function AppSidebar() {
         onClick={handleCareerGrowthClick}
         className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer text-foreground hover:text-accent-foreground ${colors.hoverBg}`}
       >
-        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 ${colors.icon}`} />
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 ${getIconColor(item.title)}`} />
         {!isCollapsed && (
           <div className="flex items-center justify-between flex-1 min-w-0">
             <span className="text-sm truncate">
@@ -424,7 +492,7 @@ export function AppSidebar() {
         onClick={handleGitHubToolsClick}
         className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer text-foreground hover:text-accent-foreground ${colors.hoverBg}`}
       >
-        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 ${colors.icon}`} />
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 ${getIconColor(item.title)}`} />
         {!isCollapsed && (
           <div className="flex items-center justify-between flex-1 min-w-0">
             <span className="text-sm truncate">
@@ -446,7 +514,7 @@ export function AppSidebar() {
           }`
         }
       >
-        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 ${colors.icon}`} />
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 ${getIconColor(item.title)}`} />
         {!isCollapsed && (
           <div className="flex items-center justify-between flex-1 min-w-0">
             <span className="text-sm truncate">
