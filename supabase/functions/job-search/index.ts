@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
           job_requirements,
           employment_type,
           resume_pdf_url,
-          resume_pdf_base64: resumePdfBase64
+          resume_pdf_base64
         }),
       });
 
