@@ -34,14 +34,14 @@ const JobHunterLevelUp = () => {
     },
     {
       id: 3,
-      title: "Automate Job Hunting",
-      description: "Let AI streamline your entire job search process",
+      title: "Manage HR Details",
+      description: "Store and organize HR contacts and job applications",
       icon: Zap,
-      route: "/dashboard/automate-job-hunting",
+      route: "/dashboard/manage-hr-details",
       gradient: "from-[hsl(var(--warning))] to-[hsl(var(--amber))]",
       iconBg: "bg-[hsl(var(--warning))]/10",
       iconColor: "text-[hsl(var(--warning))]",
-      badge: "AI Powered",
+      badge: "Organize",
     },
     {
       id: 4,

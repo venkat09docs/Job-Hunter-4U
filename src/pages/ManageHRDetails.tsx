@@ -126,7 +126,7 @@ const ManageHRDetails = () => {
               <h1 className="text-4xl font-bold">Manage HR Details</h1>
             </div>
             <Button
-              onClick={() => navigate("/automate-job-hunting")}
+              onClick={() => navigate("/dashboard/automate-job-hunting")}
               className="gap-2"
             >
               Add New HR Details
@@ -161,7 +161,7 @@ const ManageHRDetails = () => {
               <p className="text-muted-foreground text-center mb-4">
                 You haven't added any HR details yet. Start by adding your first HR contact.
               </p>
-              <Button onClick={() => navigate("/automate-job-hunting")}>
+              <Button onClick={() => navigate("/dashboard/automate-job-hunting")}>
                 Add HR Details
               </Button>
             </CardContent>
