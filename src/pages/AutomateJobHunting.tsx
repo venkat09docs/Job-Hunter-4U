@@ -272,14 +272,22 @@ const AutomateJobHunting = () => {
               </div>
               <h1 className="text-4xl font-bold">Add HR Details</h1>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => setIsSmtpDialogOpen(true)}
-              className="gap-2"
-            >
-              <Settings className="h-4 w-4" />
-              Configure SMTP Server
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => navigate("/dashboard/manage-hr-details")}
+              >
+                Manage HR Details
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setIsSmtpDialogOpen(true)}
+                className="gap-2"
+              >
+                <Settings className="h-4 w-4" />
+                Configure SMTP Server
+              </Button>
+            </div>
           </div>
           <p className="text-muted-foreground text-lg">
             Streamline your job application process by filling in the details below

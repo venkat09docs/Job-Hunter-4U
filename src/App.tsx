@@ -102,6 +102,7 @@ import AWSCertsAssistants from "./pages/AWSCertsAssistants";
 import ResumeAnalyzer from "./pages/ResumeAnalyzer";
 import JobHunterLevelUp from "./pages/JobHunterLevelUp";
 import AutomateJobHunting from "./pages/AutomateJobHunting";
+import ManageHRDetails from "./pages/ManageHRDetails";
 
 const queryClient = new QueryClient();
 
@@ -462,7 +463,15 @@ const AppContent = () => {
             } 
           />
           <Route 
-            path="/github-weekly" 
+            path="/dashboard/manage-hr-details" 
+            element={
+              <PremiumProtectedRoute featureKey="page_automate_job_hunting">
+                <ManageHRDetails />
+              </PremiumProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/github-weekly"
             element={
               <ProtectedRoute>
                 <GitHubWeekly />
