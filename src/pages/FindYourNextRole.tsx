@@ -673,9 +673,13 @@ const FindYourNextRole = () => {
 
     } catch (error) {
       console.error('Error searching jobs:', error);
+      
+      // Display the actual error message if available
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      
       toast({
-        title: "Search Error",
-        description: "Please try again later.",
+        title: "Job Search Failed",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

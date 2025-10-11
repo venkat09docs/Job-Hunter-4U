@@ -124,7 +124,18 @@ Deno.serve(async (req) => {
       if (!n8nResponse.ok) {
         const errorText = await n8nResponse.text();
         console.error('n8n webhook error response:', errorText);
-        throw new Error(`n8n webhook failed: ${n8nResponse.status} ${n8nResponse.statusText} - ${errorText}`);
+        
+        // Parse error details if available
+        let errorMessage = `Webhook returned status ${n8nResponse.status}`;
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.message || errorMessage;
+        } catch {
+          // If not JSON, use the text as is
+          errorMessage = errorText || errorMessage;
+        }
+        
+        throw new Error(`n8n webhook failed: ${errorMessage}. Please ensure the n8n workflow is active.`);
       }
 
       // Read response as text first to handle empty responses
@@ -147,11 +158,8 @@ Deno.serve(async (req) => {
     } catch (fetchError) {
       console.error('Error calling n8n webhook:', fetchError);
       
-      // Return empty result when webhook fails
-      console.log('n8n webhook failed, returning empty result');
-      n8nResult = {
-        jobs: []
-      };
+      // Return error information to the user instead of silently failing
+      throw new Error(`Job search webhook failed: ${fetchError.message}. Please check that the n8n workflow is active and the webhook URL is correct.`);
     }
 
     // Process the job search results
