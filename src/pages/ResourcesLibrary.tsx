@@ -30,6 +30,8 @@ interface SavedResume {
   title: string;
   word_url?: string;
   pdf_url?: string;
+  word_base64?: string;  // Base64 encoded Word document
+  pdf_base64?: string;   // Base64 encoded PDF
   resume_data: any;
   created_at: string;
   updated_at: string;
@@ -449,7 +451,8 @@ const ResourcesLibrary = () => {
     }
   };
 
-  const downloadFile = (url: string, filename: string) => {
+  const downloadFile = (url: string, filename: string, base64Data?: string, mimeType?: string) => {
+    // Check for placeholder URLs
     if (url.startsWith('#')) {
       toast({
         title: 'Download not available',
@@ -459,12 +462,66 @@ const ResourcesLibrary = () => {
       return;
     }
     
+    // Check if it's an expired blob URL
+    if (url.startsWith('blob:') && !base64Data) {
+      toast({
+        title: 'Download not available',
+        description: 'This file has expired. Please regenerate your resume from the Resume Builder.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    // If we have base64 data, use it (preferred for persistence)
+    if (base64Data) {
+      try {
+        // Convert base64 to blob
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: mimeType || 'application/octet-stream' });
+        
+        // Create download link
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(blobUrl);
+        
+        toast({
+          title: 'Download started',
+          description: `${filename} is being downloaded.`,
+        });
+        return;
+      } catch (error) {
+        console.error('Error downloading from base64:', error);
+        toast({
+          title: 'Download failed',
+          description: 'Failed to prepare file for download. Please try again.',
+          variant: 'destructive'
+        });
+        return;
+      }
+    }
+    
+    // Fallback to URL (may work for fresh blob URLs or real URLs)
     const link = document.createElement('a');
     link.href = url;
     link.download = filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    toast({
+      title: 'Download started',
+      description: `${filename} is being downloaded.`,
+    });
   };
 
   const downloadCoverLetterTXT = (coverLetter: SavedCoverLetter) => {
@@ -1107,7 +1164,12 @@ const ResourcesLibrary = () => {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => downloadFile(resume.pdf_url!, `${resume.title}.pdf`)}
+                                    onClick={() => downloadFile(
+                                      resume.pdf_url!, 
+                                      `${resume.title}.pdf`, 
+                                      resume.pdf_base64, 
+                                      'application/pdf'
+                                    )}
                                     className="flex items-center gap-1"
                                   >
                                     <Download className="h-4 w-4" />
@@ -1118,7 +1180,12 @@ const ResourcesLibrary = () => {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => downloadFile(resume.word_url!, `${resume.title}.docx`)}
+                                    onClick={() => downloadFile(
+                                      resume.word_url!, 
+                                      `${resume.title}.docx`, 
+                                      resume.word_base64, 
+                                      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                                    )}
                                     className="flex items-center gap-1"
                                   >
                                     <Download className="h-4 w-4" />

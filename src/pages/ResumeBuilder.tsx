@@ -775,20 +775,34 @@ ${resumeData.personalDetails.fullName}`;
       // Generate PDF blob
       const pdfBlob = await generatePDFBlob();
       const pdfUrl = URL.createObjectURL(pdfBlob);
+      
+      // Convert PDF to base64
+      const pdfArrayBuffer = await pdfBlob.arrayBuffer();
+      const pdfUint8Array = new Uint8Array(pdfArrayBuffer);
+      const pdfBase64 = btoa(String.fromCharCode(...pdfUint8Array));
+      console.log('✅ PDF converted to base64, size:', pdfBase64.length);
 
       // Generate Word blob  
       const wordBlob = await generateWordBlob();
       const wordUrl = URL.createObjectURL(wordBlob);
+      
+      // Convert Word to base64
+      const wordArrayBuffer = await wordBlob.arrayBuffer();
+      const wordUint8Array = new Uint8Array(wordArrayBuffer);
+      const wordBase64 = btoa(String.fromCharCode(...wordUint8Array));
+      console.log('✅ Word converted to base64, size:', wordBase64.length);
 
-      // Save to saved_resumes table
+      // Save to saved_resumes table with base64 data
       const { error: saveError } = await supabase
         .from('saved_resumes')
         .insert({
           user_id: user.id,
           title: title,
           resume_data: resumeData as any,
-          word_url: wordUrl,
-          pdf_url: pdfUrl,
+          word_url: wordUrl,  // Keep for backward compatibility
+          pdf_url: pdfUrl,    // Keep for backward compatibility
+          word_base64: wordBase64,  // New persistent storage
+          pdf_base64: pdfBase64     // New persistent storage
         });
 
       if (saveError) throw saveError;

@@ -4626,33 +4626,39 @@ export type Database = {
           created_at: string
           id: string
           is_default: boolean
+          pdf_base64: string | null
           pdf_url: string | null
           resume_data: Json
           title: string
           updated_at: string
           user_id: string
+          word_base64: string | null
           word_url: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           is_default?: boolean
+          pdf_base64?: string | null
           pdf_url?: string | null
           resume_data: Json
           title: string
           updated_at?: string
           user_id: string
+          word_base64?: string | null
           word_url?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           is_default?: boolean
+          pdf_base64?: string | null
           pdf_url?: string | null
           resume_data?: Json
           title?: string
           updated_at?: string
           user_id?: string
+          word_base64?: string | null
           word_url?: string | null
         }
         Relationships: []
