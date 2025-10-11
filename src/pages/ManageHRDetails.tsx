@@ -292,91 +292,76 @@ const ManageHRDetails = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {filteredHrDetails.map((hr) => (
               <Card key={hr.id} className="hover:shadow-md transition-all border-l-4 border-l-primary/40 hover:border-l-primary">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between gap-4">
-                    {/* Left Section - Company & Job Info */}
-                    <div className="flex-1 space-y-4">
-                      {/* Header Row */}
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start gap-4">
-                          <div className="p-3 bg-primary/10 rounded-lg">
-                            <Building2 className="h-6 w-6 text-primary" />
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-bold mb-1">{hr.company_name}</h3>
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <Briefcase className="h-4 w-4" />
-                              <span className="font-medium">{hr.job_title}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(hr.id)}
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        >
-                          <Trash2 className="h-5 w-5" />
-                        </Button>
+                <CardContent className="p-4">
+                  {/* Line 1: Company, Job Title, Delete Button */}
+                  <div className="flex items-center justify-between gap-4 mb-2">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                        <Building2 className="h-5 w-5 text-primary" />
                       </div>
-
-                      {/* Company Details Row */}
-                      <div className="flex items-center gap-6 text-sm">
-                        {hr.company_employees && (
-                          <div className="flex items-center gap-2">
-                            <Users className="h-4 w-4 text-muted-foreground" />
-                            <span>{hr.company_employees} employees</span>
-                          </div>
-                        )}
-                        {hr.company_founded_year && (
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <span>Founded {hr.company_founded_year}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* HR Contact Section */}
-                      {hr.hr_name && (
-                        <div className="p-4 bg-muted/50 rounded-lg">
-                          <p className="text-sm font-semibold mb-2 text-muted-foreground">HR Contact</p>
-                          <div className="flex items-center gap-4">
-                            <div>
-                              <p className="font-medium">{hr.hr_name}</p>
-                              <p className="text-sm text-muted-foreground">{hr.hr_email}</p>
-                            </div>
-                          </div>
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <h3 className="text-lg font-bold">{hr.company_name}</h3>
+                        <span className="text-muted-foreground">•</span>
+                        <div className="flex items-center gap-1.5">
+                          <Briefcase className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">{hr.job_title}</span>
                         </div>
-                      )}
-
-                      {/* Job Description */}
-                      {hr.job_description && (
-                        <div>
-                          <p className="text-sm font-semibold mb-2 text-muted-foreground">Job Description</p>
-                          <p className="text-sm leading-relaxed line-clamp-3">{hr.job_description}</p>
-                        </div>
-                      )}
-
-                      {/* Key Skills */}
-                      {hr.key_skills && (
-                        <div>
-                          <p className="text-sm font-semibold mb-2 text-muted-foreground">Key Skills Required</p>
-                          <p className="text-sm leading-relaxed">{hr.key_skills}</p>
-                        </div>
-                      )}
-
-                      {/* Footer - Date */}
-                      <div className="pt-3 border-t flex items-center justify-between text-xs text-muted-foreground">
-                        <span>Added on {new Date(hr.created_at).toLocaleDateString('en-US', { 
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric' 
-                        })}</span>
                       </div>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(hr.id)}
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  {/* Line 2: HR Contact, Company Details */}
+                  <div className="flex items-center gap-6 text-sm mb-2 flex-wrap">
+                    {hr.hr_name && (
+                      <>
+                        <span className="font-medium">{hr.hr_name}</span>
+                        <span className="text-muted-foreground">{hr.hr_email}</span>
+                        <span className="text-muted-foreground">•</span>
+                      </>
+                    )}
+                    {hr.company_employees && (
+                      <div className="flex items-center gap-1.5">
+                        <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span>{hr.company_employees}</span>
+                      </div>
+                    )}
+                    {hr.company_founded_year && (
+                      <>
+                        <span className="text-muted-foreground">•</span>
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span>Est. {hr.company_founded_year}</span>
+                        </div>
+                      </>
+                    )}
+                    <span className="text-muted-foreground ml-auto text-xs">
+                      {new Date(hr.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
+                  </div>
+
+                  {/* Line 3: Job Description & Skills (compact) */}
+                  <div className="flex items-start gap-4 text-sm text-muted-foreground">
+                    {hr.job_description && (
+                      <p className="line-clamp-1 flex-1">
+                        <span className="font-medium text-foreground">Description:</span> {hr.job_description}
+                      </p>
+                    )}
+                    {hr.key_skills && (
+                      <p className="line-clamp-1 flex-1">
+                        <span className="font-medium text-foreground">Skills:</span> {hr.key_skills}
+                      </p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
