@@ -452,8 +452,11 @@ const ResourcesLibrary = () => {
   };
 
   const downloadFile = (url: string, filename: string, base64Data?: string, mimeType?: string) => {
+    console.log('📥 Download requested:', { filename, hasBase64: !!base64Data, hasUrl: !!url, mimeType });
+
     // Check for placeholder URLs
     if (url.startsWith('#')) {
+      console.warn('⚠️ Placeholder URL detected');
       toast({
         title: 'Download not available',
         description: 'This file was not properly generated. Please regenerate your resume.',
@@ -464,6 +467,7 @@ const ResourcesLibrary = () => {
     
     // Check if it's an expired blob URL
     if (url.startsWith('blob:') && !base64Data) {
+      console.warn('⚠️ Expired blob URL detected without base64 fallback');
       toast({
         title: 'Download not available',
         description: 'This file has expired. Please regenerate your resume from the Resume Builder.',
@@ -472,9 +476,11 @@ const ResourcesLibrary = () => {
       return;
     }
 
-    // If we have base64 data, use it (preferred for persistence)
+    // If we have base64 data, use it (preferred for persistence and reliability)
     if (base64Data) {
       try {
+        console.log('✅ Using base64 data for download, length:', base64Data.length);
+        
         // Convert base64 to blob
         const byteCharacters = atob(base64Data);
         const byteNumbers = new Array(byteCharacters.length);
@@ -483,6 +489,8 @@ const ResourcesLibrary = () => {
         }
         const byteArray = new Uint8Array(byteNumbers);
         const blob = new Blob([byteArray], { type: mimeType || 'application/octet-stream' });
+        
+        console.log('✅ Blob created, size:', blob.size, 'type:', blob.type);
         
         // Create download link
         const blobUrl = URL.createObjectURL(blob);
@@ -494,13 +502,15 @@ const ResourcesLibrary = () => {
         document.body.removeChild(link);
         URL.revokeObjectURL(blobUrl);
         
+        console.log('✅ Download initiated successfully');
+        
         toast({
           title: 'Download started',
           description: `${filename} is being downloaded.`,
         });
         return;
       } catch (error) {
-        console.error('Error downloading from base64:', error);
+        console.error('❌ Error downloading from base64:', error);
         toast({
           title: 'Download failed',
           description: 'Failed to prepare file for download. Please try again.',
@@ -510,7 +520,8 @@ const ResourcesLibrary = () => {
       }
     }
     
-    // Fallback to URL (may work for fresh blob URLs or real URLs)
+    // Fallback to URL (for Supabase storage public URLs)
+    console.log('📂 Falling back to URL download:', url);
     const link = document.createElement('a');
     link.href = url;
     link.download = filename;
@@ -738,10 +749,22 @@ const ResourcesLibrary = () => {
 
     setIsUploading(true);
     try {
+      console.log('📤 Starting resume upload...', {
+        fileName: selectedFile.name,
+        fileSize: selectedFile.size,
+        fileType: selectedFile.type
+      });
+
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `${user?.id}/${Date.now()}.${fileExt}`;
 
-      // Upload file to Supabase storage
+      // Convert file to base64 for persistent storage
+      const arrayBuffer = await selectedFile.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+      const base64String = btoa(String.fromCharCode(...uint8Array));
+      console.log('✅ File converted to base64, length:', base64String.length);
+
+      // Upload file to Supabase storage (for backward compatibility and direct access)
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('resumes')
         .upload(fileName, selectedFile);
@@ -753,13 +776,22 @@ const ResourcesLibrary = () => {
         .from('resumes')
         .getPublicUrl(fileName);
 
-      // Save to database
+      console.log('✅ File uploaded to storage, public URL:', publicUrl);
+
+      // Save to database with base64 data (persistent) and URL (temporary)
       const resumeData = {
         user_id: user?.id,
         title: uploadTitle.trim(),
+        // Store base64 in appropriate column based on file type
         ...(selectedFile.type === 'application/pdf' 
-          ? { pdf_url: publicUrl }
-          : { word_url: publicUrl }
+          ? { 
+              pdf_url: publicUrl,
+              pdf_base64: base64String  // Persistent storage
+            }
+          : { 
+              word_url: publicUrl,
+              word_base64: base64String  // Persistent storage
+            }
         ),
         resume_data: {
           uploaded: true,
@@ -770,6 +802,8 @@ const ResourcesLibrary = () => {
         is_default: savedResumes.length === 0 // Set as default if it's the first resume
       };
 
+      console.log('💾 Saving to database with base64 data...');
+
       const { data, error } = await supabase
         .from('saved_resumes')
         .insert(resumeData)
@@ -777,6 +811,8 @@ const ResourcesLibrary = () => {
         .single();
 
       if (error) throw error;
+
+      console.log('✅ Resume saved successfully to database:', data.id);
 
       // Update local state
       setSavedResumes(prev => [data, ...prev]);
@@ -788,11 +824,11 @@ const ResourcesLibrary = () => {
 
       toast({
         title: 'Resume uploaded successfully',
-        description: `Your resume "${uploadTitle}" has been saved to your library.`,
+        description: `Your resume "${uploadTitle}" has been saved with persistent storage for downloads and API calls.`,
       });
 
     } catch (error) {
-      console.error('Error uploading resume:', error);
+      console.error('❌ Error uploading resume:', error);
       toast({
         title: 'Upload failed',
         description: 'Failed to upload resume. Please try again.',
