@@ -34,7 +34,7 @@ export default function ResumeAnalyzer() {
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { usageInfo, loading: usageLoading, incrementUsage } = useResumeAnalysisUsage();
+  const { usageInfo, loading: usageLoading, incrementUsage, refreshUsage } = useResumeAnalysisUsage();
 
   const handleFileSelect = (file: File) => {
     const validTypes = [
@@ -171,6 +171,9 @@ export default function ResumeAnalyzer() {
       
       setAnalysisResult(data.analysis);
       setShowResultsDialog(true);
+      
+      // Refresh usage info to update UI
+      refreshUsage();
       
       // Show appropriate toast based on usage
       if (usageResult.limitReached) {
