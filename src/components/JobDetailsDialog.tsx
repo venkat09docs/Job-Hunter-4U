@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ExternalLink, MapPin, Mail, Phone, Building } from "lucide-react";
+import { Loader2, ExternalLink, MapPin, Mail, Phone, Building, FileText } from "lucide-react";
 
 interface JobDetails {
   companyDetails: string;
@@ -149,22 +149,31 @@ export const JobDetailsDialog = ({
               </Button>
               <Button
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                className="flex-1"
+                onClick={() => {
+                  // Resume Analyzer functionality to be implemented
+                  console.log('Resume Analyzer clicked');
+                }}
               >
-                Close
+                <FileText className="h-4 w-4 mr-2" />
+                Resume Analyzer
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  // Redefine Resume functionality to be implemented
+                  console.log('Redefine Resume clicked');
+                }}
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Redefine Resume
               </Button>
             </div>
           </div>
         ) : (
           <div className="py-12 text-center text-muted-foreground">
             <p>Failed to load job details. Please try again.</p>
-            <Button 
-              variant="outline" 
-              className="mt-4"
-              onClick={() => onOpenChange(false)}
-            >
-              Close
-            </Button>
           </div>
         )}
       </DialogContent>
