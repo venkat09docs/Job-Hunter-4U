@@ -173,20 +173,110 @@ const AutomateJobHunting = () => {
     },
   });
 
-  const onSubmit = (data: FormData) => {
-    console.log("Form data:", data);
-    console.log("Cover Letter:", coverLetterFile);
-    console.log("Resume:", resumeFile);
+  const onSubmit = async (data: FormData) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to submit",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    toast({
-      title: "Job Hunting Started!",
-      description: "Your automated job hunting process has been initiated.",
-    });
+      let coverLetterUrl = null;
+      let resumeUrl = null;
 
-    // Reset form
-    form.reset();
-    setCoverLetterFile(null);
-    setResumeFile(null);
+      // Upload cover letter if provided
+      if (coverLetterFile) {
+        const fileExt = coverLetterFile.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}_cover_letter.${fileExt}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('job-applications')
+          .upload(fileName, coverLetterFile);
+
+        if (uploadError) {
+          console.error('Cover letter upload error:', uploadError);
+        } else {
+          const { data: { publicUrl } } = supabase.storage
+            .from('job-applications')
+            .getPublicUrl(fileName);
+          coverLetterUrl = publicUrl;
+        }
+      }
+
+      // Upload resume
+      if (resumeFile) {
+        const fileExt = resumeFile.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}_resume.${fileExt}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('job-applications')
+          .upload(fileName, resumeFile);
+
+        if (uploadError) {
+          console.error('Resume upload error:', uploadError);
+          toast({
+            title: "Upload Error",
+            description: "Failed to upload resume. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        } else {
+          const { data: { publicUrl } } = supabase.storage
+            .from('job-applications')
+            .getPublicUrl(fileName);
+          resumeUrl = publicUrl;
+        }
+      }
+
+      // Save to hr_details table
+      const { error: insertError } = await supabase
+        .from('hr_details')
+        .insert({
+          user_id: user.id,
+          company_name: data.companyName,
+          hr_name: data.hrName || null,
+          hr_email: data.hrEmail,
+          hr_phone: data.hrPhone || null,
+          company_website: data.companyWebsite || null,
+          company_linkedin: data.companyLinkedIn || null,
+          company_employees: data.companyEmployees || null,
+          company_founded_year: data.companyFoundedYear || null,
+          contact_source: data.contactSource,
+          job_title: data.jobTitle,
+          job_description: data.jobDescription,
+          cover_letter_url: coverLetterUrl,
+          resume_url: resumeUrl,
+        });
+
+      if (insertError) {
+        console.error('Database insert error:', insertError);
+        toast({
+          title: "Error",
+          description: "Failed to save job application details",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Job Hunting Started!",
+        description: "Your automated job hunting process has been initiated.",
+      });
+
+      // Reset form
+      form.reset();
+      setCoverLetterFile(null);
+      setResumeFile(null);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

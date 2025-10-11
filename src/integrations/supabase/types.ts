@@ -2234,6 +2234,66 @@ export type Database = {
           },
         ]
       }
+      hr_details: {
+        Row: {
+          company_employees: string | null
+          company_founded_year: string | null
+          company_linkedin: string | null
+          company_name: string
+          company_website: string | null
+          contact_source: string
+          cover_letter_url: string | null
+          created_at: string
+          hr_email: string
+          hr_name: string | null
+          hr_phone: string | null
+          id: string
+          job_description: string
+          job_title: string
+          resume_url: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_employees?: string | null
+          company_founded_year?: string | null
+          company_linkedin?: string | null
+          company_name: string
+          company_website?: string | null
+          contact_source: string
+          cover_letter_url?: string | null
+          created_at?: string
+          hr_email: string
+          hr_name?: string | null
+          hr_phone?: string | null
+          id?: string
+          job_description: string
+          job_title: string
+          resume_url?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_employees?: string | null
+          company_founded_year?: string | null
+          company_linkedin?: string | null
+          company_name?: string
+          company_website?: string | null
+          contact_source?: string
+          cover_letter_url?: string | null
+          created_at?: string
+          hr_email?: string
+          hr_name?: string | null
+          hr_phone?: string | null
+          id?: string
+          job_description?: string
+          job_title?: string
+          resume_url?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       institute_admin_assignments: {
         Row: {
           assigned_at: string
