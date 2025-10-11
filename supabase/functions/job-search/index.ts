@@ -85,16 +85,17 @@ Deno.serve(async (req) => {
     console.log('Job search request:', { query, num_pages, date_posted, country, language, job_requirements, employment_type, resume_pdf_url });
 
     if (resume_pdf_base64) {
-      console.log('Received PDF base64 from frontend, size:', resume_pdf_base64.length);
+      console.log('✅ Received PDF base64 from frontend, size:', resume_pdf_base64.length);
     } else {
-      console.log('No PDF base64 received');
+      console.log('⚠️ No PDF base64 received from frontend');
     }
 
     // Use the production n8n webhook URL
     const n8nWebhookUrl = 'https://n8n.srv995073.hstgr.cloud/webhook-test/jsearch';
 
     // Send job search request to n8n
-    console.log('Sending to n8n webhook:', n8nWebhookUrl);
+    console.log('📤 Sending to n8n webhook:', n8nWebhookUrl);
+    console.log('📦 Payload includes resume_pdf_base64:', !!resume_pdf_base64);
     
     let n8nResponse;
     let n8nResult;
@@ -118,12 +119,12 @@ Deno.serve(async (req) => {
         }),
       });
 
-      console.log('n8n response status:', n8nResponse.status);
-      console.log('n8n response status text:', n8nResponse.statusText);
+      console.log('✅ n8n response status:', n8nResponse.status);
+      console.log('📊 n8n response status text:', n8nResponse.statusText);
 
       if (!n8nResponse.ok) {
         const errorText = await n8nResponse.text();
-        console.error('n8n webhook error response:', errorText);
+        console.error('❌ n8n webhook error response:', errorText);
         throw new Error(`n8n webhook failed: ${n8nResponse.status} ${n8nResponse.statusText} - ${errorText}`);
       }
 

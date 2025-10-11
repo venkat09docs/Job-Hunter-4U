@@ -383,14 +383,20 @@ const FindYourNextRole = () => {
 
           // Fetch the blob and convert to base64
           try {
+            console.log('📄 Fetching resume PDF from:', defaultResumePdfUrl);
             const response = await fetch(defaultResumePdfUrl);
+            if (!response.ok) {
+              throw new Error(`Failed to fetch PDF: ${response.status}`);
+            }
             const blob = await response.blob();
+            console.log('✅ Fetched PDF blob, size:', blob.size, 'type:', blob.type);
             const arrayBuffer = await blob.arrayBuffer();
             const uint8Array = new Uint8Array(arrayBuffer);
             resumePdfBase64 = btoa(String.fromCharCode(...uint8Array));
-            console.log('Converted resume to base64, size:', resumePdfBase64.length);
+            console.log('✅ Converted resume to base64, size:', resumePdfBase64.length);
           } catch (blobError) {
-            console.error('Error converting PDF to base64:', blobError);
+            console.error('❌ Error converting PDF to base64:', blobError);
+            console.warn('⚠️ Continuing without resume attachment');
           }
         }
       } catch (resumeError) {
@@ -398,6 +404,13 @@ const FindYourNextRole = () => {
       }
 
       // Call the Supabase edge function for job search
+      console.log('📤 Sending job search request with:', {
+        hasResumeUrl: !!defaultResumePdfUrl,
+        hasResumeBase64: !!resumePdfBase64,
+        resumeBase64Length: resumePdfBase64?.length,
+        query: formData.query
+      });
+      
       const { data, error } = await supabase.functions.invoke('job-search', {
         body: {
           query: formData.query,
