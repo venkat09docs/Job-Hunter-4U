@@ -78,14 +78,14 @@ const JobHunterLevelUp = () => {
                     >
                       <CardHeader className="text-center pb-4">
                         <div className="flex justify-center mb-4">
-                          <div className="p-4 rounded-full bg-muted">
-                            <Icon className={`h-8 w-8 ${board.color}`} />
+                          <div className="p-5 rounded-full bg-primary/10 border-2 border-primary/20">
+                            <Icon className={`h-10 w-10 ${board.color} stroke-[2.5]`} />
                           </div>
                         </div>
-                        <CardTitle className="text-lg">{board.title}</CardTitle>
+                        <CardTitle className="text-lg font-bold">{board.title}</CardTitle>
                       </CardHeader>
                       <CardContent className="text-center">
-                        <CardDescription>{board.description}</CardDescription>
+                        <CardDescription className="text-sm">{board.description}</CardDescription>
                       </CardContent>
                     </Card>
                   );
