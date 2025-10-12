@@ -1027,7 +1027,7 @@ const ManageHRDetails = () => {
 
         {/* Automate Job - Upload Documents Dialog */}
         <Dialog open={isAutomateJobDialogOpen} onOpenChange={setIsAutomateJobDialogOpen}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[85vh] flex flex-col">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-3">
                 <div className="p-2 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl">
@@ -1040,7 +1040,7 @@ const ManageHRDetails = () => {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-6 mt-4">
+            <div className="space-y-6 mt-4 overflow-y-auto pr-2 flex-1">
               {/* Job Info Preview */}
               <div className="p-4 bg-muted/50 rounded-lg">
                 <p className="text-sm font-semibold mb-2">Job Application:</p>
@@ -1117,35 +1117,35 @@ const ManageHRDetails = () => {
                   />
                 </label>
               </div>
+            </div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-3 pt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsAutomateJobDialogOpen(false)}
-                  className="flex-1"
-                  disabled={isUploadingDocuments}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleUploadDocuments}
-                  disabled={!resumeFile || isUploadingDocuments}
-                  className="flex-1 bg-gradient-to-r from-primary to-primary/80"
-                >
-                  {isUploadingDocuments ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Uploading...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="mr-2 h-4 w-4" />
-                      Save Documents
-                    </>
-                  )}
-                </Button>
-              </div>
+            {/* Action Buttons - Fixed at bottom */}
+            <div className="flex gap-3 pt-4 border-t mt-4">
+              <Button
+                variant="outline"
+                onClick={() => setIsAutomateJobDialogOpen(false)}
+                className="flex-1"
+                disabled={isUploadingDocuments}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleUploadDocuments}
+                disabled={!resumeFile || isUploadingDocuments}
+                className="flex-1 bg-gradient-to-r from-primary to-primary/80"
+              >
+                {isUploadingDocuments ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Save Documents
+                  </>
+                )}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
