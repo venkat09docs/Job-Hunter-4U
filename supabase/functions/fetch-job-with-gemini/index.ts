@@ -34,15 +34,28 @@ serve(async (req) => {
     const htmlContent = await pageResponse.text();
     console.log('Fetched HTML content, length:', htmlContent.length);
 
-    // Clean and extract text from HTML
-    const cleanText = htmlContent
+    // Extract and preserve link information before cleaning
+    const linkPattern = /<a[^>]+href=["']([^"']+)["'][^>]*>([^<]+)<\/a>/gi;
+    const links = [];
+    let linkMatch;
+    while ((linkMatch = linkPattern.exec(htmlContent)) !== null) {
+      links.push({ url: linkMatch[1], text: linkMatch[2] });
+    }
+
+    // Clean HTML but keep some structure
+    let cleanText = htmlContent
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
       .replace(/<[^>]+>/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
 
-    const textToAnalyze = cleanText.substring(0, 10000); // Limit to 10k chars
+    // Add link information at the end
+    if (links.length > 0) {
+      cleanText += '\n\nExtracted Links:\n' + links.map(l => `${l.text}: ${l.url}`).join('\n');
+    }
+
+    const textToAnalyze = cleanText.substring(0, 15000); // Increased to 15k chars to include links
     console.log('Cleaned text length:', textToAnalyze.length);
 
     // Use Gemini to extract job details
@@ -64,7 +77,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a job details extractor. Analyze the content and determine if it contains a single job posting or multiple job listings. Return ONLY valid JSON in this format: {"isSingleJob": boolean, "jobs": [array of job objects]}. Each job object must have: jobTitle, companyName, location, jobType, salary, description, requirements, responsibilities, benefits, applicationDeadline, contactEmail, applyLink. Use null for missing fields.'
+            content: 'You are a job details extractor. Analyze the content and determine if it contains a single job posting or multiple job listings. Return ONLY valid JSON in this format: {"isSingleJob": boolean, "jobs": [array of job objects]}. Each job object must have: jobTitle, companyName, location, jobType, salary, description, requirements, responsibilities, benefits, applicationDeadline, contactEmail, applyLink. For applyLink, extract the ACTUAL URL from the href attribute of the apply/application link (e.g., "https://company.com/apply"), NOT the link text like "Click here" or "Apply Now". Use null for missing fields.'
           },
           {
             role: 'user',
