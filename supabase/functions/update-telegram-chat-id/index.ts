@@ -5,7 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const N8N_WEBHOOK_URL = 'https://n8n.srv995073.hstgr.cloud/webhook-test/8d5c183b-a4b2-4431-9111-c1ab729bd600';
+const N8N_WEBHOOK_URL = Deno.env.get('N8N_WEBHOOK_TELEGRAM_URL') || 'https://n8n.srv995073.hstgr.cloud/webhook-test/8d5c183b-a4b2-4431-9111-c1ab729bd600';
 
 interface UpdateTelegramRequest {
   email: string;

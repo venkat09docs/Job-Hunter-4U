@@ -51,8 +51,8 @@ Deno.serve(async (req) => {
 
     console.log('LinkedIn job search request:', { title, location, type, remote, industry, seniority, external_apply, directapply });
 
-    // Use the LinkedIn-specific n8n webhook URL
-    const n8nWebhookUrl = 'https://n8n.srv995073.hstgr.cloud/webhook/linkedin';
+    // Use the LinkedIn-specific n8n webhook URL from environment variable
+    const n8nWebhookUrl = Deno.env.get('N8N_WEBHOOK_LINKEDIN_URL') || 'https://n8n.srv995073.hstgr.cloud/webhook/linkedin';
 
     // Send job search request to n8n
     console.log('Sending to LinkedIn n8n webhook:', n8nWebhookUrl);

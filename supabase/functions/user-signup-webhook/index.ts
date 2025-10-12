@@ -1,7 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
 
-const WEBHOOK_URL = 'https://services.leadconnectorhq.com/hooks/H6as7qxVFG5F9DoBoLVM/webhook-trigger/ff787746-939d-4016-96e7-7712f455f521'
+const WEBHOOK_URL = Deno.env.get('LEADCONNECTOR_WEBHOOK_SIGNUP_URL') || 'https://services.leadconnectorhq.com/hooks/H6as7qxVFG5F9DoBoLVM/webhook-trigger/ff787746-939d-4016-96e7-7712f455f521'
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests

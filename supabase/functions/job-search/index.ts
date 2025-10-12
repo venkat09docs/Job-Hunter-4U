@@ -87,8 +87,8 @@ Deno.serve(async (req) => {
       console.log('⚠️ No PDF base64 received from frontend');
     }
 
-    // Use the production n8n webhook URL
-    const n8nWebhookUrl = 'https://n8n.srv995073.hstgr.cloud/webhook/jsearch';
+    // Use the production n8n webhook URL from environment variable
+    const n8nWebhookUrl = Deno.env.get('N8N_WEBHOOK_JSEARCH_URL') || 'https://n8n.srv995073.hstgr.cloud/webhook/jsearch';
 
     // Send job search request to n8n
     console.log('📤 Sending to n8n webhook:', n8nWebhookUrl);
