@@ -54,11 +54,15 @@ const ManageHRDetails = () => {
   const [isAnalysisDialogOpen, setIsAnalysisDialogOpen] = useState(false);
   const [isViewReportDialogOpen, setIsViewReportDialogOpen] = useState(false);
   const [isRedefinedResumeDialogOpen, setIsRedefinedResumeDialogOpen] = useState(false);
+  const [isAutomateJobDialogOpen, setIsAutomateJobDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [coverLetterFile, setCoverLetterFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isRedefining, setIsRedefining] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isUploadingDocuments, setIsUploadingDocuments] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<string>("");
   const [redefinedResumeContent, setRedefinedResumeContent] = useState<string>("");
   const [parsedAnalysis, setParsedAnalysis] = useState<{
@@ -533,6 +537,121 @@ const ManageHRDetails = () => {
     setIsViewReportDialogOpen(true);
   };
 
+  const handleAutomateJobClick = () => {
+    setIsDetailDialogOpen(false);
+    setResumeFile(null);
+    setCoverLetterFile(null);
+    setIsAutomateJobDialogOpen(true);
+  };
+
+  const handleResumeFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.type !== 'application/pdf') {
+        toast({
+          title: "Invalid File Type",
+          description: "Please upload a PDF file for the resume",
+          variant: "destructive",
+        });
+        return;
+      }
+      setResumeFile(file);
+    }
+  };
+
+  const handleCoverLetterFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.type !== 'application/pdf') {
+        toast({
+          title: "Invalid File Type",
+          description: "Please upload a PDF file for the cover letter",
+          variant: "destructive",
+        });
+        return;
+      }
+      setCoverLetterFile(file);
+    }
+  };
+
+  const handleUploadDocuments = async () => {
+    if (!resumeFile || !selectedHR) return;
+
+    setIsUploadingDocuments(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      const timestamp = Date.now();
+      let resumeUrl = null;
+      let coverLetterUrl = null;
+
+      // Upload resume
+      const resumePath = `${user.id}/${timestamp}-${resumeFile.name}`;
+      const { error: resumeError } = await supabase.storage
+        .from('hr-documents')
+        .upload(resumePath, resumeFile, {
+          contentType: 'application/pdf',
+          upsert: false,
+        });
+
+      if (resumeError) throw resumeError;
+
+      // Get public URL for resume
+      const { data: resumeUrlData } = supabase.storage
+        .from('hr-documents')
+        .getPublicUrl(resumePath);
+      resumeUrl = resumeUrlData.publicUrl;
+
+      // Upload cover letter if provided
+      if (coverLetterFile) {
+        const coverLetterPath = `${user.id}/${timestamp}-${coverLetterFile.name}`;
+        const { error: coverLetterError } = await supabase.storage
+          .from('hr-documents')
+          .upload(coverLetterPath, coverLetterFile, {
+            contentType: 'application/pdf',
+            upsert: false,
+          });
+
+        if (coverLetterError) throw coverLetterError;
+
+        // Get public URL for cover letter
+        const { data: coverLetterUrlData } = supabase.storage
+          .from('hr-documents')
+          .getPublicUrl(coverLetterPath);
+        coverLetterUrl = coverLetterUrlData.publicUrl;
+      }
+
+      // Update hr_details record with file URLs
+      const { error: updateError } = await supabase
+        .from('hr_details')
+        .update({
+          resume_url: resumeUrl,
+          cover_letter_url: coverLetterUrl,
+        })
+        .eq('id', selectedHR.id);
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: "Documents Uploaded",
+        description: "Your resume and cover letter have been saved successfully.",
+      });
+
+      setIsAutomateJobDialogOpen(false);
+      fetchHRDetails();
+    } catch (error) {
+      console.error('Error uploading documents:', error);
+      toast({
+        title: "Upload Failed",
+        description: error instanceof Error ? error.message : "Failed to upload documents. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingDocuments(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Top Navigation */}
@@ -893,10 +1012,7 @@ const ManageHRDetails = () => {
                     Resume Analyzer
                   </Button>
                   <Button
-                    onClick={() => {
-                      setIsDetailDialogOpen(false);
-                      navigate("/dashboard/automate-job-hunting");
-                    }}
+                    onClick={handleAutomateJobClick}
                     variant="outline"
                     className="flex-1 h-12 text-base font-semibold border-2 hover:bg-gradient-to-r hover:from-primary/10 hover:to-secondary/10 transition-all duration-300 hover-scale"
                   >
@@ -906,6 +1022,131 @@ const ManageHRDetails = () => {
                 </div>
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Automate Job - Upload Documents Dialog */}
+        <Dialog open={isAutomateJobDialogOpen} onOpenChange={setIsAutomateJobDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl">
+                  <Upload className="h-6 w-6 text-primary" />
+                </div>
+                Upload Documents
+              </DialogTitle>
+              <DialogDescription>
+                Upload your finalized resume and cover letter (optional) for {selectedHR?.company_name}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6 mt-4">
+              {/* Job Info Preview */}
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="text-sm font-semibold mb-2">Job Application:</p>
+                <p className="text-base font-bold">{selectedHR?.company_name}</p>
+                <p className="text-sm text-muted-foreground">{selectedHR?.job_title}</p>
+              </div>
+
+              {/* Resume Upload - Required */}
+              <div className="space-y-2">
+                <label htmlFor="resume-upload-automate" className="block">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm font-medium">Resume</span>
+                    <Badge variant="destructive" className="text-xs">Required</Badge>
+                    <Badge variant="outline" className="text-xs">PDF Only</Badge>
+                  </div>
+                  <div className="border-2 border-dashed border-primary/40 rounded-xl p-6 text-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-all duration-300">
+                    {resumeFile ? (
+                      <div className="space-y-2">
+                        <FileText className="h-10 w-10 text-primary mx-auto" />
+                        <p className="text-sm font-medium">{resumeFile.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(resumeFile.size / 1024).toFixed(1)} KB
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Upload className="h-10 w-10 text-muted-foreground mx-auto" />
+                        <p className="text-sm font-medium">Click to upload resume</p>
+                        <p className="text-xs text-muted-foreground">PDF format recommended</p>
+                      </div>
+                    )}
+                  </div>
+                  <Input
+                    id="resume-upload-automate"
+                    type="file"
+                    accept="application/pdf"
+                    onChange={handleResumeFileChange}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+
+              {/* Cover Letter Upload - Optional */}
+              <div className="space-y-2">
+                <label htmlFor="cover-letter-upload" className="block">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm font-medium">Cover Letter</span>
+                    <Badge variant="secondary" className="text-xs">Optional</Badge>
+                    <Badge variant="outline" className="text-xs">PDF Only</Badge>
+                  </div>
+                  <div className="border-2 border-dashed border-muted-foreground/40 rounded-xl p-6 text-center cursor-pointer hover:border-muted-foreground hover:bg-muted/30 transition-all duration-300">
+                    {coverLetterFile ? (
+                      <div className="space-y-2">
+                        <FileText className="h-10 w-10 text-primary mx-auto" />
+                        <p className="text-sm font-medium">{coverLetterFile.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(coverLetterFile.size / 1024).toFixed(1)} KB
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Upload className="h-10 w-10 text-muted-foreground mx-auto" />
+                        <p className="text-sm font-medium">Click to upload cover letter</p>
+                        <p className="text-xs text-muted-foreground">PDF format recommended</p>
+                      </div>
+                    )}
+                  </div>
+                  <Input
+                    id="cover-letter-upload"
+                    type="file"
+                    accept="application/pdf"
+                    onChange={handleCoverLetterFileChange}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsAutomateJobDialogOpen(false)}
+                  className="flex-1"
+                  disabled={isUploadingDocuments}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleUploadDocuments}
+                  disabled={!resumeFile || isUploadingDocuments}
+                  className="flex-1 bg-gradient-to-r from-primary to-primary/80"
+                >
+                  {isUploadingDocuments ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Save Documents
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
 
