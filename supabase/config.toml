@@ -90,5 +90,8 @@ verify_jwt = false
 [functions.scrape-job-details]
 verify_jwt = false
 
+[functions.fetch-job-with-gemini]
+verify_jwt = false
+
 [functions.job-search]
 verify_jwt = false

@@ -36,6 +36,7 @@ import GitHubWeekly from "./pages/GitHubWeekly";
 import GitHubActivityTracker from "./pages/GitHubActivityTracker";
 import CareerGrowth from "./pages/CareerGrowth";
 import Affiliate from "./pages/Affiliate";
+import FetchJobDetails from "./pages/FetchJobDetails";
 
 import FindYourNextRole from "./pages/FindYourNextRole";
 import BuildMyProfile from "./pages/BuildMyProfile";
@@ -754,6 +755,7 @@ const AppContent = () => {
             } 
           />
           <Route path="/resume-analyzer" element={<ResumeAnalyzer />} />
+          <Route path="/fetch-job-details" element={<FetchJobDetails />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/cookie-policy" element={<CookiePolicy />} />
