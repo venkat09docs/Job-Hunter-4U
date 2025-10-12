@@ -22,22 +22,37 @@ serve(async (req) => {
     // Fetch the webpage content
     const pageResponse = await fetch(jobUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
       }
     });
 
     if (!pageResponse.ok) {
+      console.error('Failed to fetch page:', pageResponse.status, pageResponse.statusText);
       throw new Error(`Failed to fetch job page: ${pageResponse.status}`);
     }
 
     const htmlContent = await pageResponse.text();
+    console.log('Fetched HTML content, length:', htmlContent.length);
+
+    // Clean and extract text from HTML
+    const cleanText = htmlContent
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const textToAnalyze = cleanText.substring(0, 10000); // Limit to 10k chars
+    console.log('Cleaned text length:', textToAnalyze.length);
 
     // Use Gemini to extract job details
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
+      console.error('LOVABLE_API_KEY not found in environment');
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
+    console.log('Calling Gemini API...');
     const geminiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -49,14 +64,13 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a job details extractor. Extract structured job information from HTML content and return it as clean JSON with these fields: jobTitle, companyName, location, jobType, salary, description, requirements, responsibilities, benefits, applicationDeadline, contactEmail. If a field is not found, use null.'
+            content: 'You are a job details extractor. Extract structured job information from text content. Return ONLY valid JSON with these exact fields: jobTitle, companyName, location, jobType, salary, description, requirements, responsibilities, benefits, applicationDeadline, contactEmail. Use null for missing fields. Be concise.'
           },
           {
             role: 'user',
-            content: `Extract job details from this HTML content:\n\n${htmlContent.substring(0, 15000)}`
+            content: `Extract job details from this text:\n\n${textToAnalyze}\n\nReturn ONLY a JSON object with the requested fields.`
           }
         ],
-        response_format: { type: "json_object" }
       }),
     });
 
@@ -67,9 +81,28 @@ serve(async (req) => {
     }
 
     const geminiData = await geminiResponse.json();
-    const extractedData = JSON.parse(geminiData.choices[0].message.content);
+    console.log('Gemini response received');
 
-    console.log('Successfully extracted job details:', extractedData);
+    let extractedData;
+    const content = geminiData.choices[0].message.content;
+    
+    // Try to parse JSON from the response
+    try {
+      // Remove markdown code blocks if present
+      const cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      extractedData = JSON.parse(cleanContent);
+    } catch (parseError) {
+      console.error('Failed to parse Gemini response:', parseError);
+      // Try to extract JSON from the content
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        extractedData = JSON.parse(jsonMatch[0]);
+      } else {
+        throw new Error('Could not extract valid JSON from AI response');
+      }
+    }
+
+    console.log('Successfully extracted job details');
 
     return new Response(
       JSON.stringify({ 
@@ -86,7 +119,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message 
+        error: error.message || 'An error occurred while fetching job details'
       }),
       { 
         status: 500,
