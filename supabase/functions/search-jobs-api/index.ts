@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
     console.log('Search parameters:', searchParams);
 
     // Call n8n webhook with retry logic
-    const n8nWebhookUrl = Deno.env.get('N8N_WEBHOOK_JSEARCH_URL') || 'https://n8n.srv995073.hstgr.cloud/webhook/jsearch';
+    const n8nWebhookUrl = 'https://rns.srv995073.hstgr.cloud/webhook/jsearch';
     
     let n8nResponse: Response;
     try {
