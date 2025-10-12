@@ -645,6 +645,36 @@ const ManageHRDetails = () => {
       
       if (webhookUrl) {
         try {
+          // Download PDFs and convert to base64
+          let resumeBase64 = '';
+          let coverLetterBase64 = '';
+
+          // Fetch and convert resume to base64
+          if (resumeUrl) {
+            const resumeResponse = await fetch(resumeUrl);
+            const resumeBlob = await resumeResponse.blob();
+            const resumeArrayBuffer = await resumeBlob.arrayBuffer();
+            resumeBase64 = btoa(
+              new Uint8Array(resumeArrayBuffer).reduce(
+                (data, byte) => data + String.fromCharCode(byte),
+                ''
+              )
+            );
+          }
+
+          // Fetch and convert cover letter to base64 if exists
+          if (coverLetterUrl) {
+            const coverLetterResponse = await fetch(coverLetterUrl);
+            const coverLetterBlob = await coverLetterResponse.blob();
+            const coverLetterArrayBuffer = await coverLetterBlob.arrayBuffer();
+            coverLetterBase64 = btoa(
+              new Uint8Array(coverLetterArrayBuffer).reduce(
+                (data, byte) => data + String.fromCharCode(byte),
+                ''
+              )
+            );
+          }
+
           const webhookPayload = {
             hr_id: selectedHR.id,
             company_name: selectedHR.company_name,
@@ -658,6 +688,8 @@ const ManageHRDetails = () => {
             analysis_report: selectedHR.analysis_report,
             resume_url: resumeUrl,
             cover_letter_url: coverLetterUrl,
+            resume_base64: resumeBase64,
+            cover_letter_base64: coverLetterBase64,
             user_id: user.id,
             gmail_id: gmailId,
             created_at: selectedHR.created_at,
