@@ -633,9 +633,15 @@ const ManageHRDetails = () => {
 
       if (updateError) throw updateError;
 
-      // Trigger automation webhook with all HR details
-      const webhookUrl = import.meta.env.VITE_AUTOMATION_WEBHOOK_URL;
-      if (webhookUrl && webhookUrl !== 'YOUR_WEBHOOK_URL_HERE') {
+      // Fetch automation webhook URL from smtp_configurations
+      const { data: smtpConfig } = await supabase
+        .from('smtp_configurations')
+        .select('automation_webhook_url')
+        .maybeSingle();
+
+      const webhookUrl = smtpConfig?.automation_webhook_url;
+      
+      if (webhookUrl) {
         try {
           const webhookPayload = {
             hr_id: selectedHR.id,

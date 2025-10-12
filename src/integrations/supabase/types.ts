@@ -4846,6 +4846,7 @@ export type Database = {
       smtp_configurations: {
         Row: {
           app_password: string
+          automation_webhook_url: string | null
           consent_given: boolean
           created_at: string
           gmail_id: string
@@ -4855,6 +4856,7 @@ export type Database = {
         }
         Insert: {
           app_password: string
+          automation_webhook_url?: string | null
           consent_given?: boolean
           created_at?: string
           gmail_id: string
@@ -4864,6 +4866,7 @@ export type Database = {
         }
         Update: {
           app_password?: string
+          automation_webhook_url?: string | null
           consent_given?: boolean
           created_at?: string
           gmail_id?: string
