@@ -633,13 +633,15 @@ const ManageHRDetails = () => {
 
       if (updateError) throw updateError;
 
-      // Fetch automation webhook URL from smtp_configurations
+      // Fetch automation webhook URL and Gmail ID from smtp_configurations based on user_id
       const { data: smtpConfig } = await supabase
         .from('smtp_configurations')
-        .select('automation_webhook_url')
+        .select('automation_webhook_url, gmail_id')
+        .eq('user_id', user.id)
         .maybeSingle();
 
       const webhookUrl = smtpConfig?.automation_webhook_url;
+      const gmailId = smtpConfig?.gmail_id;
       
       if (webhookUrl) {
         try {
@@ -657,6 +659,7 @@ const ManageHRDetails = () => {
             resume_url: resumeUrl,
             cover_letter_url: coverLetterUrl,
             user_id: user.id,
+            gmail_id: gmailId,
             created_at: selectedHR.created_at,
           };
 
