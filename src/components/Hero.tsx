@@ -32,8 +32,8 @@ const Hero = () => {
               </div>
             </div>
 
-            {/* Stats with urgency */}
-            <div className="space-y-4">
+            {/* Stats with urgency - Temporarily hidden */}
+            {/* <div className="space-y-4">
               <div className="flex flex-wrap justify-center lg:justify-start gap-4 md:gap-6">
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4 md:w-5 md:h-5 text-success" />
@@ -48,7 +48,7 @@ const Hero = () => {
                   <span className="text-xs md:text-sm font-medium">5x Faster Hiring</span>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Rating and trust indicators */}
             <div className="space-y-4">
