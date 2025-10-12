@@ -633,6 +633,40 @@ const ManageHRDetails = () => {
 
       if (updateError) throw updateError;
 
+      // Trigger automation webhook with all HR details
+      const webhookUrl = import.meta.env.VITE_AUTOMATION_WEBHOOK_URL;
+      if (webhookUrl && webhookUrl !== 'YOUR_WEBHOOK_URL_HERE') {
+        try {
+          const webhookPayload = {
+            hr_id: selectedHR.id,
+            company_name: selectedHR.company_name,
+            hr_name: selectedHR.hr_name,
+            hr_email: selectedHR.hr_email,
+            company_employees: selectedHR.company_employees,
+            company_founded_year: selectedHR.company_founded_year,
+            job_title: selectedHR.job_title,
+            job_description: selectedHR.job_description,
+            key_skills: selectedHR.key_skills,
+            analysis_report: selectedHR.analysis_report,
+            resume_url: resumeUrl,
+            cover_letter_url: coverLetterUrl,
+            user_id: user.id,
+            created_at: selectedHR.created_at,
+          };
+
+          await fetch(webhookUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(webhookPayload),
+          });
+        } catch (webhookError) {
+          console.error('Webhook trigger failed:', webhookError);
+          // Don't throw - we don't want to fail the upload if webhook fails
+        }
+      }
+
       toast({
         title: "Documents Uploaded",
         description: "Your resume and cover letter have been saved successfully.",
