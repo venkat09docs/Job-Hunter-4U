@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Link2, Briefcase, MapPin, DollarSign, Calendar, Mail, ArrowLeft } from "lucide-react";
+import { Loader2, Link2, Briefcase, MapPin, DollarSign, Calendar, Mail, ArrowLeft, ExternalLink } from "lucide-react";
 
 interface JobDetails {
   jobTitle: string | null;
@@ -21,12 +21,14 @@ interface JobDetails {
   benefits: string | null;
   applicationDeadline: string | null;
   contactEmail: string | null;
+  applyLink: string | null;
 }
 
 const FetchJobDetails = () => {
   const [jobUrl, setJobUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [jobDetails, setJobDetails] = useState<JobDetails | null>(null);
+  const [jobs, setJobs] = useState<JobDetails[]>([]);
+  const [isSingleJob, setIsSingleJob] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -49,10 +51,11 @@ const FetchJobDetails = () => {
       if (error) throw error;
 
       if (data.success) {
-        setJobDetails(data.jobDetails);
+        setJobs(data.jobs || []);
+        setIsSingleJob(data.isSingleJob || false);
         toast({
           title: "Success",
-          description: "Job details fetched successfully",
+          description: `Successfully fetched ${data.jobs?.length || 0} job(s)`,
         });
       } else {
         throw new Error(data.error || "Failed to fetch job details");
@@ -125,9 +128,18 @@ const FetchJobDetails = () => {
           </CardContent>
         </Card>
 
-        {jobDetails && (
+        {jobs.length > 0 && (
           <div className="space-y-6 animate-fade-in">
-            <Card className="border-2 border-primary/20 shadow-xl">
+            {!isSingleJob && jobs.length > 1 && (
+              <div className="text-center">
+                <Badge variant="outline" className="text-lg px-4 py-2">
+                  Found {jobs.length} Job Listings
+                </Badge>
+              </div>
+            )}
+            
+            {jobs.map((jobDetails, index) => (
+              <Card key={index} className="border-2 border-primary/20 shadow-xl">
               <CardHeader className="space-y-4 pb-6">
                 <div className="space-y-2">
                   {jobDetails.jobTitle && (
@@ -174,6 +186,18 @@ const FetchJobDetails = () => {
                     </Badge>
                   )}
                 </div>
+
+                {jobDetails.applyLink && (
+                  <div className="mt-4">
+                    <Button
+                      onClick={() => window.open(jobDetails.applyLink!, '_blank')}
+                      className="w-full sm:w-auto"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Apply Now
+                    </Button>
+                  </div>
+                )}
               </CardHeader>
 
               <CardContent className="space-y-6">
@@ -231,6 +255,7 @@ const FetchJobDetails = () => {
                 )}
               </CardContent>
             </Card>
+            ))}
           </div>
         )}
       </div>

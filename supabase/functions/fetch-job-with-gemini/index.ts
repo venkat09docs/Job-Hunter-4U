@@ -64,11 +64,11 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a job details extractor. Extract structured job information from text content. Return ONLY valid JSON with these exact fields: jobTitle, companyName, location, jobType, salary, description, requirements, responsibilities, benefits, applicationDeadline, contactEmail. Use null for missing fields. Be concise.'
+            content: 'You are a job details extractor. Analyze the content and determine if it contains a single job posting or multiple job listings. Return ONLY valid JSON in this format: {"isSingleJob": boolean, "jobs": [array of job objects]}. Each job object must have: jobTitle, companyName, location, jobType, salary, description, requirements, responsibilities, benefits, applicationDeadline, contactEmail, applyLink. Use null for missing fields.'
           },
           {
             role: 'user',
-            content: `Extract job details from this text:\n\n${textToAnalyze}\n\nReturn ONLY a JSON object with the requested fields.`
+            content: `Analyze this content and extract all job postings. If it's a single job page, return one job in the array. If it's a job listings page, extract all jobs:\n\n${textToAnalyze}\n\nReturn ONLY a JSON object with "isSingleJob" (boolean) and "jobs" (array) fields.`
           }
         ],
       }),
@@ -104,10 +104,18 @@ serve(async (req) => {
 
     console.log('Successfully extracted job details');
 
+    // Validate the response structure
+    if (!extractedData.jobs || !Array.isArray(extractedData.jobs)) {
+      throw new Error('Invalid response format from AI');
+    }
+
+    console.log(`Successfully extracted ${extractedData.jobs.length} job(s)`);
+
     return new Response(
       JSON.stringify({ 
         success: true, 
-        jobDetails: extractedData 
+        isSingleJob: extractedData.isSingleJob || false,
+        jobs: extractedData.jobs 
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
