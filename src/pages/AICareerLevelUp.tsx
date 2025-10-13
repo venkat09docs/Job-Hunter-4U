@@ -54,6 +54,7 @@ import { Github, Instagram } from "lucide-react";
 import { useCareerLevelProgram } from "@/hooks/useCareerLevelProgram";
 import type { Course } from "@/types/clp";
 import Navigation from "@/components/Navigation";
+import { CourseContentViewer } from "@/components/CourseContentViewer";
 
 // Import generated images
 import heroImage from "@/assets/ai-career-hero.jpg";
@@ -68,6 +69,9 @@ export default function AICareerLevelUp() {
   console.log("✅ AICareerLevelUp component starting");
   const { getCourses, loading } = useCareerLevelProgram();
   const [courses, setCourses] = useState<Course[]>([]);
+  const [buildProfileCourses, setBuildProfileCourses] = useState<Course[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [showCourseContent, setShowCourseContent] = useState(false);
   const navigate = useNavigate();
 
   console.log("✅ About to define handleEnrollClick");
@@ -93,6 +97,17 @@ export default function AICareerLevelUp() {
   const loadCourses = async () => {
     const coursesData = await getCourses();
     setCourses(coursesData);
+    
+    // Filter courses for "Build Profile" category
+    const buildProfileCoursesData = coursesData.filter(
+      course => course.category === 'Build Profile'
+    );
+    setBuildProfileCourses(buildProfileCoursesData);
+  };
+
+  const handleCourseClick = (course: Course) => {
+    setSelectedCourse(course);
+    setShowCourseContent(true);
   };
 
   // Scroll to section function
@@ -854,76 +869,98 @@ export default function AICareerLevelUp() {
           </div>
 
           <div className="relative">
-            <Carousel className="w-full" opts={{ align: "start", loop: true }}>
-              <CarouselContent className="-ml-2 md:-ml-4">
-                {/* Profile Build Activity */}
-                <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
-                  <Card className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-indigo-600 to-purple-700 border-0 shadow-xl overflow-hidden">
+            {loading ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3].map(i => (
+                  <Card key={i} className="h-full animate-pulse">
                     <CardContent className="p-0">
-                      {/* Activity Header */}
-                      <div className="bg-gradient-to-r from-indigo-700 to-purple-800 p-6 text-center relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 backdrop-blur-sm"></div>
-                        <div className="relative z-10">
-                          <div className="flex items-center justify-center gap-3 mb-3">
-                            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
-                              <User className="h-8 w-8 text-white" />
-                            </div>
-                            <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm">
-                              Foundation
-                            </Badge>
-                          </div>
-                          <h3 className="text-2xl font-bold text-white mb-2">
-                            Profile Build
-                          </h3>
-                          <p className="text-white/90 text-sm">
-                            Build Your Professional Identity
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Activity Content */}
-                      <div className="p-6 text-white">
-                        <p className="text-white/90 mb-6 leading-relaxed">
-                          Create a compelling professional profile that showcases your skills, experience, and achievements to stand out to employers.
-                        </p>
-
-                        {/* Activity Features */}
-                        <div className="space-y-3 mb-6">
-                          <div className="flex items-center gap-2 text-green-300">
-                            <CheckCircle className="h-4 w-4" />
-                            <span className="text-sm">Resume Optimization</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-green-300">
-                            <CheckCircle className="h-4 w-4" />
-                            <span className="text-sm">Personal Branding</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-green-300">
-                            <CheckCircle className="h-4 w-4" />
-                            <span className="text-sm">Professional Portfolio</span>
-                          </div>
-                        </div>
-
-                        {/* Progress Indicator */}
-                        <div className="mb-6">
-                          <div className="flex justify-between text-sm mb-2">
-                            <span className="text-white/80">Progress</span>
-                            <span className="text-white font-semibold">Build Foundation</span>
-                          </div>
-                          <div className="w-full bg-white/20 rounded-full h-2">
-                            <div className="bg-gradient-to-r from-green-400 to-green-500 h-2 rounded-full w-1/3"></div>
-                          </div>
-                        </div>
-
-                        {/* Action Button */}
-                        <Button className="w-full bg-white text-indigo-700 hover:bg-gray-100 font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
-                          Start Building Profile
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
+                      <div className="h-48 bg-muted"></div>
+                      <div className="p-6 space-y-4">
+                        <div className="h-6 bg-muted rounded"></div>
+                        <div className="h-4 bg-muted rounded w-3/4"></div>
+                        <div className="h-10 bg-muted rounded"></div>
                       </div>
                     </CardContent>
                   </Card>
-                </CarouselItem>
+                ))}
+              </div>
+            ) : buildProfileCourses.length > 0 ? (
+              <Carousel className="w-full" opts={{ align: "start", loop: true }}>
+                <CarouselContent className="-ml-2 md:-ml-4">
+                  {buildProfileCourses.map((course) => (
+                    <CarouselItem key={course.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                      <Card 
+                        className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-indigo-600 to-purple-700 border-0 shadow-xl overflow-hidden cursor-pointer"
+                        onClick={() => handleCourseClick(course)}
+                      >
+                        <CardContent className="p-0">
+                          {/* Course Image Header */}
+                          <div className="relative h-48 overflow-hidden">
+                            {course.image ? (
+                              <img 
+                                src={course.image} 
+                                alt={course.title}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-primary via-purple to-teal" />
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                            <div className="absolute bottom-4 left-4 right-4">
+                              <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm mb-2">
+                                {course.code}
+                              </Badge>
+                              <h3 className="text-xl font-bold text-white line-clamp-2">
+                                {course.title}
+                              </h3>
+                            </div>
+                          </div>
 
+                          {/* Course Content */}
+                          <div className="p-6 text-white">
+                            <p className="text-white/90 mb-4 leading-relaxed line-clamp-3">
+                              {course.description || "Comprehensive course covering fundamental concepts and practical applications"}
+                            </p>
+
+                            {/* Action Button */}
+                            <Button className="w-full bg-white text-indigo-700 hover:bg-gray-100 font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
+                              View Course Content
+                              <BookOpen className="ml-2 h-4 w-4" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="hidden md:flex -left-12" />
+                <CarouselNext className="hidden md:flex -right-12" />
+              </Carousel>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-400 text-lg">No courses available in Build Profile category yet.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Course Content Viewer Dialog */}
+      {selectedCourse && (
+        <CourseContentViewer
+          open={showCourseContent}
+          onOpenChange={setShowCourseContent}
+          courseId={selectedCourse.id}
+          courseTitle={selectedCourse.title}
+        />
+      )}
+
+      {/* Continue with other sections */}
+      <section className="py-20 px-4 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className="container mx-auto max-w-7xl">
+          <div className="relative">
+            <Carousel className="w-full" opts={{ align: "start", loop: true }}>
+              <CarouselContent className="-ml-2 md:-ml-4">
                 {/* LinkedIn Network Growth Activity */}
                 <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
                   <Card className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-blue-600 to-cyan-700 border-0 shadow-xl overflow-hidden">
