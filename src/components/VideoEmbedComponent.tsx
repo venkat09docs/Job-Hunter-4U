@@ -108,10 +108,17 @@ export const VideoEmbedComponent: React.FC<VideoEmbedComponentProps> = ({
       )}
 
       {embedUrl && isValidVideoUrl(videoUrl) && (
-        <div className="space-y-2">
+        <div 
+          className="space-y-2"
+          onContextMenu={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          }}
+        >
           <Label>Video Preview</Label>
           <div 
-            className="relative w-full aspect-video bg-gray-100 rounded-lg overflow-hidden select-none"
+            className="relative w-full aspect-video bg-gray-100 rounded-lg overflow-hidden"
             style={{
               userSelect: 'none',
               WebkitUserSelect: 'none',
@@ -127,6 +134,14 @@ export const VideoEmbedComponent: React.FC<VideoEmbedComponentProps> = ({
               if (e.button === 2) {
                 e.preventDefault();
                 e.stopPropagation();
+                return false;
+              }
+            }}
+            onMouseUp={(e) => {
+              if (e.button === 2) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
               }
             }}
           >
@@ -140,8 +155,39 @@ export const VideoEmbedComponent: React.FC<VideoEmbedComponentProps> = ({
               style={{ 
                 border: 'none'
               }}
+              onContextMenu={(e: any) => {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+              }}
+            />
+            {/* Transparent overlay to block right-click */}
+            <div 
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                zIndex: 10,
+                background: 'transparent'
+              }}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+              }}
             />
           </div>
+          <style dangerouslySetInnerHTML={{
+            __html: `
+              iframe {
+                pointer-events: auto !important;
+              }
+              iframe * {
+                user-select: none !important;
+                -webkit-user-select: none !important;
+                -moz-user-select: none !important;
+                -ms-user-select: none !important;
+              }
+            `
+          }} />
         </div>
       )}
 

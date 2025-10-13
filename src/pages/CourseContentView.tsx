@@ -342,10 +342,17 @@ const CourseContentView: React.FC = () => {
             console.log('Final embed URL:', embedUrl);
 
             return (
-              <div className="relative w-full">
+              <div 
+                className="relative w-full"
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  return false;
+                }}
+              >
                 {/* Responsive video container with security */}
                 <div 
-                  className="relative w-full bg-gray-100 rounded-lg overflow-hidden select-none"
+                  className="relative w-full bg-gray-100 rounded-lg overflow-hidden"
                   style={{ 
                     aspectRatio: '16/9',
                     maxHeight: 'min(90vh, 900px)',
@@ -363,6 +370,14 @@ const CourseContentView: React.FC = () => {
                     if (e.button === 2) {
                       e.preventDefault();
                       e.stopPropagation();
+                      return false;
+                    }
+                  }}
+                  onMouseUp={(e) => {
+                    if (e.button === 2) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return false;
                     }
                   }}
                 >
@@ -376,8 +391,39 @@ const CourseContentView: React.FC = () => {
                     style={{ 
                       border: 'none'
                     }}
+                    onContextMenu={(e: any) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return false;
+                    }}
+                  />
+                  {/* Transparent overlay to block right-click while allowing controls */}
+                  <div 
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      zIndex: 10,
+                      background: 'transparent'
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return false;
+                    }}
                   />
                 </div>
+                <style dangerouslySetInnerHTML={{
+                  __html: `
+                    iframe {
+                      pointer-events: auto !important;
+                    }
+                    iframe * {
+                      user-select: none !important;
+                      -webkit-user-select: none !important;
+                      -moz-user-select: none !important;
+                      -ms-user-select: none !important;
+                    }
+                  `
+                }} />
               </div>
             );
           } catch (error) {

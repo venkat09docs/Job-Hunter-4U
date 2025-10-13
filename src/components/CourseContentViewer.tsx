@@ -153,9 +153,16 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
           }
 
           return (
-            <div className="space-y-4">
+            <div 
+              className="space-y-4"
+              onContextMenu={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+              }}
+            >
               <div 
-                className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden select-none"
+                className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden"
                 style={{
                   userSelect: 'none',
                   WebkitUserSelect: 'none',
@@ -171,6 +178,14 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
                   if (e.button === 2) {
                     e.preventDefault();
                     e.stopPropagation();
+                    return false;
+                  }
+                }}
+                onMouseUp={(e) => {
+                  if (e.button === 2) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
                   }
                 }}
               >
@@ -183,8 +198,39 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
                   style={{ 
                     border: 'none'
                   }}
+                  onContextMenu={(e: any) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                  }}
+                />
+                {/* Transparent overlay to block right-click */}
+                <div 
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    zIndex: 10,
+                    background: 'transparent'
+                  }}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                  }}
                 />
               </div>
+              <style dangerouslySetInnerHTML={{
+                __html: `
+                  iframe {
+                    pointer-events: auto !important;
+                  }
+                  iframe * {
+                    user-select: none !important;
+                    -webkit-user-select: none !important;
+                    -moz-user-select: none !important;
+                    -ms-user-select: none !important;
+                  }
+                `
+              }} />
               {content_data.description && (
                 <div className="prose prose-sm max-w-none">
                   <p className="text-muted-foreground">{content_data.description}</p>
