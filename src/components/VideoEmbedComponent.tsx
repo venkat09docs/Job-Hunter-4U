@@ -154,7 +154,8 @@ export const VideoEmbedComponent: React.FC<VideoEmbedComponentProps> = ({
               sandbox="allow-scripts allow-same-origin allow-presentation"
               title="Video Preview"
               style={{ 
-                border: 'none'
+                border: 'none',
+                pointerEvents: 'none'
               }}
               onContextMenu={(e: any) => {
                 e.preventDefault();
@@ -162,12 +163,11 @@ export const VideoEmbedComponent: React.FC<VideoEmbedComponentProps> = ({
                 return false;
               }}
             />
-            {/* Strategic overlays to block menu buttons */}
+            {/* Full blocking overlay except center area */}
             <div 
-              className="absolute top-0 right-0 w-20 h-16"
+              className="absolute inset-0"
               style={{
-                zIndex: 10,
-                background: 'transparent',
+                zIndex: 20,
                 pointerEvents: 'auto'
               }}
               onContextMenu={(e) => {
@@ -178,48 +178,37 @@ export const VideoEmbedComponent: React.FC<VideoEmbedComponentProps> = ({
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const allowedWidth = rect.width * 0.6;
+                const allowedHeight = rect.height * 0.6;
+                
+                if (Math.abs(x - centerX) < allowedWidth / 2 && 
+                    Math.abs(y - centerY) < allowedHeight / 2) {
+                  const iframe = e.currentTarget.previousElementSibling as HTMLIFrameElement;
+                  if (iframe && iframe.style) {
+                    iframe.style.pointerEvents = 'auto';
+                    setTimeout(() => {
+                      if (iframe.style) iframe.style.pointerEvents = 'none';
+                    }, 50);
+                  }
+                }
               }}
-            />
-            <div 
-              className="absolute bottom-0 right-0 w-32 h-12"
-              style={{
-                zIndex: 10,
-                background: 'transparent',
-                pointerEvents: 'auto'
-              }}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-              }}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-            />
-            <div 
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                zIndex: 5,
-                background: 'transparent'
-              }}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-              }}
-            />
+            >
+              <div className="w-full h-full" style={{ background: 'transparent' }} />
+            </div>
           </div>
           <style dangerouslySetInnerHTML={{
             __html: `
               iframe {
-                pointer-events: auto !important;
-              }
-              iframe * {
-                user-select: none !important;
                 -webkit-user-select: none !important;
                 -moz-user-select: none !important;
                 -ms-user-select: none !important;
+                user-select: none !important;
               }
             `
           }} />

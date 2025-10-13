@@ -392,7 +392,8 @@ const CourseContentView: React.FC = () => {
                     sandbox="allow-scripts allow-same-origin allow-presentation"
                     title={chapter.title}
                     style={{ 
-                      border: 'none'
+                      border: 'none',
+                      pointerEvents: 'none'
                     }}
                     onContextMenu={(e: any) => {
                       e.preventDefault();
@@ -400,13 +401,11 @@ const CourseContentView: React.FC = () => {
                       return false;
                     }}
                   />
-                  {/* Strategic overlays to block menu buttons while allowing play/pause */}
-                  {/* Top right corner overlay to block menu button */}
+                  {/* Full blocking overlay except center area */}
                   <div 
-                    className="absolute top-0 right-0 w-20 h-16"
+                    className="absolute inset-0"
                     style={{
-                      zIndex: 10,
-                      background: 'transparent',
+                      zIndex: 20,
                       pointerEvents: 'auto'
                     }}
                     onContextMenu={(e) => {
@@ -417,50 +416,41 @@ const CourseContentView: React.FC = () => {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
+                      // Get click position relative to container
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const x = e.clientX - rect.left;
+                      const y = e.clientY - rect.top;
+                      const centerX = rect.width / 2;
+                      const centerY = rect.height / 2;
+                      
+                      // Only allow clicks in center 60% area for play/pause
+                      const allowedWidth = rect.width * 0.6;
+                      const allowedHeight = rect.height * 0.6;
+                      
+                      if (Math.abs(x - centerX) < allowedWidth / 2 && 
+                          Math.abs(y - centerY) < allowedHeight / 2) {
+                        // Enable iframe clicks temporarily for center area only
+                        const iframe = e.currentTarget.previousElementSibling as HTMLIFrameElement;
+                        if (iframe && iframe.style) {
+                          iframe.style.pointerEvents = 'auto';
+                          setTimeout(() => {
+                            if (iframe.style) iframe.style.pointerEvents = 'none';
+                          }, 50);
+                        }
+                      }
                     }}
-                  />
-                  {/* Bottom control bar overlay to block download options */}
-                  <div 
-                    className="absolute bottom-0 right-0 w-32 h-12"
-                    style={{
-                      zIndex: 10,
-                      background: 'transparent',
-                      pointerEvents: 'auto'
-                    }}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      return false;
-                    }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                    }}
-                  />
-                  {/* Full overlay to block all right-clicks */}
-                  <div 
-                    className="absolute inset-0 pointer-events-none"
-                    style={{
-                      zIndex: 5,
-                      background: 'transparent'
-                    }}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      return false;
-                    }}
-                  />
+                  >
+                    {/* Transparent overlay */}
+                    <div className="w-full h-full" style={{ background: 'transparent' }} />
+                  </div>
                 </div>
                 <style dangerouslySetInnerHTML={{
                   __html: `
                     iframe {
-                      pointer-events: auto !important;
-                    }
-                    iframe * {
-                      user-select: none !important;
                       -webkit-user-select: none !important;
                       -moz-user-select: none !important;
                       -ms-user-select: none !important;
+                      user-select: none !important;
                     }
                   `
                 }} />
