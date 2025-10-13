@@ -330,13 +330,15 @@ const CourseContentView: React.FC = () => {
               const videoId = videoUrl.includes('youtu.be') 
                 ? videoUrl.split('/').pop()?.split('?')[0]
                 : new URL(videoUrl).searchParams.get('v');
-              embedUrl = `https://www.youtube.com/embed/${videoId}`;
+              // Add parameters to disable download and minimize controls
+              embedUrl = `https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0&showinfo=0&controls=1&disablekb=1`;
             } else if (videoUrl.includes('vimeo.com')) {
               const videoId = videoUrl.split('/').pop();
-              embedUrl = `https://player.vimeo.com/video/${videoId}`;
+              // Add parameters to prevent downloads
+              embedUrl = `https://player.vimeo.com/video/${videoId}?title=0&byline=0&portrait=0`;
             } else if (videoUrl.includes('loom.com')) {
               const videoId = videoUrl.split('/').pop()?.split('?')[0];
-              embedUrl = `https://www.loom.com/embed/${videoId}`;
+              embedUrl = `https://www.loom.com/embed/${videoId}?hide_owner=true&hide_share=true&hide_title=true&hideEmbedTopBar=true`;
             }
 
             console.log('Final embed URL:', embedUrl);
@@ -387,6 +389,7 @@ const CourseContentView: React.FC = () => {
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
+                    sandbox="allow-scripts allow-same-origin allow-presentation"
                     title={chapter.title}
                     style={{ 
                       border: 'none'
@@ -397,11 +400,48 @@ const CourseContentView: React.FC = () => {
                       return false;
                     }}
                   />
-                  {/* Transparent overlay to block right-click while allowing controls */}
+                  {/* Strategic overlays to block menu buttons while allowing play/pause */}
+                  {/* Top right corner overlay to block menu button */}
+                  <div 
+                    className="absolute top-0 right-0 w-20 h-16"
+                    style={{
+                      zIndex: 10,
+                      background: 'transparent',
+                      pointerEvents: 'auto'
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return false;
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                  />
+                  {/* Bottom control bar overlay to block download options */}
+                  <div 
+                    className="absolute bottom-0 right-0 w-32 h-12"
+                    style={{
+                      zIndex: 10,
+                      background: 'transparent',
+                      pointerEvents: 'auto'
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return false;
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                  />
+                  {/* Full overlay to block all right-clicks */}
                   <div 
                     className="absolute inset-0 pointer-events-none"
                     style={{
-                      zIndex: 10,
+                      zIndex: 5,
                       background: 'transparent'
                     }}
                     onContextMenu={(e) => {

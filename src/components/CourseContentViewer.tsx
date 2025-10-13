@@ -143,13 +143,13 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
             const videoId = content_data.video_url.includes('youtu.be') 
               ? content_data.video_url.split('/').pop()?.split('?')[0]
               : new URL(content_data.video_url).searchParams.get('v');
-            embedUrl = `https://www.youtube.com/embed/${videoId}`;
+            embedUrl = `https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0&showinfo=0&controls=1&disablekb=1`;
           } else if (content_data.video_url.includes('vimeo.com')) {
             const videoId = content_data.video_url.split('/').pop();
-            embedUrl = `https://player.vimeo.com/video/${videoId}`;
+            embedUrl = `https://player.vimeo.com/video/${videoId}?title=0&byline=0&portrait=0`;
           } else if (content_data.video_url.includes('loom.com')) {
             const videoId = content_data.video_url.split('/').pop()?.split('?')[0];
-            embedUrl = `https://www.loom.com/embed/${videoId}`;
+            embedUrl = `https://www.loom.com/embed/${videoId}?hide_owner=true&hide_share=true&hide_title=true&hideEmbedTopBar=true`;
           }
 
           return (
@@ -195,6 +195,7 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
+                  sandbox="allow-scripts allow-same-origin allow-presentation"
                   style={{ 
                     border: 'none'
                   }}
@@ -204,11 +205,45 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
                     return false;
                   }}
                 />
-                {/* Transparent overlay to block right-click */}
+                {/* Strategic overlays to block menu buttons */}
+                <div 
+                  className="absolute top-0 right-0 w-20 h-16"
+                  style={{
+                    zIndex: 10,
+                    background: 'transparent',
+                    pointerEvents: 'auto'
+                  }}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                  }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                />
+                <div 
+                  className="absolute bottom-0 right-0 w-32 h-12"
+                  style={{
+                    zIndex: 10,
+                    background: 'transparent',
+                    pointerEvents: 'auto'
+                  }}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                  }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                />
                 <div 
                   className="absolute inset-0 pointer-events-none"
                   style={{
-                    zIndex: 10,
+                    zIndex: 5,
                     background: 'transparent'
                   }}
                   onContextMenu={(e) => {
