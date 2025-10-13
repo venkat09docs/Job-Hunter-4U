@@ -922,84 +922,99 @@ export default function AICareerLevelUp() {
                             className={`h-full transition-all duration-300 bg-gradient-to-br ${gradientClasses[index % 3]} border-0 shadow-2xl overflow-hidden cursor-pointer rounded-3xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] hover:scale-[1.02]`}
                             onClick={() => handleCourseClick(course)}
                           >
-                            <CardContent className="p-8 flex flex-col h-full min-h-[600px]">
-                              {/* Icon Badge */}
-                              <div className="flex items-center gap-3 mb-6">
-                                <div className={`${iconBgClasses[index % 3]} backdrop-blur-sm p-4 rounded-2xl`}>
-                                  <BookOpen className="h-8 w-8 text-white" />
+                            <CardContent className="p-0 flex flex-col h-full">
+                              {/* Course Image Header */}
+                              {course.image && (
+                                <div className="relative h-48 overflow-hidden flex-shrink-0">
+                                  <img 
+                                    src={course.image} 
+                                    alt={course.title}
+                                    className="w-full h-full object-cover"
+                                  />
+                                  <div className={`absolute inset-0 bg-gradient-to-b ${gradientClasses[index % 3]} opacity-80`}></div>
                                 </div>
-                                <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm px-4 py-1 text-sm font-semibold">
-                                  {course.code}
-                                </Badge>
-                              </div>
-
-                              {/* Title */}
-                              <h3 className="text-3xl font-bold text-white mb-3 leading-tight">
-                                {course.title}
-                              </h3>
-
-                              {/* Subtitle */}
-                              <p className="text-white/80 text-lg mb-6 font-medium">
-                                {course.category || 'Professional Development'}
-                              </p>
-
-                              {/* Description */}
-                              <p className="text-white/90 mb-8 leading-relaxed text-base flex-shrink-0">
-                                {course.description || "Comprehensive course covering fundamental concepts and practical applications"}
-                              </p>
-
-                              {/* Course Sections as Bullet Points */}
-                              <div className="mb-8 space-y-3 flex-1">
-                                {courseSections[course.id] && courseSections[course.id].length > 0 ? (
-                                  courseSections[course.id].map((section, idx) => (
-                                    <div key={idx} className="flex items-start gap-3">
-                                      <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
-                                      <span className="text-white/90 text-base leading-relaxed">{section.title}</span>
-                                    </div>
-                                  ))
-                                ) : (
-                                  <>
-                                    <div className="flex items-start gap-3">
-                                      <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
-                                      <span className="text-white/90 text-base">Interactive Learning Content</span>
-                                    </div>
-                                    <div className="flex items-start gap-3">
-                                      <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
-                                      <span className="text-white/90 text-base">Practical Projects</span>
-                                    </div>
-                                    <div className="flex items-start gap-3">
-                                      <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
-                                      <span className="text-white/90 text-base">Professional Certification</span>
-                                    </div>
-                                  </>
-                                )}
-                              </div>
-
-                              {/* Progress Bar */}
-                              <div className="mb-6 flex-shrink-0">
-                                <div className="flex justify-between text-sm mb-2">
-                                  <span className="text-white/80 font-medium">Progress</span>
-                                  <span className="text-white font-semibold">Ready to Start</span>
+                              )}
+                              
+                              {/* Content Section */}
+                              <div className="p-8 flex flex-col flex-1">
+                                {/* Icon Badge */}
+                                <div className="flex items-center gap-3 mb-6">
+                                  <div className={`${iconBgClasses[index % 3]} backdrop-blur-sm p-4 rounded-2xl`}>
+                                    <BookOpen className="h-8 w-8 text-white" />
+                                  </div>
+                                  <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm px-4 py-1 text-sm font-semibold">
+                                    {course.code}
+                                  </Badge>
                                 </div>
-                                <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden backdrop-blur-sm">
-                                  <div 
-                                    className="bg-gradient-to-r from-white/80 to-white h-2 rounded-full transition-all duration-500"
-                                    style={{ width: '10%' }}
-                                  ></div>
-                                </div>
-                              </div>
 
-                              {/* Action Button */}
-                              <Button 
-                                className="w-full bg-white/95 hover:bg-white text-gray-900 font-semibold shadow-lg rounded-xl h-14 text-base backdrop-blur-sm transform hover:scale-[1.02] transition-all duration-200"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleCourseClick(course);
-                                }}
-                              >
-                                View Course Content
-                                <ArrowRight className="ml-2 h-5 w-5" />
-                              </Button>
+                                {/* Title */}
+                                <h3 className="text-3xl font-bold text-white mb-3 leading-tight">
+                                  {course.title}
+                                </h3>
+
+                                {/* Subtitle */}
+                                <p className="text-white/80 text-lg mb-6 font-medium">
+                                  {course.category || 'Professional Development'}
+                                </p>
+
+                                {/* Description */}
+                                <p className="text-white/90 mb-8 leading-relaxed text-base flex-shrink-0">
+                                  {course.description || "Comprehensive course covering fundamental concepts and practical applications"}
+                                </p>
+
+                                {/* Course Sections as Bullet Points */}
+                                <div className="mb-8 space-y-3 flex-1">
+                                  {courseSections[course.id] && courseSections[course.id].length > 0 ? (
+                                    courseSections[course.id].map((section, idx) => (
+                                      <div key={idx} className="flex items-start gap-3">
+                                        <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
+                                        <span className="text-white/90 text-base leading-relaxed">{section.title}</span>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <>
+                                      <div className="flex items-start gap-3">
+                                        <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
+                                        <span className="text-white/90 text-base">Interactive Learning Content</span>
+                                      </div>
+                                      <div className="flex items-start gap-3">
+                                        <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
+                                        <span className="text-white/90 text-base">Practical Projects</span>
+                                      </div>
+                                      <div className="flex items-start gap-3">
+                                        <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
+                                        <span className="text-white/90 text-base">Professional Certification</span>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+
+                                {/* Progress Bar */}
+                                <div className="mb-6 flex-shrink-0">
+                                  <div className="flex justify-between text-sm mb-2">
+                                    <span className="text-white/80 font-medium">Progress</span>
+                                    <span className="text-white font-semibold">Ready to Start</span>
+                                  </div>
+                                  <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden backdrop-blur-sm">
+                                    <div 
+                                      className="bg-gradient-to-r from-white/80 to-white h-2 rounded-full transition-all duration-500"
+                                      style={{ width: '10%' }}
+                                    ></div>
+                                  </div>
+                                </div>
+
+                                {/* Action Button */}
+                                <Button 
+                                  className="w-full bg-white/95 hover:bg-white text-gray-900 font-semibold shadow-lg rounded-xl h-14 text-base backdrop-blur-sm transform hover:scale-[1.02] transition-all duration-200"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCourseClick(course);
+                                  }}
+                                >
+                                  View Course Content
+                                  <ArrowRight className="ml-2 h-5 w-5" />
+                                </Button>
+                              </div>
                             </CardContent>
                           </Card>
                         </CarouselItem>
