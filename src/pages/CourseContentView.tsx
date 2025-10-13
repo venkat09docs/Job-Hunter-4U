@@ -348,28 +348,63 @@ const CourseContentView: React.FC = () => {
                   className="relative w-full bg-gray-100 rounded-lg overflow-hidden select-none"
                   style={{ 
                     aspectRatio: '16/9',
-                    maxHeight: 'min(90vh, 900px)' // Increased height limit for maximum space usage
+                    maxHeight: 'min(90vh, 900px)',
+                    userSelect: 'none',
+                    WebkitUserSelect: 'none',
+                    MozUserSelect: 'none',
+                    msUserSelect: 'none'
                   }}
                   onContextMenu={(e) => {
                     e.preventDefault();
+                    e.stopPropagation();
                     return false;
+                  }}
+                  onMouseDown={(e) => {
+                    if (e.button === 2) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }
                   }}
                 >
                   <iframe
                     src={embedUrl}
-                    className="absolute inset-0 w-full h-full pointer-events-auto"
+                    className="absolute inset-0 w-full h-full"
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                     title={chapter.title}
-                    style={{ border: 'none' }}
+                    style={{ 
+                      border: 'none',
+                      pointerEvents: 'none'
+                    }}
                   />
-                  {/* Transparent overlay to prevent right-click on iframe */}
+                  {/* Multiple security layers to prevent interactions */}
                   <div 
-                    className="absolute inset-0 pointer-events-none"
+                    className="absolute inset-0 pointer-events-auto"
+                    style={{
+                      background: 'transparent',
+                      cursor: 'default'
+                    }}
                     onContextMenu={(e) => {
                       e.preventDefault();
+                      e.stopPropagation();
                       return false;
+                    }}
+                    onMouseDown={(e) => {
+                      if (e.button === 2) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }
+                    }}
+                    onClick={(e) => {
+                      // Allow clicks to pass through for play button
+                      const iframe = e.currentTarget.previousElementSibling as HTMLIFrameElement;
+                      if (iframe && iframe.style) {
+                        iframe.style.pointerEvents = 'auto';
+                        setTimeout(() => {
+                          if (iframe.style) iframe.style.pointerEvents = 'none';
+                        }, 100);
+                      }
                     }}
                   />
                 </div>
