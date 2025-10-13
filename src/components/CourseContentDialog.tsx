@@ -494,6 +494,8 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
         return <FileText className="h-4 w-4" />;
       case 'checklist':
         return <CheckSquare className="h-4 w-4" />;
+      case 'embed_code':
+        return <Video className="h-4 w-4" />;
       default:
         return <FileText className="h-4 w-4" />;
     }
@@ -507,6 +509,8 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
         return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'checklist':
         return 'bg-green-100 text-green-800 border-green-200';
+      case 'embed_code':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
