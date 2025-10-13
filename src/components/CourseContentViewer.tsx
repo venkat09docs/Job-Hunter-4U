@@ -154,13 +154,27 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
 
           return (
             <div className="space-y-4">
-              <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+              <div 
+                className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden select-none"
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  return false;
+                }}
+              >
                 <iframe
                   src={embedUrl}
-                  className="w-full h-full"
+                  className="absolute inset-0 w-full h-full pointer-events-auto"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
+                />
+                {/* Transparent overlay to prevent right-click on iframe */}
+                <div 
+                  className="absolute inset-0 pointer-events-none"
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    return false;
+                  }}
                 />
               </div>
               {content_data.description && (

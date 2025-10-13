@@ -110,14 +110,28 @@ export const VideoEmbedComponent: React.FC<VideoEmbedComponentProps> = ({
       {embedUrl && isValidVideoUrl(videoUrl) && (
         <div className="space-y-2">
           <Label>Video Preview</Label>
-          <div className="relative w-full aspect-video bg-gray-100 rounded-lg overflow-hidden">
+          <div 
+            className="relative w-full aspect-video bg-gray-100 rounded-lg overflow-hidden select-none"
+            onContextMenu={(e) => {
+              e.preventDefault();
+              return false;
+            }}
+          >
             <iframe
               src={embedUrl}
-              className="absolute inset-0 w-full h-full"
+              className="absolute inset-0 w-full h-full pointer-events-auto"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
               title="Video Preview"
+            />
+            {/* Transparent overlay to prevent right-click on iframe */}
+            <div 
+              className="absolute inset-0 pointer-events-none"
+              onContextMenu={(e) => {
+                e.preventDefault();
+                return false;
+              }}
             />
           </div>
         </div>

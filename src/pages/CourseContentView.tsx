@@ -343,22 +343,34 @@ const CourseContentView: React.FC = () => {
 
             return (
               <div className="relative w-full">
-                {/* Responsive video container with maximum space utilization */}
+                {/* Responsive video container with maximum space utilization and security */}
                 <div 
-                  className="relative w-full bg-gray-100 rounded-lg overflow-hidden"
+                  className="relative w-full bg-gray-100 rounded-lg overflow-hidden select-none"
                   style={{ 
                     aspectRatio: '16/9',
                     maxHeight: 'min(90vh, 900px)' // Increased height limit for maximum space usage
                   }}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    return false;
+                  }}
                 >
                   <iframe
                     src={embedUrl}
-                    className="absolute inset-0 w-full h-full"
+                    className="absolute inset-0 w-full h-full pointer-events-auto"
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                     title={chapter.title}
                     style={{ border: 'none' }}
+                  />
+                  {/* Transparent overlay to prevent right-click on iframe */}
+                  <div 
+                    className="absolute inset-0 pointer-events-none"
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      return false;
+                    }}
                   />
                 </div>
               </div>
