@@ -52,10 +52,8 @@ import {
 } from "lucide-react";
 import { Github, Instagram } from "lucide-react";
 import { useCareerLevelProgram } from "@/hooks/useCareerLevelProgram";
-import { useCourseContent } from "@/hooks/useCourseContent";
 import type { Course } from "@/types/clp";
 import Navigation from "@/components/Navigation";
-import { CourseContentViewer } from "@/components/CourseContentViewer";
 
 // Import generated images
 import heroImage from "@/assets/ai-career-hero.jpg";
@@ -69,12 +67,7 @@ import careerSuccessSteps from "@/assets/career-success-steps.jpg";
 export default function AICareerLevelUp() {
   console.log("✅ AICareerLevelUp component starting");
   const { getCourses, loading } = useCareerLevelProgram();
-  const { getSectionsByCourse } = useCourseContent();
   const [courses, setCourses] = useState<Course[]>([]);
-  const [buildProfileCourses, setBuildProfileCourses] = useState<Course[]>([]);
-  const [courseSections, setCourseSections] = useState<Record<string, any[]>>({});
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-  const [showCourseContent, setShowCourseContent] = useState(false);
   const navigate = useNavigate();
 
   console.log("✅ About to define handleEnrollClick");
@@ -100,30 +93,6 @@ export default function AICareerLevelUp() {
   const loadCourses = async () => {
     const coursesData = await getCourses();
     setCourses(coursesData);
-    
-    // Filter courses for "Build Profile" category
-    const buildProfileCoursesData = coursesData.filter(
-      course => course.category === 'Build Profile'
-    );
-    setBuildProfileCourses(buildProfileCoursesData);
-
-    // Fetch sections for each Build Profile course
-    const sectionsMap: Record<string, any[]> = {};
-    for (const course of buildProfileCoursesData) {
-      try {
-        const sections = await getSectionsByCourse(course.id);
-        sectionsMap[course.id] = sections; // Get all sections
-      } catch (error) {
-        console.error(`Error fetching sections for course ${course.id}:`, error);
-        sectionsMap[course.id] = [];
-      }
-    }
-    setCourseSections(sectionsMap);
-  };
-
-  const handleCourseClick = (course: Course) => {
-    setSelectedCourse(course);
-    setShowCourseContent(true);
   };
 
   // Scroll to section function
@@ -885,151 +854,200 @@ export default function AICareerLevelUp() {
           </div>
 
           <div className="relative">
-            {loading ? (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3].map(i => (
-                  <Card key={i} className="h-full animate-pulse">
-                    <CardContent className="p-0">
-                      <div className="h-48 bg-muted"></div>
-                      <div className="p-6 space-y-4">
-                        <div className="h-6 bg-muted rounded"></div>
-                        <div className="h-4 bg-muted rounded w-3/4"></div>
-                        <div className="h-10 bg-muted rounded"></div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : buildProfileCourses.length > 0 ? (
-              <div className="relative">
-                <Carousel className="w-full" opts={{ align: "start", loop: true }}>
-                  <CarouselContent className="-ml-2 md:-ml-4">
-                    {buildProfileCourses.map((course, index) => {
-                      const gradientClasses = [
-                        'from-blue-600 via-cyan-600 to-teal-600',
-                        'from-gray-900 via-purple-900 to-pink-900',
-                        'from-emerald-600 via-green-600 to-teal-600'
-                      ];
-                      const iconBgClasses = [
-                        'bg-white/20',
-                        'bg-white/20',
-                        'bg-white/20'
-                      ];
-                      
-                      return (
-                        <CarouselItem key={course.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
-                          <Card 
-                            className={`h-full transition-all duration-300 bg-gradient-to-br ${gradientClasses[index % 3]} border-0 shadow-2xl cursor-pointer rounded-3xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] hover:scale-[1.02]`}
-                            onClick={() => handleCourseClick(course)}
-                          >
-                            <CardContent className="p-0 flex flex-col h-full overflow-hidden">
-                              {/* Course Image Header - Only if image exists */}
-                              {course.image && (
-                                <div className="relative h-48 flex-shrink-0 overflow-hidden">
-                                  <img 
-                                    src={course.image} 
-                                    alt={course.title}
-                                    className="w-full h-full object-cover"
-                                    style={{ objectFit: 'cover' }}
-                                  />
-                                  <div className={`absolute inset-0 bg-gradient-to-b ${gradientClasses[index % 3]} opacity-50`}></div>
-                                </div>
-                              )}
-                              
-                              {/* Content Section */}
-                              <div className={`p-8 flex flex-col flex-1 ${!course.image ? 'pt-12' : ''}`}>
-                                {/* Icon Badge */}
-                                <div className="flex items-center gap-3 mb-6">
-                                  <div className={`${iconBgClasses[index % 3]} backdrop-blur-sm p-4 rounded-2xl`}>
-                                    <BookOpen className="h-8 w-8 text-white" />
-                                  </div>
-                                  <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm px-4 py-1 text-sm font-semibold">
-                                    {course.code}
-                                  </Badge>
-                                </div>
+            {/* Three Core Activities Grid */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+              {/* LinkedIn Network Growth */}
+              <Card className="h-full transition-all duration-300 bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600 border-0 shadow-2xl cursor-pointer rounded-3xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] hover:scale-[1.02]">
+                <CardContent className="p-8 flex flex-col h-full min-h-[600px]">
+                  {/* Icon Badge */}
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl">
+                      <Users className="h-8 w-8 text-white" />
+                    </div>
+                    <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm px-4 py-1 text-sm font-semibold">
+                      Networking
+                    </Badge>
+                  </div>
 
-                                {/* Title */}
-                                <h3 className="text-3xl font-bold text-white mb-3 leading-tight">
-                                  {course.title}
-                                </h3>
+                  {/* Title */}
+                  <h3 className="text-3xl font-bold text-white mb-3 leading-tight">
+                    LinkedIn Network Growth
+                  </h3>
 
-                                {/* Subtitle */}
-                                <p className="text-white/80 text-lg mb-6 font-medium">
-                                  {course.category || 'Professional Development'}
-                                </p>
+                  {/* Subtitle */}
+                  <p className="text-white/80 text-lg mb-6 font-medium">
+                    Expand Your Professional Network
+                  </p>
 
-                                {/* Description */}
-                                <p className="text-white/90 mb-6 leading-relaxed text-base">
-                                  {course.description || "Comprehensive course covering fundamental concepts and practical applications"}
-                                </p>
+                  {/* Description */}
+                  <p className="text-white/90 mb-6 leading-relaxed text-base">
+                    Grow your LinkedIn network strategically, engage with industry professionals, and build meaningful connections.
+                  </p>
 
-                                {/* Course Sections as Bullet Points - All sections */}
-                                <div className="mb-6 space-y-3 flex-1 overflow-y-auto max-h-64 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
-                                  {courseSections[course.id] && courseSections[course.id].length > 0 ? (
-                                    courseSections[course.id].map((section, idx) => (
-                                      <div key={idx} className="flex items-start gap-3">
-                                        <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
-                                        <span className="text-white/90 text-base leading-relaxed">{section.title}</span>
-                                      </div>
-                                    ))
-                                  ) : (
-                                    <>
-                                      <div className="flex items-start gap-3">
-                                        <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
-                                        <span className="text-white/90 text-base">Interactive Learning Content</span>
-                                      </div>
-                                      <div className="flex items-start gap-3">
-                                        <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
-                                        <span className="text-white/90 text-base">Practical Projects</span>
-                                      </div>
-                                      <div className="flex items-start gap-3">
-                                        <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
-                                        <span className="text-white/90 text-base">Professional Certification</span>
-                                      </div>
-                                    </>
-                                  )}
-                                </div>
+                  {/* Features as Bullet Points */}
+                  <div className="mb-6 space-y-3 flex-1">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
+                      <span className="text-white/90 text-base">Connection Building</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
+                      <span className="text-white/90 text-base">Content Creation</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
+                      <span className="text-white/90 text-base">Engagement Strategies</span>
+                    </div>
+                  </div>
 
-                                {/* Action Button */}
-                                <Button 
-                                  className="w-full bg-white/95 hover:bg-white text-gray-900 font-semibold shadow-lg rounded-xl h-14 text-base backdrop-blur-sm transform hover:scale-[1.02] transition-all duration-200"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleCourseClick(course);
-                                  }}
-                                >
-                                  View Course Content
-                                  <ArrowRight className="ml-2 h-5 w-5" />
-                                </Button>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </CarouselItem>
-                      );
-                    })}
-                  </CarouselContent>
-                  <CarouselPrevious className="hidden lg:flex -left-12 h-12 w-12 bg-white/90 hover:bg-white border-0 shadow-xl" />
-                  <CarouselNext className="hidden lg:flex -right-12 h-12 w-12 bg-white/90 hover:bg-white border-0 shadow-xl" />
-                </Carousel>
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-gray-400 text-lg">No courses available in Build Profile category yet.</p>
-              </div>
-            )}
+                  {/* Progress Bar */}
+                  <div className="mb-6">
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-white/80 font-medium">Progress</span>
+                      <span className="text-white font-semibold">Growing Network</span>
+                    </div>
+                    <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden backdrop-blur-sm">
+                      <div className="bg-gradient-to-r from-white/80 to-white h-2 rounded-full" style={{ width: '60%' }}></div>
+                    </div>
+                  </div>
+
+                  {/* Action Button */}
+                  <Button className="w-full bg-white/95 hover:bg-white text-blue-700 font-semibold shadow-lg rounded-xl h-14 text-base backdrop-blur-sm transform hover:scale-[1.02] transition-all duration-200">
+                    Grow Your Network
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* GitHub Repository */}
+              <Card className="h-full transition-all duration-300 bg-gradient-to-br from-gray-900 via-purple-900 to-pink-900 border-0 shadow-2xl cursor-pointer rounded-3xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] hover:scale-[1.02]">
+                <CardContent className="p-8 flex flex-col h-full min-h-[600px]">
+                  {/* Icon Badge */}
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl">
+                      <Github className="h-8 w-8 text-white" />
+                    </div>
+                    <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm px-4 py-1 text-sm font-semibold">
+                      Development
+                    </Badge>
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="text-3xl font-bold text-white mb-3 leading-tight">
+                    GitHub Repository
+                  </h3>
+
+                  {/* Subtitle */}
+                  <p className="text-white/80 text-lg mb-6 font-medium">
+                    Showcase Your Technical Skills
+                  </p>
+
+                  {/* Description */}
+                  <p className="text-white/90 mb-6 leading-relaxed text-base">
+                    Build and maintain a professional GitHub profile with quality repositories that demonstrate your coding abilities.
+                  </p>
+
+                  {/* Features as Bullet Points */}
+                  <div className="mb-6 space-y-3 flex-1">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
+                      <span className="text-white/90 text-base">Repository Creation</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
+                      <span className="text-white/90 text-base">Code Quality</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
+                      <span className="text-white/90 text-base">Project Documentation</span>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="mb-6">
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-white/80 font-medium">Progress</span>
+                      <span className="text-white font-semibold">Building Portfolio</span>
+                    </div>
+                    <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden backdrop-blur-sm">
+                      <div className="bg-gradient-to-r from-pink-400 to-purple-500 h-2 rounded-full" style={{ width: '50%' }}></div>
+                    </div>
+                  </div>
+
+                  {/* Action Button */}
+                  <Button className="w-full bg-white/95 hover:bg-white text-gray-900 font-semibold shadow-lg rounded-xl h-14 text-base backdrop-blur-sm transform hover:scale-[1.02] transition-all duration-200">
+                    Build Repositories
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Digital Portfolio */}
+              <Card className="h-full transition-all duration-300 bg-gradient-to-br from-emerald-600 via-green-600 to-teal-600 border-0 shadow-2xl cursor-pointer rounded-3xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] hover:scale-[1.02]">
+                <CardContent className="p-8 flex flex-col h-full min-h-[600px]">
+                  {/* Icon Badge */}
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl">
+                      <Globe className="h-8 w-8 text-white" />
+                    </div>
+                    <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm px-4 py-1 text-sm font-semibold">
+                      Portfolio
+                    </Badge>
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="text-3xl font-bold text-white mb-3 leading-tight">
+                    Digital Portfolio
+                  </h3>
+
+                  {/* Subtitle */}
+                  <p className="text-white/80 text-lg mb-6 font-medium">
+                    Showcase Your Complete Journey
+                  </p>
+
+                  {/* Description */}
+                  <p className="text-white/90 mb-6 leading-relaxed text-base">
+                    Create a comprehensive digital portfolio that showcases your skills, projects, achievements, and professional journey.
+                  </p>
+
+                  {/* Features as Bullet Points */}
+                  <div className="mb-6 space-y-3 flex-1">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
+                      <span className="text-white/90 text-base">Project Showcase</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
+                      <span className="text-white/90 text-base">Skills Documentation</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
+                      <span className="text-white/90 text-base">Achievement Gallery</span>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="mb-6">
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-white/80 font-medium">Progress</span>
+                      <span className="text-white font-semibold">Creating Showcase</span>
+                    </div>
+                    <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden backdrop-blur-sm">
+                      <div className="bg-gradient-to-r from-white/80 to-white h-2 rounded-full" style={{ width: '40%' }}></div>
+                    </div>
+                  </div>
+
+                  {/* Action Button */}
+                  <Button className="w-full bg-white/95 hover:bg-white text-emerald-700 font-semibold shadow-lg rounded-xl h-14 text-base backdrop-blur-sm transform hover:scale-[1.02] transition-all duration-200">
+                    Build Portfolio
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </section>
-
-      {/* Course Content Viewer Dialog */}
-      {selectedCourse && (
-        <CourseContentViewer
-          open={showCourseContent}
-          onOpenChange={setShowCourseContent}
-          courseId={selectedCourse.id}
-          courseTitle={selectedCourse.title}
-        />
-      )}
 
       {/* Continue with other sections */}
       <section className="py-20 px-4 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
