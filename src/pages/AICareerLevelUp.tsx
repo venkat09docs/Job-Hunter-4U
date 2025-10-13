@@ -919,24 +919,25 @@ export default function AICareerLevelUp() {
                       return (
                         <CarouselItem key={course.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
                           <Card 
-                            className={`h-full transition-all duration-300 bg-gradient-to-br ${gradientClasses[index % 3]} border-0 shadow-2xl overflow-hidden cursor-pointer rounded-3xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] hover:scale-[1.02]`}
+                            className={`h-full transition-all duration-300 bg-gradient-to-br ${gradientClasses[index % 3]} border-0 shadow-2xl cursor-pointer rounded-3xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] hover:scale-[1.02]`}
                             onClick={() => handleCourseClick(course)}
                           >
-                            <CardContent className="p-0 flex flex-col h-full">
+                            <CardContent className="p-0 flex flex-col h-full overflow-hidden">
                               {/* Course Image Header - Only if image exists */}
-                              {course.image ? (
-                                <div className="relative h-48 overflow-hidden flex-shrink-0">
+                              {course.image && (
+                                <div className="relative h-48 flex-shrink-0 overflow-hidden">
                                   <img 
                                     src={course.image} 
                                     alt={course.title}
                                     className="w-full h-full object-cover"
+                                    style={{ objectFit: 'cover' }}
                                   />
-                                  <div className={`absolute inset-0 bg-gradient-to-b ${gradientClasses[index % 3]} opacity-70`}></div>
+                                  <div className={`absolute inset-0 bg-gradient-to-b ${gradientClasses[index % 3]} opacity-50`}></div>
                                 </div>
-                              ) : null}
+                              )}
                               
                               {/* Content Section */}
-                              <div className="p-8 flex flex-col flex-1">
+                              <div className={`p-8 flex flex-col flex-1 ${!course.image ? 'pt-12' : ''}`}>
                                 {/* Icon Badge */}
                                 <div className="flex items-center gap-3 mb-6">
                                   <div className={`${iconBgClasses[index % 3]} backdrop-blur-sm p-4 rounded-2xl`}>
@@ -963,7 +964,7 @@ export default function AICareerLevelUp() {
                                 </p>
 
                                 {/* Course Sections as Bullet Points - All sections */}
-                                <div className="mb-6 space-y-3 flex-1 overflow-y-auto max-h-64">
+                                <div className="mb-6 space-y-3 flex-1 overflow-y-auto max-h-64 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
                                   {courseSections[course.id] && courseSections[course.id].length > 0 ? (
                                     courseSections[course.id].map((section, idx) => (
                                       <div key={idx} className="flex items-start gap-3">
