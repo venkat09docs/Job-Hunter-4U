@@ -10,12 +10,158 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BookOpen, Plus, Edit2, Trash2, ArrowLeft, Save, VideoIcon, FileText, CheckSquare } from 'lucide-react';
+import { BookOpen, Plus, Edit2, Trash2, ArrowLeft, Save, VideoIcon, FileText, CheckSquare, GripVertical } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import type { Course } from '@/types/clp';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+// Sortable Section Component
+const SortableSection = ({ section, onEdit, onDelete }: any) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: section.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex justify-between items-start gap-3">
+            <div
+              {...attributes}
+              {...listeners}
+              className="cursor-grab active:cursor-grabbing mt-1"
+            >
+              <GripVertical className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <BookOpen className="h-4 w-4" />
+                <h4 className="font-medium">{section.title}</h4>
+                <Badge variant="secondary">
+                  {section.chapters?.length || 0} chapters
+                </Badge>
+              </div>
+              {section.description && (
+                <p className="text-sm text-muted-foreground">{section.description}</p>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onEdit(section)}
+              >
+                <Edit2 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onDelete(section.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+// Sortable Chapter Component
+const SortableChapter = ({ chapter, onEdit, onDelete }: any) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: chapter.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <div className="flex items-center justify-between p-3 border rounded">
+        <div className="flex items-center gap-3">
+          <div
+            {...attributes}
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing"
+          >
+            <GripVertical className="h-4 w-4 text-muted-foreground" />
+          </div>
+          {chapter.content_type === 'video' && <VideoIcon className="h-4 w-4" />}
+          {chapter.content_type === 'article' && <FileText className="h-4 w-4" />}
+          {chapter.content_type === 'checklist' && <CheckSquare className="h-4 w-4" />}
+          <div>
+            <h5 className="font-medium">{chapter.title}</h5>
+            {chapter.description && (
+              <p className="text-sm text-muted-foreground">{chapter.description}</p>
+            )}
+            <div className="flex gap-2 mt-1">
+              <Badge variant="outline">{chapter.content_type}</Badge>
+              {chapter.duration_minutes > 0 && (
+                <Badge variant="secondary">{chapter.duration_minutes} min</Badge>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onEdit(chapter)}
+          >
+            <Edit2 className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onDelete(chapter.id)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const CourseContentManagement = () => {
   const { courseId } = useParams();
@@ -377,6 +523,93 @@ const CourseContentManagement = () => {
     setSelectedSectionId('');
   };
 
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Handle section reorder
+  const handleSectionDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const oldIndex = sections.findIndex((s) => s.id === active.id);
+    const newIndex = sections.findIndex((s) => s.id === over.id);
+
+    const newSections = arrayMove(sections, oldIndex, newIndex);
+    setSections(newSections);
+
+    // Update order_index in database
+    try {
+      const updates = newSections.map((section, index) => ({
+        id: section.id,
+        order_index: index,
+      }));
+
+      for (const update of updates) {
+        await supabase
+          .from('course_sections')
+          .update({ order_index: update.order_index })
+          .eq('id', update.id);
+      }
+
+      toast.success('Section order updated');
+    } catch (error) {
+      console.error('Error updating section order:', error);
+      toast.error('Failed to update section order');
+      loadSections(); // Reload to reset order
+    }
+  };
+
+  // Handle chapter reorder within a section
+  const handleChapterDragEnd = async (event: DragEndEvent, sectionId: string) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const section = sections.find((s) => s.id === sectionId);
+    if (!section || !section.chapters) return;
+
+    const oldIndex = section.chapters.findIndex((c: any) => c.id === active.id);
+    const newIndex = section.chapters.findIndex((c: any) => c.id === over.id);
+
+    const newChapters = arrayMove(section.chapters, oldIndex, newIndex);
+
+    // Update local state
+    setSections(sections.map((s) => 
+      s.id === sectionId ? { ...s, chapters: newChapters } : s
+    ));
+
+    // Update order_index in database
+    try {
+      const updates = newChapters.map((chapter: any, index: number) => ({
+        id: chapter.id,
+        order_index: index,
+      }));
+
+      for (const update of updates) {
+        await supabase
+          .from('course_chapters')
+          .update({ order_index: update.order_index })
+          .eq('id', update.id);
+      }
+
+      toast.success('Chapter order updated');
+    } catch (error) {
+      console.error('Error updating chapter order:', error);
+      toast.error('Failed to update chapter order');
+      loadSections(); // Reload to reset order
+    }
+  };
+
   if (!course) {
     return (
       <div className="min-h-screen bg-background p-6">
@@ -468,42 +701,25 @@ const CourseContentManagement = () => {
             {/* Existing Sections */}
             <div className="space-y-4">
               <h3 className="text-xl font-semibold">Existing Sections</h3>
-              {sections.map((section, index) => (
-                <Card key={section.id}>
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <BookOpen className="h-4 w-4" />
-                          <h4 className="font-medium">{section.title}</h4>
-                          <Badge variant="secondary">
-                            {section.chapters?.length || 0} chapters
-                          </Badge>
-                        </div>
-                        {section.description && (
-                          <p className="text-sm text-muted-foreground">{section.description}</p>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => startEditingSection(section)}
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteSection(section.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleSectionDragEnd}
+              >
+                <SortableContext
+                  items={sections.map((s) => s.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {sections.map((section) => (
+                    <SortableSection
+                      key={section.id}
+                      section={section}
+                      onEdit={startEditingSection}
+                      onDelete={handleDeleteSection}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
             </div>
           </TabsContent>
 
@@ -698,45 +914,27 @@ const CourseContentManagement = () => {
                   </CardHeader>
                   <CardContent>
                     {section.chapters && section.chapters.length > 0 ? (
-                      <div className="space-y-3">
-                        {section.chapters.map((chapter: any) => (
-                          <div key={chapter.id} className="flex items-center justify-between p-3 border rounded">
-                            <div className="flex items-center gap-3">
-                              {chapter.content_type === 'video' && <VideoIcon className="h-4 w-4" />}
-                              {chapter.content_type === 'article' && <FileText className="h-4 w-4" />}
-                              {chapter.content_type === 'checklist' && <CheckSquare className="h-4 w-4" />}
-                              <div>
-                                <h5 className="font-medium">{chapter.title}</h5>
-                                {chapter.description && (
-                                  <p className="text-sm text-muted-foreground">{chapter.description}</p>
-                                )}
-                                <div className="flex gap-2 mt-1">
-                                  <Badge variant="outline">{chapter.content_type}</Badge>
-                                  {chapter.duration_minutes > 0 && (
-                                    <Badge variant="secondary">{chapter.duration_minutes} min</Badge>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => startEditingChapter(chapter)}
-                              >
-                                <Edit2 className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDeleteChapter(chapter.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
+                      <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={(event) => handleChapterDragEnd(event, section.id)}
+                      >
+                        <SortableContext
+                          items={section.chapters.map((c: any) => c.id)}
+                          strategy={verticalListSortingStrategy}
+                        >
+                          <div className="space-y-3">
+                            {section.chapters.map((chapter: any) => (
+                              <SortableChapter
+                                key={chapter.id}
+                                chapter={chapter}
+                                onEdit={startEditingChapter}
+                                onDelete={handleDeleteChapter}
+                              />
+                            ))}
                           </div>
-                        ))}
-                      </div>
+                        </SortableContext>
+                      </DndContext>
                     ) : (
                       <p className="text-muted-foreground">No chapters in this section yet.</p>
                     )}
