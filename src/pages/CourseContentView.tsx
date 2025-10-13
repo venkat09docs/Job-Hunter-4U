@@ -392,20 +392,16 @@ const CourseContentView: React.FC = () => {
                     sandbox="allow-scripts allow-same-origin allow-presentation"
                     title={chapter.title}
                     style={{ 
-                      border: 'none',
-                      pointerEvents: 'none'
-                    }}
-                    onContextMenu={(e: any) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      return false;
+                      border: 'none'
                     }}
                   />
-                  {/* Full blocking overlay except center area */}
+                  {/* Block only the three-dot menu areas */}
+                  {/* Top right corner - blocks YouTube three-dot menu */}
                   <div 
-                    className="absolute inset-0"
+                    className="absolute top-2 right-2 w-16 h-16 rounded-full"
                     style={{
-                      zIndex: 20,
+                      zIndex: 10,
+                      background: 'transparent',
                       pointerEvents: 'auto'
                     }}
                     onContextMenu={(e) => {
@@ -416,33 +412,26 @@ const CourseContentView: React.FC = () => {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      // Get click position relative to container
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      const x = e.clientX - rect.left;
-                      const y = e.clientY - rect.top;
-                      const centerX = rect.width / 2;
-                      const centerY = rect.height / 2;
-                      
-                      // Only allow clicks in center 60% area for play/pause
-                      const allowedWidth = rect.width * 0.6;
-                      const allowedHeight = rect.height * 0.6;
-                      
-                      if (Math.abs(x - centerX) < allowedWidth / 2 && 
-                          Math.abs(y - centerY) < allowedHeight / 2) {
-                        // Enable iframe clicks temporarily for center area only
-                        const iframe = e.currentTarget.previousElementSibling as HTMLIFrameElement;
-                        if (iframe && iframe.style) {
-                          iframe.style.pointerEvents = 'auto';
-                          setTimeout(() => {
-                            if (iframe.style) iframe.style.pointerEvents = 'none';
-                          }, 50);
-                        }
-                      }
                     }}
-                  >
-                    {/* Transparent overlay */}
-                    <div className="w-full h-full" style={{ background: 'transparent' }} />
-                  </div>
+                  />
+                  {/* Bottom right corner - blocks additional menu options */}
+                  <div 
+                    className="absolute bottom-2 right-2 w-40 h-16"
+                    style={{
+                      zIndex: 10,
+                      background: 'transparent',
+                      pointerEvents: 'auto'
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return false;
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                  />
                 </div>
                 <style dangerouslySetInnerHTML={{
                   __html: `

@@ -197,20 +197,15 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
                   allowFullScreen
                   sandbox="allow-scripts allow-same-origin allow-presentation"
                   style={{ 
-                    border: 'none',
-                    pointerEvents: 'none'
-                  }}
-                  onContextMenu={(e: any) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    return false;
+                    border: 'none'
                   }}
                 />
-                {/* Full blocking overlay except center area */}
+                {/* Block only the three-dot menu areas */}
                 <div 
-                  className="absolute inset-0"
+                  className="absolute top-2 right-2 w-16 h-16 rounded-full"
                   style={{
-                    zIndex: 20,
+                    zIndex: 10,
+                    background: 'transparent',
                     pointerEvents: 'auto'
                   }}
                   onContextMenu={(e) => {
@@ -221,29 +216,25 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-                    const centerX = rect.width / 2;
-                    const centerY = rect.height / 2;
-                    
-                    const allowedWidth = rect.width * 0.6;
-                    const allowedHeight = rect.height * 0.6;
-                    
-                    if (Math.abs(x - centerX) < allowedWidth / 2 && 
-                        Math.abs(y - centerY) < allowedHeight / 2) {
-                      const iframe = e.currentTarget.previousElementSibling as HTMLIFrameElement;
-                      if (iframe && iframe.style) {
-                        iframe.style.pointerEvents = 'auto';
-                        setTimeout(() => {
-                          if (iframe.style) iframe.style.pointerEvents = 'none';
-                        }, 50);
-                      }
-                    }
                   }}
-                >
-                  <div className="w-full h-full" style={{ background: 'transparent' }} />
-                </div>
+                />
+                <div 
+                  className="absolute bottom-2 right-2 w-40 h-16"
+                  style={{
+                    zIndex: 10,
+                    background: 'transparent',
+                    pointerEvents: 'auto'
+                  }}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                  }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                />
               </div>
               <style dangerouslySetInnerHTML={{
                 __html: `
