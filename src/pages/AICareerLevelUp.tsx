@@ -901,70 +901,115 @@ export default function AICareerLevelUp() {
                 ))}
               </div>
             ) : buildProfileCourses.length > 0 ? (
-              <Carousel className="w-full" opts={{ align: "start", loop: true }}>
-                <CarouselContent className="-ml-2 md:-ml-4">
-                  {buildProfileCourses.map((course) => (
-                    <CarouselItem key={course.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
-                      <Card 
-                        className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-white border-0 shadow-xl overflow-hidden cursor-pointer rounded-2xl"
-                        onClick={() => handleCourseClick(course)}
-                      >
-                        <CardContent className="p-0 flex flex-col h-full">
-                          {/* Course Image Header - Fixed with proper spacing */}
-                          <div className="relative h-56 overflow-hidden rounded-t-2xl flex-shrink-0">
-                            {course.image ? (
-                              <img 
-                                src={course.image} 
-                                alt={course.title}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500" />
-                            )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
-                            <div className="absolute bottom-0 left-0 right-0 p-6">
-                              <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm mb-2">
-                                {course.code}
-                              </Badge>
-                              <h3 className="text-xl font-bold text-white line-clamp-2">
+              <div className="relative">
+                <Carousel className="w-full" opts={{ align: "start", loop: true }}>
+                  <CarouselContent className="-ml-2 md:-ml-4">
+                    {buildProfileCourses.map((course, index) => {
+                      const gradientClasses = [
+                        'from-blue-600 via-cyan-600 to-teal-600',
+                        'from-gray-900 via-purple-900 to-pink-900',
+                        'from-emerald-600 via-green-600 to-teal-600'
+                      ];
+                      const iconBgClasses = [
+                        'bg-white/20',
+                        'bg-white/20',
+                        'bg-white/20'
+                      ];
+                      
+                      return (
+                        <CarouselItem key={course.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                          <Card 
+                            className={`h-full transition-all duration-300 bg-gradient-to-br ${gradientClasses[index % 3]} border-0 shadow-2xl overflow-hidden cursor-pointer rounded-3xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] hover:scale-[1.02]`}
+                            onClick={() => handleCourseClick(course)}
+                          >
+                            <CardContent className="p-8 flex flex-col h-full min-h-[600px]">
+                              {/* Icon Badge */}
+                              <div className="flex items-center gap-3 mb-6">
+                                <div className={`${iconBgClasses[index % 3]} backdrop-blur-sm p-4 rounded-2xl`}>
+                                  <BookOpen className="h-8 w-8 text-white" />
+                                </div>
+                                <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm px-4 py-1 text-sm font-semibold">
+                                  {course.code}
+                                </Badge>
+                              </div>
+
+                              {/* Title */}
+                              <h3 className="text-3xl font-bold text-white mb-3 leading-tight">
                                 {course.title}
                               </h3>
-                            </div>
-                          </div>
 
-                          {/* Course Content - Increased padding */}
-                          <div className="p-6 flex-1 flex flex-col bg-gradient-to-br from-indigo-50 to-purple-50">
-                            <p className="text-gray-700 mb-4 leading-relaxed line-clamp-2 text-sm">
-                              {course.description || "Comprehensive course covering fundamental concepts and practical applications"}
-                            </p>
+                              {/* Subtitle */}
+                              <p className="text-white/80 text-lg mb-6 font-medium">
+                                {course.category || 'Professional Development'}
+                              </p>
 
-                            {/* Course Sections as Bullet Points */}
-                            {courseSections[course.id] && courseSections[course.id].length > 0 && (
-                              <div className="mb-4 space-y-2">
-                                <p className="text-xs font-semibold text-indigo-700 mb-2">Top Sections:</p>
-                                {courseSections[course.id].map((section, idx) => (
-                                  <div key={idx} className="flex items-start gap-2">
-                                    <CheckCircle className="h-3.5 w-3.5 text-green-600 mt-0.5 flex-shrink-0" />
-                                    <span className="text-xs text-gray-700 line-clamp-1">{section.title}</span>
-                                  </div>
-                                ))}
+                              {/* Description */}
+                              <p className="text-white/90 mb-8 leading-relaxed text-base flex-shrink-0">
+                                {course.description || "Comprehensive course covering fundamental concepts and practical applications"}
+                              </p>
+
+                              {/* Course Sections as Bullet Points */}
+                              <div className="mb-8 space-y-3 flex-1">
+                                {courseSections[course.id] && courseSections[course.id].length > 0 ? (
+                                  courseSections[course.id].map((section, idx) => (
+                                    <div key={idx} className="flex items-start gap-3">
+                                      <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
+                                      <span className="text-white/90 text-base leading-relaxed">{section.title}</span>
+                                    </div>
+                                  ))
+                                ) : (
+                                  <>
+                                    <div className="flex items-start gap-3">
+                                      <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
+                                      <span className="text-white/90 text-base">Interactive Learning Content</span>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                      <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
+                                      <span className="text-white/90 text-base">Practical Projects</span>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                      <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
+                                      <span className="text-white/90 text-base">Professional Certification</span>
+                                    </div>
+                                  </>
+                                )}
                               </div>
-                            )}
 
-                            {/* Action Button */}
-                            <Button className="w-full mt-auto bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold shadow-lg rounded-xl">
-                              View Course Content
-                              <BookOpen className="ml-2 h-4 w-4" />
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious className="hidden md:flex -left-12" />
-                <CarouselNext className="hidden md:flex -right-12" />
-              </Carousel>
+                              {/* Progress Bar */}
+                              <div className="mb-6 flex-shrink-0">
+                                <div className="flex justify-between text-sm mb-2">
+                                  <span className="text-white/80 font-medium">Progress</span>
+                                  <span className="text-white font-semibold">Ready to Start</span>
+                                </div>
+                                <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden backdrop-blur-sm">
+                                  <div 
+                                    className="bg-gradient-to-r from-white/80 to-white h-2 rounded-full transition-all duration-500"
+                                    style={{ width: '10%' }}
+                                  ></div>
+                                </div>
+                              </div>
+
+                              {/* Action Button */}
+                              <Button 
+                                className="w-full bg-white/95 hover:bg-white text-gray-900 font-semibold shadow-lg rounded-xl h-14 text-base backdrop-blur-sm transform hover:scale-[1.02] transition-all duration-200"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCourseClick(course);
+                                }}
+                              >
+                                View Course Content
+                                <ArrowRight className="ml-2 h-5 w-5" />
+                              </Button>
+                            </CardContent>
+                          </Card>
+                        </CarouselItem>
+                      );
+                    })}
+                  </CarouselContent>
+                  <CarouselPrevious className="hidden lg:flex -left-12 h-12 w-12 bg-white/90 hover:bg-white border-0 shadow-xl" />
+                  <CarouselNext className="hidden lg:flex -right-12 h-12 w-12 bg-white/90 hover:bg-white border-0 shadow-xl" />
+                </Carousel>
+              </div>
             ) : (
               <div className="text-center py-12">
                 <p className="text-gray-400 text-lg">No courses available in Build Profile category yet.</p>
