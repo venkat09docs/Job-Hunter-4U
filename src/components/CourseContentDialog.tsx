@@ -797,7 +797,8 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                            isAdmin, 
                            userRole, 
                            canShowChecklist: isAdmin,
-                           canShowVideo: isAdmin 
+                           canShowVideo: isAdmin,
+                           canShowEmbedCode: isAdmin
                          });
                          setChapterType(value);
                          // Save immediately on change
@@ -806,19 +807,15 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                          <SelectTrigger>
                            <SelectValue />
                          </SelectTrigger>
-                         <SelectContent>
+                         <SelectContent className="z-[100] bg-popover">
                            <SelectItem value="article">📝 Article</SelectItem>
-                           {isAdmin && (
-                             <>
-                                <SelectItem value="checklist">✅ Checklist</SelectItem>
-                                <SelectItem value="video">🎥 Video</SelectItem>
-                                <SelectItem value="embed_code">🔗 Embed Code</SelectItem>
-                              </>
-                            )}
+                           <SelectItem value="checklist">✅ Checklist</SelectItem>
+                           <SelectItem value="video">🎥 Video</SelectItem>
+                           <SelectItem value="embed_code">🔗 Embed Code</SelectItem>
                           </SelectContent>
                         </Select>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Debug: isAdmin={String(isAdmin)}, userRole={userRole} | Available options: Article{isAdmin && ', Checklist, Video, Embed Code'}
+                          Debug: isAdmin={String(isAdmin)}, userRole={userRole} | canManageContent={String(canManageContent)}
                         </p>
                     </div>
                   </div>
