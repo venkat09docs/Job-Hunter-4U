@@ -112,7 +112,7 @@ export default function AICareerLevelUp() {
     for (const course of buildProfileCoursesData) {
       try {
         const sections = await getSectionsByCourse(course.id);
-        sectionsMap[course.id] = sections.slice(0, 3); // Get top 3 sections
+        sectionsMap[course.id] = sections; // Get all sections
       } catch (error) {
         console.error(`Error fetching sections for course ${course.id}:`, error);
         sectionsMap[course.id] = [];
@@ -923,17 +923,17 @@ export default function AICareerLevelUp() {
                             onClick={() => handleCourseClick(course)}
                           >
                             <CardContent className="p-0 flex flex-col h-full">
-                              {/* Course Image Header */}
-                              {course.image && (
+                              {/* Course Image Header - Only if image exists */}
+                              {course.image ? (
                                 <div className="relative h-48 overflow-hidden flex-shrink-0">
                                   <img 
                                     src={course.image} 
                                     alt={course.title}
                                     className="w-full h-full object-cover"
                                   />
-                                  <div className={`absolute inset-0 bg-gradient-to-b ${gradientClasses[index % 3]} opacity-80`}></div>
+                                  <div className={`absolute inset-0 bg-gradient-to-b ${gradientClasses[index % 3]} opacity-70`}></div>
                                 </div>
-                              )}
+                              ) : null}
                               
                               {/* Content Section */}
                               <div className="p-8 flex flex-col flex-1">
@@ -958,12 +958,12 @@ export default function AICareerLevelUp() {
                                 </p>
 
                                 {/* Description */}
-                                <p className="text-white/90 mb-8 leading-relaxed text-base flex-shrink-0">
+                                <p className="text-white/90 mb-6 leading-relaxed text-base">
                                   {course.description || "Comprehensive course covering fundamental concepts and practical applications"}
                                 </p>
 
-                                {/* Course Sections as Bullet Points */}
-                                <div className="mb-8 space-y-3 flex-1">
+                                {/* Course Sections as Bullet Points - All sections */}
+                                <div className="mb-6 space-y-3 flex-1 overflow-y-auto max-h-64">
                                   {courseSections[course.id] && courseSections[course.id].length > 0 ? (
                                     courseSections[course.id].map((section, idx) => (
                                       <div key={idx} className="flex items-start gap-3">
@@ -987,20 +987,6 @@ export default function AICareerLevelUp() {
                                       </div>
                                     </>
                                   )}
-                                </div>
-
-                                {/* Progress Bar */}
-                                <div className="mb-6 flex-shrink-0">
-                                  <div className="flex justify-between text-sm mb-2">
-                                    <span className="text-white/80 font-medium">Progress</span>
-                                    <span className="text-white font-semibold">Ready to Start</span>
-                                  </div>
-                                  <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden backdrop-blur-sm">
-                                    <div 
-                                      className="bg-gradient-to-r from-white/80 to-white h-2 rounded-full transition-all duration-500"
-                                      style={{ width: '10%' }}
-                                    ></div>
-                                  </div>
                                 </div>
 
                                 {/* Action Button */}
