@@ -779,18 +779,18 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-7xl h-[90vh] p-0">
+      <DialogContent className="max-w-7xl h-[90vh] p-0 overflow-hidden">
         <DialogTitle className="sr-only">{courseTitle} - Course Content</DialogTitle>
         <DialogDescription className="sr-only">
           View course sections, chapters, and upgrade to access full content
         </DialogDescription>
-        <div className="flex h-full">
+        <div className="flex h-full w-full overflow-hidden">
           {/* Sidebar - Course Navigation */}
-          <div className="w-80 border-r bg-muted/20 flex flex-col">
+          <div className="w-80 min-w-[320px] border-r bg-muted/20 flex flex-col shrink-0">
             {/* Header */}
-            <div className="p-4 border-b bg-background space-y-3">
+            <div className="p-4 border-b bg-background space-y-3 shrink-0">
               <div className="flex items-center justify-between">
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-lg line-clamp-1">{courseTitle}</h3>
                   <p className="text-sm text-muted-foreground">Course Content</p>
                 </div>
@@ -798,7 +798,7 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => onOpenChange(false)}
-                  className="flex-shrink-0"
+                  className="flex-shrink-0 ml-2"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -831,7 +831,7 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
 
             {/* Course Content Navigation */}
             <ScrollArea className="flex-1 overflow-y-auto">
-              <div className="p-4 h-full">
+              <div className="p-4">
                 {loading ? (
                   <div className="space-y-4">
                     {[1, 2, 3].map(i => (
@@ -858,12 +858,12 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
                         onOpenChange={() => toggleSection(section.id)}
                       >
                         <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded hover:bg-muted/50 text-left cursor-pointer transition-colors">
-                          <div className="flex items-center gap-2 flex-1">
-                            <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <div className="flex items-center gap-1 shrink-0">
                               {openSections.has(section.id) ? (
-                                <ChevronDown className="h-4 w-4 flex-shrink-0" />
+                                <ChevronDown className="h-4 w-4" />
                               ) : (
-                                <ChevronRight className="h-4 w-4 flex-shrink-0" />
+                                <ChevronRight className="h-4 w-4" />
                               )}
                             </div>
                             <span className="font-medium text-sm line-clamp-2">{section.title}</span>
@@ -904,9 +904,9 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
           </div>
 
           {/* Main Content Area - Upgrade Prompt */}
-          <div className="flex-1 flex flex-col">
-            <div className="flex-1 flex items-center justify-center p-8">
-              <div className="text-center max-w-md">
+          <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background">
+            <div className="flex-1 flex items-center justify-center p-8 overflow-y-auto">
+              <div className="text-center max-w-md w-full">
                 <div className="mb-6 inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-primary to-purple-600">
                   <BookOpen className="h-10 w-10 text-white" />
                 </div>
