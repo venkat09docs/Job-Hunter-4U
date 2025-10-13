@@ -793,30 +793,19 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                       <Label htmlFor="chapter-type">Content Type</Label>
                        <Select value={chapterType} onValueChange={(value: 'video' | 'article' | 'document' | 'checklist' | 'embed_code') => {
                          console.log('🎯 Content type selected:', value);
-                         console.log('🔍 Current dropdown state:', { 
-                           isAdmin, 
-                           userRole, 
-                           canShowChecklist: isAdmin,
-                           canShowVideo: isAdmin,
-                           canShowEmbedCode: isAdmin
-                         });
                          setChapterType(value);
-                         // Save immediately on change
                          setTimeout(() => saveFormState(), 100);
                        }}>
-                         <SelectTrigger>
-                           <SelectValue />
+                         <SelectTrigger className="w-full">
+                           <SelectValue placeholder="Select content type" />
                          </SelectTrigger>
-                         <SelectContent className="z-[100] bg-popover">
+                         <SelectContent className="z-[100] bg-background border shadow-md">
                            <SelectItem value="article">📝 Article</SelectItem>
                            <SelectItem value="checklist">✅ Checklist</SelectItem>
                            <SelectItem value="video">🎥 Video</SelectItem>
                            <SelectItem value="embed_code">🔗 Embed Code</SelectItem>
                           </SelectContent>
                         </Select>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Debug: isAdmin={String(isAdmin)}, userRole={userRole} | canManageContent={String(canManageContent)}
-                        </p>
                     </div>
                   </div>
 
