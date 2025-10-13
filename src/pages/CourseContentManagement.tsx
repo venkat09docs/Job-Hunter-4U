@@ -129,6 +129,7 @@ const SortableChapter = ({ chapter, onEdit, onDelete }: any) => {
           {chapter.content_type === 'video' && <VideoIcon className="h-4 w-4" />}
           {chapter.content_type === 'article' && <FileText className="h-4 w-4" />}
           {chapter.content_type === 'checklist' && <CheckSquare className="h-4 w-4" />}
+          {chapter.content_type === 'embed_code' && <VideoIcon className="h-4 w-4" />}
           <div>
             <h5 className="font-medium">{chapter.title}</h5>
             {chapter.description && (
@@ -179,9 +180,10 @@ const CourseContentManagement = () => {
   const [sectionDescription, setSectionDescription] = useState('');
   const [chapterTitle, setChapterTitle] = useState('');
   const [chapterDescription, setChapterDescription] = useState('');
-  const [chapterType, setChapterType] = useState<'video' | 'article' | 'document' | 'checklist'>('video');
+  const [chapterType, setChapterType] = useState<'video' | 'article' | 'document' | 'checklist' | 'embed_code'>('video');
   const [chapterVideoUrl, setChapterVideoUrl] = useState('');
   const [chapterArticleContent, setChapterArticleContent] = useState('');
+  const [chapterEmbedCode, setChapterEmbedCode] = useState('');
   const [chapterDuration, setChapterDuration] = useState<number>(0);
   
   // Checklist states
@@ -335,6 +337,8 @@ const CourseContentManagement = () => {
           return;
         }
         chapterData.content_data = { checklist_items: checklistItems };
+      } else if (chapterType === 'embed_code') {
+        chapterData.content_data = { embed_code: chapterEmbedCode };
       } else {
         chapterData.content_data = {};
       }
@@ -352,8 +356,10 @@ const CourseContentManagement = () => {
       setChapterDescription('');
       setChapterVideoUrl('');
       setChapterArticleContent('');
+      setChapterEmbedCode('');
       setChapterDuration(0);
       setSelectedSectionId('');
+      setChecklistItems([]);
       
       loadSections();
       toast.success('Chapter created successfully');
@@ -463,6 +469,8 @@ const CourseContentManagement = () => {
           return;
         }
         chapterData.content_data = { checklist_items: checklistItems };
+      } else if (chapterType === 'embed_code') {
+        chapterData.content_data = { embed_code: chapterEmbedCode };
       } else {
         chapterData.content_data = {};
       }
@@ -479,8 +487,10 @@ const CourseContentManagement = () => {
       setChapterDescription('');
       setChapterVideoUrl('');
       setChapterArticleContent('');
+      setChapterEmbedCode('');
       setChapterDuration(0);
       setEditingChapter(null);
+      setChecklistItems([]);
       
       loadSections();
       toast.success('Chapter updated successfully');
@@ -505,8 +515,10 @@ const CourseContentManagement = () => {
     setChapterType(chapter.content_type);
     setChapterVideoUrl(chapter.video_url || '');
     setChapterArticleContent(chapter.article_content || '');
+    setChapterEmbedCode(chapter.content_data?.embed_code || '');
     setChapterDuration(chapter.duration_minutes || 0);
     setSelectedSectionId(chapter.section_id);
+    setChecklistItems(chapter.content_data?.checklist_items || []);
   };
 
   // Cancel editing
@@ -519,8 +531,10 @@ const CourseContentManagement = () => {
     setChapterDescription('');
     setChapterVideoUrl('');
     setChapterArticleContent('');
+    setChapterEmbedCode('');
     setChapterDuration(0);
     setSelectedSectionId('');
+    setChecklistItems([]);
   };
 
   // Drag and drop sensors
@@ -773,14 +787,15 @@ const CourseContentManagement = () => {
 
                 <div>
                   <Label htmlFor="chapter-type">Content Type</Label>
-                  <Select value={chapterType} onValueChange={(value: 'video' | 'article' | 'document' | 'checklist') => setChapterType(value)}>
+                  <Select value={chapterType} onValueChange={(value: 'video' | 'article' | 'document' | 'checklist' | 'embed_code') => setChapterType(value)}>
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Select content type" />
                     </SelectTrigger>
-                    <SelectContent>
-                      {userRole === 'admin' && <SelectItem value="video">🎥 Video</SelectItem>}
+                    <SelectContent className="z-[9999] bg-background">
                       <SelectItem value="article">📝 Article</SelectItem>
+                      {userRole === 'admin' && <SelectItem value="video">🎥 Video</SelectItem>}
                       {userRole === 'admin' && <SelectItem value="checklist">✅ Checklist</SelectItem>}
+                      {userRole === 'admin' && <SelectItem value="embed_code">🔗 Embed Code</SelectItem>}
                     </SelectContent>
                   </Select>
                 </div>
@@ -807,6 +822,22 @@ const CourseContentManagement = () => {
                       placeholder="Enter article content"
                       rows={6}
                     />
+                  </div>
+                )}
+
+                {chapterType === 'embed_code' && userRole === 'admin' && (
+                  <div>
+                    <Label htmlFor="embed-code">Embed Code or Video URL</Label>
+                    <Textarea
+                      id="embed-code"
+                      value={chapterEmbedCode}
+                      onChange={(e) => setChapterEmbedCode(e.target.value)}
+                      placeholder="Paste iframe embed code or video URL (YouTube, Vimeo, Loom)"
+                      rows={6}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      You can paste either an iframe embed code or a direct video URL
+                    </p>
                   </div>
                 )}
 
