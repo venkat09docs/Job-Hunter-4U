@@ -893,9 +893,9 @@ export default function AICareerLevelUp() {
                         className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-indigo-600 to-purple-700 border-0 shadow-xl overflow-hidden cursor-pointer"
                         onClick={() => handleCourseClick(course)}
                       >
-                        <CardContent className="p-0">
-                          {/* Course Image Header */}
-                          <div className="relative h-48 overflow-hidden">
+                        <CardContent className="p-0 flex flex-col">
+                          {/* Course Image Header - Increased height */}
+                          <div className="relative h-64 overflow-hidden flex-shrink-0">
                             {course.image ? (
                               <img 
                                 src={course.image} 
@@ -905,7 +905,7 @@ export default function AICareerLevelUp() {
                             ) : (
                               <div className="w-full h-full bg-gradient-to-br from-primary via-purple to-teal" />
                             )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                             <div className="absolute bottom-4 left-4 right-4">
                               <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm mb-2">
                                 {course.code}
@@ -916,9 +916,9 @@ export default function AICareerLevelUp() {
                             </div>
                           </div>
 
-                          {/* Course Content */}
-                          <div className="p-6 text-white">
-                            <p className="text-white/90 mb-4 leading-relaxed line-clamp-3">
+                          {/* Course Content - Increased padding */}
+                          <div className="p-8 text-white flex-1 flex flex-col">
+                            <p className="text-white/90 mb-6 leading-relaxed line-clamp-3 flex-1">
                               {course.description || "Comprehensive course covering fundamental concepts and practical applications"}
                             </p>
 

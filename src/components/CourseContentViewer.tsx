@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, BookOpen, Play, FileText, Download, ChevronRight, ChevronDown, CheckSquare, Check } from 'lucide-react';
+import { X, BookOpen, Play, FileText, Download, ChevronRight, ChevronDown, CheckSquare, Check, ArrowRight } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -863,47 +863,53 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
             </ScrollArea>
           </div>
 
-          {/* Main Content Area */}
+          {/* Main Content Area - Upgrade Prompt */}
           <div className="flex-1 flex flex-col">
-            {selectedChapter ? (
-              <>
-                {/* Chapter Header */}
-                <div className="p-6 border-b bg-background">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        {getContentTypeIcon(selectedChapter.content_type)}
-                        <Badge 
-                          variant="outline" 
-                          className={getContentTypeBadgeColor(selectedChapter.content_type)}
-                        >
-                          {selectedChapter.content_type.charAt(0).toUpperCase() + selectedChapter.content_type.slice(1)}
-                        </Badge>
-                      </div>
-                      <h2 className="text-xl font-semibold">{selectedChapter.title}</h2>
-                      {selectedChapter.description && (
-                        <p className="text-muted-foreground mt-1">{selectedChapter.description}</p>
-                      )}
+            <div className="flex-1 flex items-center justify-center p-8">
+              <div className="text-center max-w-md">
+                <div className="mb-6 inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-primary to-purple-600">
+                  <BookOpen className="h-10 w-10 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-3">Upgrade to Access Course Content</h3>
+                <p className="text-muted-foreground mb-6 text-lg">
+                  Get full access to all course materials, interactive content, and exclusive resources by upgrading your plan.
+                </p>
+                <div className="space-y-3 mb-8">
+                  <div className="flex items-center gap-3 text-left">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                      <Check className="h-4 w-4 text-green-600" />
                     </div>
+                    <span className="text-sm">Unlimited access to all courses</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-left">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                      <Check className="h-4 w-4 text-green-600" />
+                    </div>
+                    <span className="text-sm">Interactive learning materials</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-left">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                      <Check className="h-4 w-4 text-green-600" />
+                    </div>
+                    <span className="text-sm">Progress tracking and certifications</span>
                   </div>
                 </div>
-
-                {/* Chapter Content */}
-                <ScrollArea className="flex-1 p-6">
-                  {renderChapterContent(selectedChapter)}
-                </ScrollArea>
-              </>
-            ) : (
-              <div className="flex-1 flex items-center justify-center">
-                <div className="text-center">
-                  <BookOpen className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
-                  <h3 className="text-lg font-medium mb-2">Select a Chapter</h3>
-                  <p className="text-muted-foreground">
-                    Choose a chapter from the sidebar to start learning
-                  </p>
-                </div>
+                <Button 
+                  size="lg" 
+                  className="w-full bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white font-semibold shadow-lg"
+                  onClick={() => {
+                    onOpenChange(false);
+                    window.location.href = '/auth';
+                  }}
+                >
+                  Upgrade Plan Now
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+                <p className="text-xs text-muted-foreground mt-4">
+                  Start your journey to career success today
+                </p>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </DialogContent>
