@@ -23,9 +23,10 @@ interface Section {
 
 interface Chapter {
   id: string;
+  section_id: string;
   title: string;
   description?: string;
-  content_type: 'video' | 'article' | 'document' | 'checklist';
+  content_type: 'video' | 'article' | 'document' | 'checklist' | 'embed_code';
   content_data: any;
   order_index: number;
   duration_minutes?: number;

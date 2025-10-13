@@ -25,12 +25,16 @@ interface Section {
 
 interface Chapter {
   id: string;
+  section_id: string;
   title: string;
   description?: string;
-  content_type: 'video' | 'article' | 'document' | 'checklist';
+  content_type: 'video' | 'article' | 'document' | 'checklist' | 'embed_code';
   content_data: any;
-  order_index: number;
+  video_url?: string;
+  article_content?: string;
   duration_minutes?: number;
+  order_index: number;
+  is_active: boolean;
 }
 
 export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
@@ -110,6 +114,8 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
         return <Download className="h-4 w-4" />;
       case 'checklist':
         return <CheckSquare className="h-4 w-4" />;
+      case 'embed_code':
+        return <Play className="h-4 w-4" />;
       default:
         return <BookOpen className="h-4 w-4" />;
     }
@@ -125,6 +131,8 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
         return 'bg-green-100 text-green-700 border-green-200';
       case 'checklist':
         return 'bg-purple-100 text-purple-700 border-purple-200';
+      case 'embed_code':
+        return 'bg-orange-100 text-orange-700 border-orange-200';
       default:
         return 'bg-gray-100 text-gray-700 border-gray-200';
     }
@@ -134,6 +142,288 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
     const { content_type, content_data } = chapter;
 
     switch (content_type) {
+      case 'embed_code':
+        if (content_data.embed_code) {
+          const embedContent = content_data.embed_code;
+          
+          // Check if it's raw HTML embed code or a URL
+          if (embedContent.includes('<iframe')) {
+            // It's raw embed code - render it directly with security overlays
+            return (
+              <div 
+                className="space-y-4"
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  return false;
+                }}
+              >
+                <div 
+                  className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden"
+                  style={{
+                    userSelect: 'none',
+                    WebkitUserSelect: 'none',
+                    MozUserSelect: 'none',
+                    msUserSelect: 'none'
+                  }}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                  }}
+                >
+                  <div dangerouslySetInnerHTML={{ __html: embedContent }} />
+                  {/* Security overlays */}
+                  <div 
+                    className="absolute"
+                    style={{
+                      top: '10px',
+                      left: '10px',
+                      width: '120px',
+                      height: '50px',
+                      zIndex: 1000,
+                      background: 'transparent',
+                      pointerEvents: 'auto'
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return false;
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                  />
+                  <div 
+                    className="absolute"
+                    style={{
+                      top: '10px',
+                      right: '10px',
+                      width: '60px',
+                      height: '60px',
+                      zIndex: 1000,
+                      background: 'transparent',
+                      pointerEvents: 'auto'
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return false;
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                  />
+                  <div 
+                    className="absolute"
+                    style={{
+                      bottom: '10px',
+                      right: '60px',
+                      width: '150px',
+                      height: '50px',
+                      zIndex: 1000,
+                      background: 'transparent',
+                      pointerEvents: 'auto'
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return false;
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                  />
+                  <div 
+                    className="absolute"
+                    style={{
+                      bottom: '55px',
+                      right: '10px',
+                      width: '200px',
+                      height: '40px',
+                      zIndex: 1000,
+                      background: 'transparent',
+                      pointerEvents: 'auto'
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return false;
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                  />
+                </div>
+                {content_data.description && (
+                  <div className="prose prose-sm max-w-none">
+                    <p className="text-muted-foreground">{content_data.description}</p>
+                  </div>
+                )}
+              </div>
+            );
+          } else {
+            // It's a URL - process like video content
+            let embedUrl = embedContent;
+            
+            if (embedContent.includes('youtube.com') || embedContent.includes('youtu.be')) {
+              const videoId = embedContent.includes('youtu.be') 
+                ? embedContent.split('/').pop()?.split('?')[0]
+                : new URL(embedContent).searchParams.get('v');
+              embedUrl = `https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0&showinfo=0&controls=1&disablekb=1`;
+            } else if (embedContent.includes('vimeo.com')) {
+              const videoId = embedContent.split('/').pop();
+              embedUrl = `https://player.vimeo.com/video/${videoId}?title=0&byline=0&portrait=0`;
+            } else if (embedContent.includes('loom.com')) {
+              const videoId = embedContent.split('/').pop()?.split('?')[0];
+              embedUrl = `https://www.loom.com/embed/${videoId}?hide_owner=true&hide_share=true&hide_title=true&hideEmbedTopBar=true`;
+            }
+
+            return (
+              <div 
+                className="space-y-4"
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  return false;
+                }}
+              >
+                <div 
+                  className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden"
+                  style={{
+                    userSelect: 'none',
+                    WebkitUserSelect: 'none',
+                    MozUserSelect: 'none',
+                    msUserSelect: 'none'
+                  }}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                  }}
+                >
+                  <iframe
+                    src={embedUrl}
+                    className="absolute inset-0 w-full h-full"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    sandbox="allow-scripts allow-same-origin allow-presentation"
+                    style={{ 
+                      border: 'none'
+                    }}
+                  />
+                  {/* Security overlays */}
+                  <div 
+                    className="absolute"
+                    style={{
+                      top: '10px',
+                      left: '10px',
+                      width: '120px',
+                      height: '50px',
+                      zIndex: 1000,
+                      background: 'transparent',
+                      pointerEvents: 'auto'
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return false;
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                  />
+                  <div 
+                    className="absolute"
+                    style={{
+                      top: '10px',
+                      right: '10px',
+                      width: '60px',
+                      height: '60px',
+                      zIndex: 1000,
+                      background: 'transparent',
+                      pointerEvents: 'auto'
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return false;
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                  />
+                  <div 
+                    className="absolute"
+                    style={{
+                      bottom: '10px',
+                      right: '60px',
+                      width: '150px',
+                      height: '50px',
+                      zIndex: 1000,
+                      background: 'transparent',
+                      pointerEvents: 'auto'
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return false;
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                  />
+                  <div 
+                    className="absolute"
+                    style={{
+                      bottom: '55px',
+                      right: '10px',
+                      width: '200px',
+                      height: '40px',
+                      zIndex: 1000,
+                      background: 'transparent',
+                      pointerEvents: 'auto'
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return false;
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                  />
+                </div>
+                <style dangerouslySetInnerHTML={{
+                  __html: `
+                    iframe {
+                      -webkit-user-select: none !important;
+                      -moz-user-select: none !important;
+                      -ms-user-select: none !important;
+                      user-select: none !important;
+                    }
+                  `
+                }} />
+                {content_data.description && (
+                  <div className="prose prose-sm max-w-none">
+                    <p className="text-muted-foreground">{content_data.description}</p>
+                  </div>
+                )}
+              </div>
+            );
+          }
+        }
+        break;
+
       case 'video':
         if (content_data.video_url) {
           // Check if it's a YouTube, Vimeo, or Loom URL and convert to embed format

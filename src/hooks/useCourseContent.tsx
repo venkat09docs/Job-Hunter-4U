@@ -19,7 +19,7 @@ interface CourseChapter {
   section_id: string;
   title: string;
   description?: string;
-  content_type: 'video' | 'article' | 'document' | 'checklist';
+  content_type: 'video' | 'article' | 'document' | 'checklist' | 'embed_code';
   content_data: any;
   video_url?: string;
   article_content?: string;
@@ -42,7 +42,7 @@ interface CreateChapterData {
   section_id: string;
   title: string;
   description?: string;
-  content_type: 'video' | 'article' | 'document' | 'checklist';
+  content_type: 'video' | 'article' | 'document' | 'checklist' | 'embed_code';
   content_data?: any;
   video_url?: string;
   article_content?: string;

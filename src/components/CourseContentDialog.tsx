@@ -38,7 +38,7 @@ interface Chapter {
   section_id: string;
   title: string;
   description?: string;
-  content_type: 'video' | 'article' | 'document' | 'checklist';
+  content_type: 'video' | 'article' | 'document' | 'checklist' | 'embed_code';
   content_data: any;
   video_url?: string;
   article_content?: string;
@@ -90,12 +90,13 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
   // Chapter form state
   const [chapterTitle, setChapterTitle] = useState('');
   const [chapterDescription, setChapterDescription] = useState('');
-  const [chapterType, setChapterType] = useState<'video' | 'article' | 'document' | 'checklist'>('article');
+  const [chapterType, setChapterType] = useState<'video' | 'article' | 'document' | 'checklist' | 'embed_code'>('article');
   const [chapterVideoUrl, setChapterVideoUrl] = useState('');
   const [chapterArticleContent, setChapterArticleContent] = useState('');
   const [chapterDuration, setChapterDuration] = useState<number>(0);
   const [checklistItems, setChecklistItems] = useState<string[]>([]);
   const [currentChecklistItem, setCurrentChecklistItem] = useState('');
+  const [chapterEmbedCode, setChapterEmbedCode] = useState('');
 
   // Storage keys for persistence
   const STORAGE_KEY = `course-content-form-${courseId}`;
@@ -396,7 +397,11 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
       title: chapterTitle,
       description: chapterDescription,
       content_type: chapterType,
-      content_data: chapterType === 'checklist' ? { checklist_items: checklistItems } : {},
+      content_data: chapterType === 'checklist' 
+        ? { checklist_items: checklistItems } 
+        : chapterType === 'embed_code' 
+        ? { embed_code: chapterEmbedCode }
+        : {},
       video_url: chapterType === 'video' ? chapterVideoUrl : undefined,
       article_content: chapterType === 'article' ? chapterArticleContent : undefined,
       duration_minutes: chapterDuration > 0 ? chapterDuration : undefined,
@@ -436,6 +441,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
     setChapterDuration(0);
     setChecklistItems([]);
     setCurrentChecklistItem('');
+    setChapterEmbedCode('');
     setEditingChapter(null);
     setShowChapterForm(false);
     setSelectedSectionId('');
@@ -459,6 +465,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
     setChapterArticleContent(chapter.article_content || '');
     setChapterDuration(chapter.duration_minutes || 0);
     setChecklistItems(chapter.content_data?.checklist_items || []);
+    setChapterEmbedCode(chapter.content_data?.embed_code || '');
     setCurrentChecklistItem('');
     setSelectedSectionId(chapter.section_id);
     setShowChapterForm(true);
@@ -780,7 +787,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                     
                     <div>
                       <Label htmlFor="chapter-type">Content Type</Label>
-                       <Select value={chapterType} onValueChange={(value: 'video' | 'article' | 'document' | 'checklist') => {
+                       <Select value={chapterType} onValueChange={(value: 'video' | 'article' | 'document' | 'checklist' | 'embed_code') => {
                          console.log('🎯 Content type selected:', value);
                          console.log('🔍 Current dropdown state:', { 
                            isAdmin, 
@@ -801,12 +808,13 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                              <>
                                 <SelectItem value="checklist">✅ Checklist</SelectItem>
                                 <SelectItem value="video">🎥 Video</SelectItem>
+                                <SelectItem value="embed_code">🔗 Embed Code</SelectItem>
                               </>
                             )}
                           </SelectContent>
                         </Select>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Debug: isAdmin={String(isAdmin)}, userRole={userRole} | Available options: Article{isAdmin && ', Checklist, Video'}
+                          Debug: isAdmin={String(isAdmin)}, userRole={userRole} | Available options: Article{isAdmin && ', Checklist, Video, Embed Code'}
                         </p>
                     </div>
                   </div>
@@ -944,6 +952,41 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                           <CheckSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           <p className="text-sm">No checklist items added yet</p>
                           <p className="text-xs">Add items above to create your checklist</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {chapterType === 'embed_code' && userRole === 'admin' && (
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="embed-code">Embed Code or Video URL</Label>
+                        <Textarea
+                          id="embed-code"
+                          value={chapterEmbedCode}
+                          onChange={(e) => {
+                            setChapterEmbedCode(e.target.value);
+                            setTimeout(() => saveFormState(), 100);
+                          }}
+                          placeholder="Paste your embed code (e.g., <iframe src=...>) or video URL (YouTube, Vimeo, Loom)"
+                          rows={6}
+                          className="font-mono text-sm"
+                        />
+                        <p className="text-sm text-muted-foreground mt-1">
+                          You can paste either raw embed code (HTML iframe) or a video URL. URLs will be converted to embeds automatically.
+                        </p>
+                      </div>
+                      {chapterEmbedCode && (
+                        <div>
+                          <Label>Preview</Label>
+                          <div 
+                            className="mt-2 border rounded-lg p-4 bg-muted/20"
+                            dangerouslySetInnerHTML={{ 
+                              __html: chapterEmbedCode.includes('<iframe') 
+                                ? chapterEmbedCode 
+                                : `<p class="text-sm text-muted-foreground">URL: ${chapterEmbedCode}</p>` 
+                            }}
+                          />
                         </div>
                       )}
                     </div>
