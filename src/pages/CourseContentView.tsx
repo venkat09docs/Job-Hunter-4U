@@ -534,7 +534,27 @@ const CourseContentView: React.FC = () => {
         const articleContent = (chapter as any).article_content || content_data?.article_content || content_data?.content;
         if (articleContent) {
           return (
-            <div className="prose prose-sm max-w-none">
+            <div className="prose prose-lg max-w-none dark:prose-invert">
+              <style dangerouslySetInnerHTML={{
+                __html: `
+                  .prose h1 { font-size: 2em; font-weight: bold; margin-top: 1em; margin-bottom: 0.5em; line-height: 1.2; }
+                  .prose h2 { font-size: 1.5em; font-weight: bold; margin-top: 1.5em; margin-bottom: 0.5em; line-height: 1.3; }
+                  .prose h3 { font-size: 1.25em; font-weight: bold; margin-top: 1.25em; margin-bottom: 0.5em; line-height: 1.4; }
+                  .prose p { margin-top: 1em; margin-bottom: 1em; line-height: 1.75; }
+                  .prose ul, .prose ol { margin-top: 1em; margin-bottom: 1em; padding-left: 1.5em; }
+                  .prose li { margin-top: 0.5em; margin-bottom: 0.5em; line-height: 1.75; }
+                  .prose strong { font-weight: 600; }
+                  .prose em { font-style: italic; }
+                  .prose blockquote { border-left: 4px solid #e2e8f0; padding-left: 1em; margin: 1.5em 0; font-style: italic; color: #64748b; }
+                  .prose code { background: #f1f5f9; padding: 0.2em 0.4em; border-radius: 0.25em; font-size: 0.9em; }
+                  .prose pre { background: #f1f5f9; padding: 1em; border-radius: 0.5em; overflow-x: auto; margin: 1.5em 0; }
+                  .prose a { color: #3b82f6; text-decoration: underline; }
+                  .prose img { max-width: 100%; height: auto; margin: 1.5em 0; border-radius: 0.5em; }
+                  .prose table { width: 100%; border-collapse: collapse; margin: 1.5em 0; }
+                  .prose th, .prose td { border: 1px solid #e2e8f0; padding: 0.5em 1em; text-align: left; }
+                  .prose th { background: #f8fafc; font-weight: 600; }
+                `
+              }} />
               <div 
                 dangerouslySetInnerHTML={{ 
                   __html: articleContent
