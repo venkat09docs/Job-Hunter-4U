@@ -899,7 +899,13 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
                   className="w-full bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white font-semibold shadow-lg"
                   onClick={() => {
                     onOpenChange(false);
-                    window.location.href = '/auth';
+                    // Scroll to pricing section
+                    setTimeout(() => {
+                      const pricingSection = document.getElementById('pricing');
+                      if (pricingSection) {
+                        pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }
+                    }, 100);
                   }}
                 >
                   Upgrade Plan Now

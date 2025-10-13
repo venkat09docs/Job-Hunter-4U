@@ -52,6 +52,7 @@ import {
 } from "lucide-react";
 import { Github, Instagram } from "lucide-react";
 import { useCareerLevelProgram } from "@/hooks/useCareerLevelProgram";
+import { useCourseContent } from "@/hooks/useCourseContent";
 import type { Course } from "@/types/clp";
 import Navigation from "@/components/Navigation";
 import { CourseContentViewer } from "@/components/CourseContentViewer";
@@ -68,8 +69,10 @@ import careerSuccessSteps from "@/assets/career-success-steps.jpg";
 export default function AICareerLevelUp() {
   console.log("✅ AICareerLevelUp component starting");
   const { getCourses, loading } = useCareerLevelProgram();
+  const { getSectionsByCourse } = useCourseContent();
   const [courses, setCourses] = useState<Course[]>([]);
   const [buildProfileCourses, setBuildProfileCourses] = useState<Course[]>([]);
+  const [courseSections, setCourseSections] = useState<Record<string, any[]>>({});
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [showCourseContent, setShowCourseContent] = useState(false);
   const navigate = useNavigate();
@@ -103,6 +106,19 @@ export default function AICareerLevelUp() {
       course => course.category === 'Build Profile'
     );
     setBuildProfileCourses(buildProfileCoursesData);
+
+    // Fetch sections for each Build Profile course
+    const sectionsMap: Record<string, any[]> = {};
+    for (const course of buildProfileCoursesData) {
+      try {
+        const sections = await getSectionsByCourse(course.id);
+        sectionsMap[course.id] = sections.slice(0, 3); // Get top 3 sections
+      } catch (error) {
+        console.error(`Error fetching sections for course ${course.id}:`, error);
+        sectionsMap[course.id] = [];
+      }
+    }
+    setCourseSections(sectionsMap);
   };
 
   const handleCourseClick = (course: Course) => {
@@ -890,12 +906,12 @@ export default function AICareerLevelUp() {
                   {buildProfileCourses.map((course) => (
                     <CarouselItem key={course.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
                       <Card 
-                        className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-indigo-600 to-purple-700 border-0 shadow-xl overflow-hidden cursor-pointer"
+                        className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-white border-0 shadow-xl overflow-hidden cursor-pointer rounded-2xl"
                         onClick={() => handleCourseClick(course)}
                       >
-                        <CardContent className="p-0 flex flex-col">
-                          {/* Course Image Header - Increased height */}
-                          <div className="relative h-64 overflow-hidden flex-shrink-0">
+                        <CardContent className="p-0 flex flex-col h-full">
+                          {/* Course Image Header - Fixed with proper spacing */}
+                          <div className="relative h-56 overflow-hidden rounded-t-2xl flex-shrink-0">
                             {course.image ? (
                               <img 
                                 src={course.image} 
@@ -903,10 +919,10 @@ export default function AICareerLevelUp() {
                                 className="w-full h-full object-cover"
                               />
                             ) : (
-                              <div className="w-full h-full bg-gradient-to-br from-primary via-purple to-teal" />
+                              <div className="w-full h-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500" />
                             )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-                            <div className="absolute bottom-4 left-4 right-4">
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+                            <div className="absolute bottom-0 left-0 right-0 p-6">
                               <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm mb-2">
                                 {course.code}
                               </Badge>
@@ -917,13 +933,26 @@ export default function AICareerLevelUp() {
                           </div>
 
                           {/* Course Content - Increased padding */}
-                          <div className="p-8 text-white flex-1 flex flex-col">
-                            <p className="text-white/90 mb-6 leading-relaxed line-clamp-3 flex-1">
+                          <div className="p-6 flex-1 flex flex-col bg-gradient-to-br from-indigo-50 to-purple-50">
+                            <p className="text-gray-700 mb-4 leading-relaxed line-clamp-2 text-sm">
                               {course.description || "Comprehensive course covering fundamental concepts and practical applications"}
                             </p>
 
+                            {/* Course Sections as Bullet Points */}
+                            {courseSections[course.id] && courseSections[course.id].length > 0 && (
+                              <div className="mb-4 space-y-2">
+                                <p className="text-xs font-semibold text-indigo-700 mb-2">Top Sections:</p>
+                                {courseSections[course.id].map((section, idx) => (
+                                  <div key={idx} className="flex items-start gap-2">
+                                    <CheckCircle className="h-3.5 w-3.5 text-green-600 mt-0.5 flex-shrink-0" />
+                                    <span className="text-xs text-gray-700 line-clamp-1">{section.title}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
                             {/* Action Button */}
-                            <Button className="w-full bg-white text-indigo-700 hover:bg-gray-100 font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
+                            <Button className="w-full mt-auto bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold shadow-lg rounded-xl">
                               View Course Content
                               <BookOpen className="ml-2 h-4 w-4" />
                             </Button>
