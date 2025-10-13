@@ -351,10 +351,6 @@ const CourseContentView: React.FC = () => {
                   e.stopPropagation();
                   return false;
                 }}
-                onDragStart={(e) => {
-                  e.preventDefault();
-                  return false;
-                }}
               >
                 {/* Responsive video container with security */}
                 <div 
@@ -372,24 +368,6 @@ const CourseContentView: React.FC = () => {
                     e.stopPropagation();
                     return false;
                   }}
-                  onMouseDown={(e) => {
-                    if (e.button === 2) {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      return false;
-                    }
-                  }}
-                  onMouseUp={(e) => {
-                    if (e.button === 2) {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      return false;
-                    }
-                  }}
-                  onDragStart={(e) => {
-                    e.preventDefault();
-                    return false;
-                  }}
                 >
                   <iframe
                     src={embedUrl}
@@ -403,18 +381,17 @@ const CourseContentView: React.FC = () => {
                       border: 'none'
                     }}
                   />
-                  {/* Top-right overlay - blocks YouTube/Vimeo three-dot menu */}
+                  {/* Block YouTube logo and title area (top left) */}
                   <div 
                     className="absolute"
                     style={{
-                      top: '8px',
-                      right: '8px',
-                      width: '50px',
+                      top: '10px',
+                      left: '10px',
+                      width: '120px',
                       height: '50px',
-                      zIndex: 100,
+                      zIndex: 1000,
                       background: 'transparent',
-                      pointerEvents: 'auto',
-                      cursor: 'default'
+                      pointerEvents: 'auto'
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault();
@@ -425,23 +402,18 @@ const CourseContentView: React.FC = () => {
                       e.preventDefault();
                       e.stopPropagation();
                     }}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                    }}
                   />
-                  {/* Bottom-right overlay - blocks download/share/settings buttons */}
+                  {/* Block three-dot menu (top right) */}
                   <div 
                     className="absolute"
                     style={{
-                      bottom: '8px',
-                      right: '8px',
-                      width: '180px',
-                      height: '48px',
-                      zIndex: 100,
+                      top: '10px',
+                      right: '10px',
+                      width: '60px',
+                      height: '60px',
+                      zIndex: 1000,
                       background: 'transparent',
-                      pointerEvents: 'auto',
-                      cursor: 'default'
+                      pointerEvents: 'auto'
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault();
@@ -452,41 +424,59 @@ const CourseContentView: React.FC = () => {
                       e.preventDefault();
                       e.stopPropagation();
                     }}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                    }}
                   />
-                  {/* Transparent overlay for right-click protection - doesn't block clicks */}
+                  {/* Block settings/quality/speed buttons (bottom right, but leave space for fullscreen) */}
                   <div 
-                    className="absolute inset-0"
+                    className="absolute"
                     style={{
-                      zIndex: 50,
+                      bottom: '10px',
+                      right: '60px',
+                      width: '150px',
+                      height: '50px',
+                      zIndex: 1000,
                       background: 'transparent',
-                      pointerEvents: 'none'
+                      pointerEvents: 'auto'
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
                       return false;
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                  />
+                  {/* Block watch later, share buttons if present (bottom center-right) */}
+                  <div 
+                    className="absolute"
+                    style={{
+                      bottom: '55px',
+                      right: '10px',
+                      width: '200px',
+                      height: '40px',
+                      zIndex: 1000,
+                      background: 'transparent',
+                      pointerEvents: 'auto'
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return false;
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                     }}
                   />
                 </div>
                 <style dangerouslySetInnerHTML={{
                   __html: `
-                    /* Global right-click protection */
                     iframe {
                       -webkit-user-select: none !important;
                       -moz-user-select: none !important;
                       -ms-user-select: none !important;
                       user-select: none !important;
-                    }
-                    /* Prevent context menu on video */
-                    video {
-                      pointer-events: auto !important;
-                    }
-                    video::-webkit-media-controls-panel {
-                      pointer-events: auto !important;
                     }
                   `
                 }} />

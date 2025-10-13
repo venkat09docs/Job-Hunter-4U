@@ -115,10 +115,6 @@ export const VideoEmbedComponent: React.FC<VideoEmbedComponentProps> = ({
             e.stopPropagation();
             return false;
           }}
-          onDragStart={(e) => {
-            e.preventDefault();
-            return false;
-          }}
         >
           <Label>Video Preview</Label>
           <div 
@@ -134,24 +130,6 @@ export const VideoEmbedComponent: React.FC<VideoEmbedComponentProps> = ({
               e.stopPropagation();
               return false;
             }}
-            onMouseDown={(e) => {
-              if (e.button === 2) {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-              }
-            }}
-            onMouseUp={(e) => {
-              if (e.button === 2) {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-              }
-            }}
-            onDragStart={(e) => {
-              e.preventDefault();
-              return false;
-            }}
           >
             <iframe
               src={embedUrl}
@@ -165,18 +143,17 @@ export const VideoEmbedComponent: React.FC<VideoEmbedComponentProps> = ({
                 border: 'none'
               }}
             />
-            {/* Precise overlays to block menu buttons */}
+            {/* Strategic overlays matching CourseContentView */}
             <div 
               className="absolute"
               style={{
-                top: '8px',
-                right: '8px',
-                width: '50px',
+                top: '10px',
+                left: '10px',
+                width: '120px',
                 height: '50px',
-                zIndex: 100,
+                zIndex: 1000,
                 background: 'transparent',
-                pointerEvents: 'auto',
-                cursor: 'default'
+                pointerEvents: 'auto'
               }}
               onContextMenu={(e) => {
                 e.preventDefault();
@@ -184,10 +161,6 @@ export const VideoEmbedComponent: React.FC<VideoEmbedComponentProps> = ({
                 return false;
               }}
               onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              onMouseDown={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
               }}
@@ -195,14 +168,13 @@ export const VideoEmbedComponent: React.FC<VideoEmbedComponentProps> = ({
             <div 
               className="absolute"
               style={{
-                bottom: '8px',
-                right: '8px',
-                width: '180px',
-                height: '48px',
-                zIndex: 100,
+                top: '10px',
+                right: '10px',
+                width: '60px',
+                height: '60px',
+                zIndex: 1000,
                 background: 'transparent',
-                pointerEvents: 'auto',
-                cursor: 'default'
+                pointerEvents: 'auto'
               }}
               onContextMenu={(e) => {
                 e.preventDefault();
@@ -213,22 +185,47 @@ export const VideoEmbedComponent: React.FC<VideoEmbedComponentProps> = ({
                 e.preventDefault();
                 e.stopPropagation();
               }}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
             />
             <div 
-              className="absolute inset-0"
+              className="absolute"
               style={{
-                zIndex: 50,
+                bottom: '10px',
+                right: '60px',
+                width: '150px',
+                height: '50px',
+                zIndex: 1000,
                 background: 'transparent',
-                pointerEvents: 'none'
+                pointerEvents: 'auto'
               }}
               onContextMenu={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 return false;
+              }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+            />
+            <div 
+              className="absolute"
+              style={{
+                bottom: '55px',
+                right: '10px',
+                width: '200px',
+                height: '40px',
+                zIndex: 1000,
+                background: 'transparent',
+                pointerEvents: 'auto'
+              }}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+              }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
               }}
             />
           </div>
@@ -239,12 +236,6 @@ export const VideoEmbedComponent: React.FC<VideoEmbedComponentProps> = ({
                 -moz-user-select: none !important;
                 -ms-user-select: none !important;
                 user-select: none !important;
-              }
-              video {
-                pointer-events: auto !important;
-              }
-              video::-webkit-media-controls-panel {
-                pointer-events: auto !important;
               }
             `
           }} />
