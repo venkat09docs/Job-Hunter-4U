@@ -327,6 +327,21 @@ const CourseContentView: React.FC = () => {
         console.log('Content data keys:', content_data ? Object.keys(content_data) : 'No content_data');
         
         if (videoUrl) {
+          // Check if videoUrl is actually HTML embed code (starts with < or contains <iframe)
+          const isEmbedCode = typeof videoUrl === 'string' && (videoUrl.trim().startsWith('<') || videoUrl.includes('<iframe'));
+          
+          if (isEmbedCode) {
+            // Render as HTML embed code
+            return (
+              <div className="w-full">
+                <div 
+                  className="w-full"
+                  dangerouslySetInnerHTML={{ __html: videoUrl }}
+                />
+              </div>
+            );
+          }
+          
           // Check if it's a YouTube, Vimeo, or Loom URL and convert to embed format
           let embedUrl = videoUrl;
           
