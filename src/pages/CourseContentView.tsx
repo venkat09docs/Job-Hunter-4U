@@ -533,6 +533,25 @@ const CourseContentView: React.FC = () => {
         // Check for article content in chapter or content_data
         const articleContent = (chapter as any).article_content || content_data?.article_content || content_data?.content;
         if (articleContent) {
+          // Convert markdown-like formatting to HTML
+          const convertToHtml = (text: string) => {
+            return text
+              .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+              .replace(/\*(.*?)\*/g, '<em>$1</em>')
+              .replace(/^- (.+)$/gm, '<li>$1</li>')
+              .replace(/((?:<li>.*?<\/li>\n?)+)/g, '<ul>$1</ul>')
+              .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+              .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+              .split('\n\n').map(para => {
+                if (para.startsWith('<ul>') || para.startsWith('<blockquote>') || para.startsWith('<li>')) {
+                  return para;
+                }
+                return `<p>${para.replace(/\n/g, '<br>')}</p>`;
+              }).join('');
+          };
+          
+          const htmlContent = convertToHtml(articleContent);
+          
           return (
             <div className="prose prose-lg max-w-none dark:prose-invert">
               <style dangerouslySetInnerHTML={{
@@ -541,8 +560,8 @@ const CourseContentView: React.FC = () => {
                   .prose h2 { font-size: 1.5em; font-weight: bold; margin-top: 1.5em; margin-bottom: 0.5em; line-height: 1.3; }
                   .prose h3 { font-size: 1.25em; font-weight: bold; margin-top: 1.25em; margin-bottom: 0.5em; line-height: 1.4; }
                   .prose p { margin-top: 1em; margin-bottom: 1em; line-height: 1.75; }
-                  .prose ul, .prose ol { margin-top: 1em; margin-bottom: 1em; padding-left: 1.5em; }
-                  .prose li { margin-top: 0.5em; margin-bottom: 0.5em; line-height: 1.75; }
+                  .prose ul, .prose ol { margin-top: 1em; margin-bottom: 1em; padding-left: 1.5em; list-style-type: disc; }
+                  .prose li { margin-top: 0.5em; margin-bottom: 0.5em; line-height: 1.75; display: list-item; }
                   .prose strong { font-weight: 600; }
                   .prose em { font-style: italic; }
                   .prose blockquote { border-left: 4px solid #e2e8f0; padding-left: 1em; margin: 1.5em 0; font-style: italic; color: #64748b; }
@@ -557,7 +576,7 @@ const CourseContentView: React.FC = () => {
               }} />
               <div 
                 dangerouslySetInnerHTML={{ 
-                  __html: articleContent
+                  __html: htmlContent
                 }} 
               />
             </div>
