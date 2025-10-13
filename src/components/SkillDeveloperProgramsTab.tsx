@@ -31,7 +31,7 @@ const CourseCard: React.FC<{
             <img 
               src={course.image} 
               alt={course.title}
-              className="w-full h-full object-contain"
+              className="w-full h-full object-cover"
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-primary via-purple to-teal" />
