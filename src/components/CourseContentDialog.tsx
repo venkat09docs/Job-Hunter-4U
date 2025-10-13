@@ -799,10 +799,10 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                          <SelectTrigger className="w-full">
                            <SelectValue placeholder="Select content type" />
                          </SelectTrigger>
-                         <SelectContent className="z-[100] bg-background border shadow-md">
+                         <SelectContent className="z-[9999] bg-background border shadow-lg" position="popper" sideOffset={5}>
                            <SelectItem value="article">📝 Article</SelectItem>
-                           <SelectItem value="checklist">✅ Checklist</SelectItem>
                            <SelectItem value="video">🎥 Video</SelectItem>
+                           <SelectItem value="checklist">✅ Checklist</SelectItem>
                            <SelectItem value="embed_code">🔗 Embed Code</SelectItem>
                           </SelectContent>
                         </Select>
