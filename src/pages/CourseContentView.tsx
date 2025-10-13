@@ -786,9 +786,21 @@ const CourseContentView: React.FC = () => {
                 
                 {/* Navigation Controls */}
                 <div className="border-t bg-background p-4 lg:p-6">
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-4xl mx-auto">
-                    {/* Previous Button */}
-                    <div className="w-full sm:flex-1 sm:w-auto">
+                  <div className="max-w-4xl mx-auto space-y-4">
+                    {/* Chapter Description */}
+                    {selectedChapter.description && (
+                      <div className="bg-muted/30 border border-border rounded-lg p-4">
+                        <h4 className="font-semibold text-sm mb-2 text-foreground">About this chapter</h4>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {selectedChapter.description}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Navigation Buttons */}
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                      {/* Previous Button */}
+                      <div className="w-full sm:flex-1 sm:w-auto">
                       {getPreviousChapter() ? (
                         <Button
                           variant="outline"
@@ -824,35 +836,36 @@ const CourseContentView: React.FC = () => {
                       </Button>
                     </div>
 
-                    {/* Next Button or Next Section */}
-                    <div className="w-full sm:flex-1 sm:w-auto flex justify-end">
-                      {getNextChapter() ? (
-                        <Button
-                          onClick={() => setSelectedChapter(getNextChapter()!)}
-                          className="flex items-center gap-2 w-full sm:w-auto"
-                        >
-                          Next
-                          <ArrowRight className="h-4 w-4" />
-                        </Button>
-                      ) : getNextSection() ? (
-                        <Button
-                          onClick={handleGoToNextSection}
-                          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
-                        >
-                          Go to Next Section
-                          <ArrowRight className="h-4 w-4" />
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="outline"
-                          disabled
-                          className="flex items-center gap-2 w-full sm:w-auto"
-                        >
-                          Course Complete
-                          <CheckCircle2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
+                     {/* Next Button or Next Section */}
+                     <div className="w-full sm:flex-1 sm:w-auto flex justify-end">
+                       {getNextChapter() ? (
+                         <Button
+                           onClick={() => setSelectedChapter(getNextChapter()!)}
+                           className="flex items-center gap-2 w-full sm:w-auto"
+                         >
+                           Next
+                           <ArrowRight className="h-4 w-4" />
+                         </Button>
+                       ) : getNextSection() ? (
+                         <Button
+                           onClick={handleGoToNextSection}
+                           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
+                         >
+                           Go to Next Section
+                           <ArrowRight className="h-4 w-4" />
+                         </Button>
+                       ) : (
+                         <Button
+                           variant="outline"
+                           disabled
+                           className="flex items-center gap-2 w-full sm:w-auto"
+                         >
+                           Course Complete
+                           <CheckCircle2 className="h-4 w-4" />
+                         </Button>
+                       )}
+                     </div>
+                   </div>
                   </div>
                 </div>
               </div>
