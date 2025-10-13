@@ -830,74 +830,76 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
             </div>
 
             {/* Course Content Navigation */}
-            <ScrollArea className="flex-1 p-4">
-              {loading ? (
-                <div className="space-y-4">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="space-y-2">
-                      <div className="h-4 bg-muted rounded animate-pulse" />
-                      <div className="ml-4 space-y-1">
-                        <div className="h-3 bg-muted/70 rounded animate-pulse" />
-                        <div className="h-3 bg-muted/70 rounded animate-pulse w-3/4" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : sections.length === 0 ? (
-                <div className="text-center py-8">
-                  <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                  <p className="text-sm text-muted-foreground">No content available</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {sections.map((section) => (
-                    <Collapsible
-                      key={section.id}
-                      open={openSections.has(section.id)}
-                      onOpenChange={() => toggleSection(section.id)}
-                    >
-                      <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded hover:bg-muted/50 text-left cursor-pointer transition-colors">
-                        <div className="flex items-center gap-2 flex-1">
-                          <div className="flex items-center gap-1">
-                            {openSections.has(section.id) ? (
-                              <ChevronDown className="h-4 w-4 flex-shrink-0" />
-                            ) : (
-                              <ChevronRight className="h-4 w-4 flex-shrink-0" />
-                            )}
-                          </div>
-                          <span className="font-medium text-sm line-clamp-2">{section.title}</span>
+            <ScrollArea className="flex-1 overflow-y-auto">
+              <div className="p-4 h-full">
+                {loading ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="space-y-2">
+                        <div className="h-4 bg-muted rounded animate-pulse" />
+                        <div className="ml-4 space-y-1">
+                          <div className="h-3 bg-muted/70 rounded animate-pulse" />
+                          <div className="h-3 bg-muted/70 rounded animate-pulse w-3/4" />
                         </div>
-                        <Badge variant="secondary" className="text-xs flex-shrink-0 ml-2">
-                          {section.chapters.length}
-                        </Badge>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="ml-6 space-y-1 mt-1">
-                        {section.chapters.map((chapter) => (
-                          <button
-                            key={chapter.id}
-                            onClick={() => setSelectedChapter(chapter)}
-                            className={`w-full text-left p-2 rounded text-sm hover:bg-muted/50 transition-colors cursor-pointer ${
-                              selectedChapter?.id === chapter.id 
-                                ? 'bg-primary/10 text-primary border-l-2 border-primary' 
-                                : ''
-                            }`}
-                          >
-                            <div className="flex items-center gap-2">
-                              {getContentTypeIcon(chapter.content_type)}
-                              <span className="flex-1 line-clamp-2">{chapter.title}</span>
-                              {chapter.duration_minutes && (
-                                <span className="text-xs text-muted-foreground flex-shrink-0">
-                                  {chapter.duration_minutes}m
-                                </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : sections.length === 0 ? (
+                  <div className="text-center py-8">
+                    <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                    <p className="text-sm text-muted-foreground">No content available</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2 pb-4">
+                    {sections.map((section) => (
+                      <Collapsible
+                        key={section.id}
+                        open={openSections.has(section.id)}
+                        onOpenChange={() => toggleSection(section.id)}
+                      >
+                        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded hover:bg-muted/50 text-left cursor-pointer transition-colors">
+                          <div className="flex items-center gap-2 flex-1">
+                            <div className="flex items-center gap-1">
+                              {openSections.has(section.id) ? (
+                                <ChevronDown className="h-4 w-4 flex-shrink-0" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4 flex-shrink-0" />
                               )}
                             </div>
-                          </button>
-                        ))}
-                      </CollapsibleContent>
-                    </Collapsible>
-                  ))}
-                </div>
-              )}
+                            <span className="font-medium text-sm line-clamp-2">{section.title}</span>
+                          </div>
+                          <Badge variant="secondary" className="text-xs flex-shrink-0 ml-2">
+                            {section.chapters.length}
+                          </Badge>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="ml-6 space-y-1 mt-1">
+                          {section.chapters.map((chapter) => (
+                            <button
+                              key={chapter.id}
+                              onClick={() => setSelectedChapter(chapter)}
+                              className={`w-full text-left p-2 rounded text-sm hover:bg-muted/50 transition-colors cursor-pointer ${
+                                selectedChapter?.id === chapter.id 
+                                  ? 'bg-primary/10 text-primary border-l-2 border-primary' 
+                                  : ''
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                {getContentTypeIcon(chapter.content_type)}
+                                <span className="flex-1 line-clamp-2">{chapter.title}</span>
+                                {chapter.duration_minutes && (
+                                  <span className="text-xs text-muted-foreground flex-shrink-0">
+                                    {chapter.duration_minutes}m
+                                  </span>
+                                )}
+                              </div>
+                            </button>
+                          ))}
+                        </CollapsibleContent>
+                      </Collapsible>
+                    ))}
+                  </div>
+                )}
+              </div>
             </ScrollArea>
           </div>
 
