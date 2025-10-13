@@ -351,6 +351,10 @@ const CourseContentView: React.FC = () => {
                   e.stopPropagation();
                   return false;
                 }}
+                onDragStart={(e) => {
+                  e.preventDefault();
+                  return false;
+                }}
               >
                 {/* Responsive video container with security */}
                 <div 
@@ -382,6 +386,10 @@ const CourseContentView: React.FC = () => {
                       return false;
                     }
                   }}
+                  onDragStart={(e) => {
+                    e.preventDefault();
+                    return false;
+                  }}
                 >
                   <iframe
                     src={embedUrl}
@@ -395,14 +403,18 @@ const CourseContentView: React.FC = () => {
                       border: 'none'
                     }}
                   />
-                  {/* Block only the three-dot menu areas */}
-                  {/* Top right corner - blocks YouTube three-dot menu */}
+                  {/* Top-right overlay - blocks YouTube/Vimeo three-dot menu */}
                   <div 
-                    className="absolute top-2 right-2 w-16 h-16 rounded-full"
+                    className="absolute"
                     style={{
-                      zIndex: 10,
+                      top: '8px',
+                      right: '8px',
+                      width: '50px',
+                      height: '50px',
+                      zIndex: 100,
                       background: 'transparent',
-                      pointerEvents: 'auto'
+                      pointerEvents: 'auto',
+                      cursor: 'default'
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault();
@@ -410,17 +422,26 @@ const CourseContentView: React.FC = () => {
                       return false;
                     }}
                     onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                    onMouseDown={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
                     }}
                   />
-                  {/* Bottom right corner - blocks additional menu options */}
+                  {/* Bottom-right overlay - blocks download/share/settings buttons */}
                   <div 
-                    className="absolute bottom-2 right-2 w-40 h-16"
+                    className="absolute"
                     style={{
-                      zIndex: 10,
+                      bottom: '8px',
+                      right: '8px',
+                      width: '180px',
+                      height: '48px',
+                      zIndex: 100,
                       background: 'transparent',
-                      pointerEvents: 'auto'
+                      pointerEvents: 'auto',
+                      cursor: 'default'
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault();
@@ -430,16 +451,42 @@ const CourseContentView: React.FC = () => {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
+                    }}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                  />
+                  {/* Transparent overlay for right-click protection - doesn't block clicks */}
+                  <div 
+                    className="absolute inset-0"
+                    style={{
+                      zIndex: 50,
+                      background: 'transparent',
+                      pointerEvents: 'none'
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return false;
                     }}
                   />
                 </div>
                 <style dangerouslySetInnerHTML={{
                   __html: `
+                    /* Global right-click protection */
                     iframe {
                       -webkit-user-select: none !important;
                       -moz-user-select: none !important;
                       -ms-user-select: none !important;
                       user-select: none !important;
+                    }
+                    /* Prevent context menu on video */
+                    video {
+                      pointer-events: auto !important;
+                    }
+                    video::-webkit-media-controls-panel {
+                      pointer-events: auto !important;
                     }
                   `
                 }} />

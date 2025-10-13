@@ -160,6 +160,10 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
                 e.stopPropagation();
                 return false;
               }}
+              onDragStart={(e) => {
+                e.preventDefault();
+                return false;
+              }}
             >
               <div 
                 className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden"
@@ -188,6 +192,10 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
                     return false;
                   }
                 }}
+                onDragStart={(e) => {
+                  e.preventDefault();
+                  return false;
+                }}
               >
                 <iframe
                   src={embedUrl}
@@ -200,13 +208,18 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
                     border: 'none'
                   }}
                 />
-                {/* Block only the three-dot menu areas */}
+                {/* Precise overlays to block menu buttons only */}
                 <div 
-                  className="absolute top-2 right-2 w-16 h-16 rounded-full"
+                  className="absolute"
                   style={{
-                    zIndex: 10,
+                    top: '8px',
+                    right: '8px',
+                    width: '50px',
+                    height: '50px',
+                    zIndex: 100,
                     background: 'transparent',
-                    pointerEvents: 'auto'
+                    pointerEvents: 'auto',
+                    cursor: 'default'
                   }}
                   onContextMenu={(e) => {
                     e.preventDefault();
@@ -214,16 +227,25 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
                     return false;
                   }}
                   onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onMouseDown={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
                   }}
                 />
                 <div 
-                  className="absolute bottom-2 right-2 w-40 h-16"
+                  className="absolute"
                   style={{
-                    zIndex: 10,
+                    bottom: '8px',
+                    right: '8px',
+                    width: '180px',
+                    height: '48px',
+                    zIndex: 100,
                     background: 'transparent',
-                    pointerEvents: 'auto'
+                    pointerEvents: 'auto',
+                    cursor: 'default'
                   }}
                   onContextMenu={(e) => {
                     e.preventDefault();
@@ -233,6 +255,23 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                  }}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                />
+                <div 
+                  className="absolute inset-0"
+                  style={{
+                    zIndex: 50,
+                    background: 'transparent',
+                    pointerEvents: 'none'
+                  }}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
                   }}
                 />
               </div>
@@ -243,6 +282,12 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
                     -moz-user-select: none !important;
                     -ms-user-select: none !important;
                     user-select: none !important;
+                  }
+                  video {
+                    pointer-events: auto !important;
+                  }
+                  video::-webkit-media-controls-panel {
+                    pointer-events: auto !important;
                   }
                 `
               }} />
