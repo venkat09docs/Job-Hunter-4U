@@ -1079,109 +1079,127 @@ const CLPDashboard = () => {
               </div>
             </div>
 
-            {/* Courses List */}
-            <div className="space-y-4">
+            {/* Courses List - 3 Column Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredCourses.map((course) => (
-                <Card key={course.id} className="hover:shadow-md transition-shadow">
+                <Card key={course.id} className="hover:shadow-md transition-shadow overflow-hidden">
                   <CardContent className="p-0">
                     {/* Course Image */}
-                    {course.image && (
-                      <div className="aspect-video w-full overflow-hidden rounded-t-lg bg-muted">
+                    <div className="aspect-video w-full overflow-hidden bg-muted relative">
+                      {course.image ? (
                         <img 
                           src={course.image} 
                           alt={course.title}
                           className="w-full h-full object-cover"
                         />
-                      </div>
-                    )}
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
+                          <BookOpen className="h-12 w-12 text-primary/40" />
+                        </div>
+                      )}
+                      {/* Published Badge */}
+                      <Badge className="absolute top-3 left-3 bg-green-600 hover:bg-green-700 text-white">
+                        PUBLISHED
+                      </Badge>
+                    </div>
                     
                     <div className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-3">
-                            <div className="bg-primary/10 p-2 rounded-lg">
-                              <BookOpen className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="text-lg font-semibold">{course.title}</h3>
-                                <Badge variant="secondary">{course.code}</Badge>
-                                <Badge variant="outline" className="text-xs">{course.category}</Badge>
-                              </div>
-                              {course.description && (
-                                <p className="text-sm text-muted-foreground">{course.description}</p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-                          <div className="flex items-center gap-1">
-                            <ClipboardCheck className="h-4 w-4" />
-                            <span>{courseModules[course.id]?.length || 0} modules</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Users className="h-4 w-4" />
-                            <span>Active course</span>
-                          </div>
-                        </div>
-                        
-                        {courseModules[course.id]?.length > 0 && (
-                          <div className="flex flex-wrap gap-2">
-                            {courseModules[course.id].slice(0, 3).map((module) => (
-                              <Badge key={module.id} variant="outline" className="text-xs">
-                                {module.title}
-                              </Badge>
-                            ))}
-                            {courseModules[course.id].length > 3 && (
-                              <Badge variant="outline" className="text-xs">
-                                +{courseModules[course.id].length - 3} more
-                              </Badge>
-                            )}
-                          </div>
-                        )}
+                      {/* Course Title */}
+                      <h3 className="text-xl font-bold mb-3 line-clamp-2 min-h-[3.5rem]">
+                        {course.title}
+                      </h3>
+                      
+                      {/* Course Info */}
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+                        <ClipboardCheck className="h-4 w-4" />
+                        <span>
+                          {courseModules[course.id]?.length || 0} sections • {
+                            courseModules[course.id]?.reduce((total, module) => {
+                              // You can add logic here to count lectures per module if available
+                              return total + 10; // Placeholder: 10 lectures per section
+                            }, 0) || 0
+                          } lectures
+                        </span>
                       </div>
                       
+                      {/* Action Buttons */}
                       <div className="flex items-center gap-2">
                         <Button 
                           variant="outline" 
-                          size="sm"
+                          className="flex-1"
                           onClick={() => {
-                            // TODO: Implement course detail view functionality
                             toast.info('Course detail view coming soon!');
                           }}
                         >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View
+                          Edit course
                         </Button>
+                        
                         {(userRole === 'admin' || userRole === 'recruiter' || userRole === 'institute_admin') && (
-                          <>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleNavigateToContentManagement(course)}
-                            >
-                              <FileText className="h-4 w-4 mr-1" />
-                              Add Content
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => openEditCourse(course)}
-                            >
-                              <Edit2 className="h-4 w-4 mr-1" />
-                              Edit
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleDeleteCourse(course.id)}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4 mr-1" />
-                              Delete
-                            </Button>
-                          </>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="shrink-0">
+                                <svg 
+                                  xmlns="http://www.w3.org/2000/svg" 
+                                  width="20" 
+                                  height="20" 
+                                  viewBox="0 0 24 24" 
+                                  fill="none" 
+                                  stroke="currentColor" 
+                                  strokeWidth="2" 
+                                  strokeLinecap="round" 
+                                  strokeLinejoin="round"
+                                >
+                                  <circle cx="12" cy="12" r="1"/>
+                                  <circle cx="12" cy="5" r="1"/>
+                                  <circle cx="12" cy="19" r="1"/>
+                                </svg>
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="pointer-events-auto sm:max-w-md">
+                              <DialogHeader>
+                                <DialogTitle>Course Actions</DialogTitle>
+                                <DialogDescription>
+                                  Select an action for {course.title}
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="flex flex-col gap-2">
+                                <Button 
+                                  variant="outline" 
+                                  className="justify-start"
+                                  onClick={() => {
+                                    toast.info('Course detail view coming soon!');
+                                  }}
+                                >
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  View Course
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  className="justify-start"
+                                  onClick={() => handleNavigateToContentManagement(course)}
+                                >
+                                  <FileText className="h-4 w-4 mr-2" />
+                                  Add Content
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  className="justify-start"
+                                  onClick={() => openEditCourse(course)}
+                                >
+                                  <Edit2 className="h-4 w-4 mr-2" />
+                                  Edit Course
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  className="justify-start text-destructive hover:text-destructive"
+                                  onClick={() => handleDeleteCourse(course.id)}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete Course
+                                </Button>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
                         )}
                       </div>
                     </div>
