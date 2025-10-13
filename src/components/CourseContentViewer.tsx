@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, BookOpen, Play, FileText, Download, ChevronRight, ChevronDown, CheckSquare, Check, ArrowRight } from 'lucide-react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { X, BookOpen, Play, FileText, Download, ChevronRight, ChevronDown, CheckSquare, Check, ArrowRight, ChevronsDownUp, ChevronsUpDown } from 'lucide-react';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -102,6 +102,15 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
       }
       return newSet;
     });
+  };
+
+  const expandAll = () => {
+    const allSectionIds = sections.map(section => section.id);
+    setOpenSections(new Set(allSectionIds));
+  };
+
+  const collapseAll = () => {
+    setOpenSections(new Set());
   };
 
   const getContentTypeIcon = (contentType: string) => {
@@ -771,13 +780,17 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-7xl h-[90vh] p-0">
+        <DialogTitle className="sr-only">{courseTitle} - Course Content</DialogTitle>
+        <DialogDescription className="sr-only">
+          View course sections, chapters, and upgrade to access full content
+        </DialogDescription>
         <div className="flex h-full">
           {/* Sidebar - Course Navigation */}
           <div className="w-80 border-r bg-muted/20 flex flex-col">
             {/* Header */}
-            <div className="p-4 border-b bg-background">
+            <div className="p-4 border-b bg-background space-y-3">
               <div className="flex items-center justify-between">
-                <div>
+                <div className="flex-1">
                   <h3 className="font-semibold text-lg line-clamp-1">{courseTitle}</h3>
                   <p className="text-sm text-muted-foreground">Course Content</p>
                 </div>
@@ -785,10 +798,35 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => onOpenChange(false)}
+                  className="flex-shrink-0"
                 >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
+
+              {/* Collapse/Expand All Controls */}
+              {!loading && sections.length > 0 && (
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={expandAll}
+                    className="flex-1 text-xs cursor-pointer hover:bg-primary/10"
+                  >
+                    <ChevronsDownUp className="h-3 w-3 mr-1" />
+                    Expand All
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={collapseAll}
+                    className="flex-1 text-xs cursor-pointer hover:bg-primary/10"
+                  >
+                    <ChevronsUpDown className="h-3 w-3 mr-1" />
+                    Collapse All
+                  </Button>
+                </div>
+              )}
             </div>
 
             {/* Course Content Navigation */}
@@ -818,27 +856,27 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
                       open={openSections.has(section.id)}
                       onOpenChange={() => toggleSection(section.id)}
                     >
-                      <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded hover:bg-muted/50 text-left">
-                        <div className="flex items-center gap-2">
+                      <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded hover:bg-muted/50 text-left cursor-pointer transition-colors">
+                        <div className="flex items-center gap-2 flex-1">
                           <div className="flex items-center gap-1">
                             {openSections.has(section.id) ? (
-                              <ChevronDown className="h-4 w-4" />
+                              <ChevronDown className="h-4 w-4 flex-shrink-0" />
                             ) : (
-                              <ChevronRight className="h-4 w-4" />
+                              <ChevronRight className="h-4 w-4 flex-shrink-0" />
                             )}
                           </div>
-                          <span className="font-medium text-sm">{section.title}</span>
+                          <span className="font-medium text-sm line-clamp-2">{section.title}</span>
                         </div>
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary" className="text-xs flex-shrink-0 ml-2">
                           {section.chapters.length}
                         </Badge>
                       </CollapsibleTrigger>
-                      <CollapsibleContent className="ml-6 space-y-1">
+                      <CollapsibleContent className="ml-6 space-y-1 mt-1">
                         {section.chapters.map((chapter) => (
                           <button
                             key={chapter.id}
                             onClick={() => setSelectedChapter(chapter)}
-                            className={`w-full text-left p-2 rounded text-sm hover:bg-muted/50 transition-colors ${
+                            className={`w-full text-left p-2 rounded text-sm hover:bg-muted/50 transition-colors cursor-pointer ${
                               selectedChapter?.id === chapter.id 
                                 ? 'bg-primary/10 text-primary border-l-2 border-primary' 
                                 : ''
@@ -846,9 +884,9 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
                           >
                             <div className="flex items-center gap-2">
                               {getContentTypeIcon(chapter.content_type)}
-                              <span className="flex-1">{chapter.title}</span>
+                              <span className="flex-1 line-clamp-2">{chapter.title}</span>
                               {chapter.duration_minutes && (
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-xs text-muted-foreground flex-shrink-0">
                                   {chapter.duration_minutes}m
                                 </span>
                               )}
