@@ -791,12 +791,11 @@ const CourseContentView: React.FC = () => {
                     {selectedChapter.description && (
                       <div className="bg-muted/30 border border-border rounded-lg p-4">
                         <div 
-                          className="text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none"
+                          className="prose prose-sm max-w-none text-muted-foreground prose-headings:text-foreground prose-headings:font-semibold prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-strong:text-foreground prose-p:leading-relaxed"
                           dangerouslySetInnerHTML={{ 
-                            __html: selectedChapter.description.replace(
-                              /(https?:\/\/[^\s]+)/g, 
-                              '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">$1</a>'
-                            )
+                            __html: selectedChapter.description
+                              .replace(/\n/g, '<br/>')
+                              .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>')
                           }}
                         />
                       </div>
