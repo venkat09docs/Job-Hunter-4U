@@ -343,7 +343,7 @@ const CourseContentView: React.FC = () => {
 
             return (
               <div className="relative w-full">
-                {/* Responsive video container with maximum space utilization and security */}
+                {/* Responsive video container with security */}
                 <div 
                   className="relative w-full bg-gray-100 rounded-lg overflow-hidden select-none"
                   style={{ 
@@ -374,37 +374,7 @@ const CourseContentView: React.FC = () => {
                     allowFullScreen
                     title={chapter.title}
                     style={{ 
-                      border: 'none',
-                      pointerEvents: 'none'
-                    }}
-                  />
-                  {/* Multiple security layers to prevent interactions */}
-                  <div 
-                    className="absolute inset-0 pointer-events-auto"
-                    style={{
-                      background: 'transparent',
-                      cursor: 'default'
-                    }}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      return false;
-                    }}
-                    onMouseDown={(e) => {
-                      if (e.button === 2) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }
-                    }}
-                    onClick={(e) => {
-                      // Allow clicks to pass through for play button
-                      const iframe = e.currentTarget.previousElementSibling as HTMLIFrameElement;
-                      if (iframe && iframe.style) {
-                        iframe.style.pointerEvents = 'auto';
-                        setTimeout(() => {
-                          if (iframe.style) iframe.style.pointerEvents = 'none';
-                        }, 100);
-                      }
+                      border: 'none'
                     }}
                   />
                 </div>
