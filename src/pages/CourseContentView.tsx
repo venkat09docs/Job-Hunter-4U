@@ -275,6 +275,8 @@ const CourseContentView: React.FC = () => {
         return <Download className="h-4 w-4" />;
       case 'checklist':
         return <CheckSquare className="h-4 w-4" />;
+      case 'embed_code':
+        return <Play className="h-4 w-4" />;
       default:
         return <BookOpen className="h-4 w-4" />;
     }
@@ -290,6 +292,8 @@ const CourseContentView: React.FC = () => {
         return 'bg-green-100 text-green-700 border-green-200';
       case 'checklist':
         return 'bg-purple-100 text-purple-700 border-purple-200';
+      case 'embed_code':
+        return 'bg-orange-100 text-orange-700 border-orange-200';
       default:
         return 'bg-gray-100 text-gray-700 border-gray-200';
     }
@@ -588,6 +592,75 @@ const CourseContentView: React.FC = () => {
 
       case 'checklist':
         return <ChecklistViewer chapterId={chapter.id} checklistItems={content_data?.checklist_items || []} />;
+
+      case 'embed_code':
+        const embedCode = content_data?.embed_code || content_data?.embedCode || content_data?.code;
+        
+        if (embedCode) {
+          // Check if it's a URL (like Loom, YouTube, etc.)
+          const isUrl = embedCode.trim().startsWith('http://') || embedCode.trim().startsWith('https://');
+          
+          if (isUrl) {
+            // Extract video ID and create proper embed URL
+            let embedUrl = embedCode;
+            
+            try {
+              if (embedCode.includes('youtube.com') || embedCode.includes('youtu.be')) {
+                const videoId = embedCode.includes('youtu.be') 
+                  ? embedCode.split('/').pop()?.split('?')[0]
+                  : new URL(embedCode).searchParams.get('v');
+                embedUrl = `https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0&showinfo=0&controls=1&disablekb=1`;
+              } else if (embedCode.includes('vimeo.com')) {
+                const videoId = embedCode.split('/').pop();
+                embedUrl = `https://player.vimeo.com/video/${videoId}?title=0&byline=0&portrait=0`;
+              } else if (embedCode.includes('loom.com')) {
+                const videoId = embedCode.split('/').pop()?.split('?')[0];
+                embedUrl = `https://www.loom.com/embed/${videoId}?hide_owner=true&hide_share=true&hide_title=true&hideEmbedTopBar=true`;
+              }
+            } catch (error) {
+              console.error('Error processing embed URL:', error);
+            }
+            
+            return (
+              <div className="relative w-full">
+                <div 
+                  className="relative w-full bg-gray-100 rounded-lg overflow-hidden"
+                  style={{ 
+                    aspectRatio: '16/9',
+                    maxHeight: 'min(90vh, 900px)'
+                  }}
+                >
+                  <iframe
+                    src={embedUrl}
+                    className="absolute inset-0 w-full h-full"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title={chapter.title}
+                    style={{ border: 'none' }}
+                  />
+                </div>
+              </div>
+            );
+          } else {
+            // It's raw HTML embed code
+            return (
+              <div className="w-full">
+                <div 
+                  className="w-full"
+                  dangerouslySetInnerHTML={{ __html: embedCode }}
+                />
+              </div>
+            );
+          }
+        } else {
+          return (
+            <div className="text-center py-8 text-muted-foreground">
+              <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>Embed code not available</p>
+            </div>
+          );
+        }
 
       default:
         return (
