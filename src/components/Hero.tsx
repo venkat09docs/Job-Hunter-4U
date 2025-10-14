@@ -8,15 +8,15 @@ const Hero = () => {
   const navigate = useNavigate();
   return (
     <>
-      <section id="hero" className="relative min-h-[85vh] flex items-center justify-center overflow-hidden pt-16">
+      <section id="hero" className="relative min-h-[75vh] flex items-center justify-center overflow-hidden pt-20">
         {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-hero" />
         
         {/* Hero content */}
-        <div className="container relative z-10 px-4 py-8">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+        <div className="container relative z-10 px-4 py-4">
+          <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 items-center">
             {/* Text content */}
-            <div className="space-y-6 md:space-y-8 text-center lg:text-left">
+            <div className="space-y-4 md:space-y-6 text-center lg:text-left">
               <div className="space-y-4">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight animate-fade-in">
                   <span className="text-foreground">
@@ -46,9 +46,9 @@ const Hero = () => {
             </div>
 
             {/* Hero image and CTA */}
-            <div className="relative space-y-6">
+            <div className="relative">
               {/* Career Level Up Box from AI Career Level Up page */}
-              <div className="relative bg-gradient-to-br from-purple-600/60 via-pink-600/50 to-indigo-600/60 backdrop-blur-md rounded-3xl p-8 md:p-12 border-2 border-white/40 shadow-2xl overflow-hidden">
+              <div className="relative bg-gradient-to-br from-purple-600/60 via-pink-600/50 to-indigo-600/60 backdrop-blur-md rounded-3xl p-6 md:p-8 border-2 border-white/40 shadow-2xl overflow-hidden">
                 {/* Strong Animated Background Pattern */}
                 <div className="absolute inset-0 opacity-40">
                   <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-yellow-400/40 via-pink-500/30 to-transparent"></div>
@@ -58,7 +58,7 @@ const Hero = () => {
                 </div>
                 
                 {/* Career Success Steps Image */}
-                <div className="relative z-10 mb-8 rounded-2xl overflow-hidden shadow-2xl">
+                <div className="relative z-10 mb-6 rounded-2xl overflow-hidden shadow-2xl">
                   <img 
                     src={careerSuccessSteps} 
                     alt="Career success journey - climbing steps to reach goals" 
@@ -67,41 +67,48 @@ const Hero = () => {
                 </div>
                 
                 {/* Main Text */}
-                <div className="text-center mb-6 relative z-10">
-                  <h3 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-4 drop-shadow-2xl" style={{
+                <div className="text-center mb-4 relative z-10">
+                  <h3 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-3 drop-shadow-2xl" style={{
                     textShadow: '0 0 30px rgba(255, 255, 255, 0.5), 0 0 60px rgba(255, 105, 180, 0.3)'
                   }}>
                     Career Level Up
                   </h3>
                 </div>
                 
-                {/* Labels Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 relative z-10">
-                  <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl p-3 md:p-4 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
-                    <div className="flex items-center justify-center gap-2">
-                      <FileText className="h-4 w-4 md:h-5 md:w-5 text-white" />
-                      <span className="text-white font-bold text-xs md:text-base drop-shadow-lg">ATS Resume</span>
+                {/* Labels Grid - 5 items */}
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-3 relative z-10">
+                  <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl p-2 md:p-3 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
+                    <div className="flex items-center justify-center gap-1">
+                      <FileText className="h-3 w-3 md:h-4 md:w-4 text-white" />
+                      <span className="text-white font-bold text-[10px] md:text-xs drop-shadow-lg">ATS Resume</span>
                     </div>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl p-3 md:p-4 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
-                    <div className="flex items-center justify-center gap-2">
-                      <Brain className="h-4 w-4 md:h-5 md:w-5 text-white" />
-                      <span className="text-white font-bold text-xs md:text-base drop-shadow-lg">AI Generalist</span>
+                  <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-2 md:p-3 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
+                    <div className="flex items-center justify-center gap-1">
+                      <User className="h-3 w-3 md:h-4 md:w-4 text-white" />
+                      <span className="text-white font-bold text-[10px] md:text-xs drop-shadow-lg">Digital Portfolio</span>
                     </div>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl p-3 md:p-4 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
-                    <div className="flex items-center justify-center gap-2">
-                      <Briefcase className="h-4 w-4 md:h-5 md:w-5 text-white" />
-                      <span className="text-white font-bold text-xs md:text-base drop-shadow-lg">Job Hunting</span>
+                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl p-2 md:p-3 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
+                    <div className="flex items-center justify-center gap-1">
+                      <Briefcase className="h-3 w-3 md:h-4 md:w-4 text-white" />
+                      <span className="text-white font-bold text-[10px] md:text-xs drop-shadow-lg">Job Hunting</span>
                     </div>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-green-500 to-teal-500 rounded-xl p-3 md:p-4 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
-                    <div className="flex items-center justify-center gap-2">
-                      <Users className="h-4 w-4 md:h-5 md:w-5 text-white" />
-                      <span className="text-white font-bold text-xs md:text-base drop-shadow-lg">LinkedIn Optimization</span>
+                  <div className="bg-gradient-to-r from-green-500 to-teal-500 rounded-xl p-2 md:p-3 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
+                    <div className="flex items-center justify-center gap-1">
+                      <Users className="h-3 w-3 md:h-4 md:w-4 text-white" />
+                      <span className="text-white font-bold text-[10px] md:text-xs drop-shadow-lg">LinkedIn</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-r from-gray-700 to-gray-900 rounded-xl p-2 md:p-3 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30 col-span-2 md:col-span-1">
+                    <div className="flex items-center justify-center gap-1">
+                      <Target className="h-3 w-3 md:h-4 md:w-4 text-white" />
+                      <span className="text-white font-bold text-[10px] md:text-xs drop-shadow-lg">GitHub</span>
                     </div>
                   </div>
                 </div>
