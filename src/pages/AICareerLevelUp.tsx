@@ -925,15 +925,11 @@ export default function AICareerLevelUp() {
                             <CardContent className="p-0 flex flex-col h-full overflow-hidden">
                               {/* Course Image Header - Only if image exists */}
                               {course.image && (
-                                <div className="relative h-48 flex-shrink-0 overflow-hidden">
-                                  <img 
-                                    src={course.image} 
-                                    alt={course.title}
-                                    className="w-full h-full object-cover"
-                                    style={{ objectFit: 'cover' }}
-                                  />
-                                  <div className={`absolute inset-0 bg-gradient-to-b ${gradientClasses[index % 3]} opacity-50`}></div>
-                                </div>
+                                <img 
+                                  src={course.image} 
+                                  alt={course.title}
+                                  className="w-full h-48 object-cover flex-shrink-0"
+                                />
                               )}
                               
                               {/* Content Section */}
