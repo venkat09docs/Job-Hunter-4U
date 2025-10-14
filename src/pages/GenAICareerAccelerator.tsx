@@ -154,7 +154,7 @@ const GenAICareerAccelerator = () => {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-4 overflow-hidden">
+      <section className="relative pt-24 pb-16 px-4 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-purple-500/10 to-cyan-500/5"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(124,58,237,0.15),transparent_50%)]"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(59,130,246,0.1),transparent_50%)]"></div>
@@ -162,25 +162,25 @@ const GenAICareerAccelerator = () => {
         <div className="container mx-auto relative z-10">
           <div className="grid lg:grid-cols-2 gap-8 items-start max-w-7xl mx-auto">
             {/* Left Content */}
-            <div className="text-center lg:text-left">
-              <Badge className="mb-6 px-4 py-2 text-base bg-primary/10 text-primary border-primary/20">
+            <div className="text-center lg:text-left space-y-6">
+              <Badge className="px-4 py-2 text-base bg-primary/10 text-primary border-primary/20">
                 🎓 3-Month Intensive Program
               </Badge>
               
-              <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent leading-tight">
+              <h1 className="text-5xl md:text-7xl font-bold bg-gradient-primary bg-clip-text text-transparent leading-tight">
                 GenAI Career Accelerator
               </h1>
               
-              <p className="text-xl md:text-2xl text-muted-foreground mb-4 font-medium">
+              <p className="text-xl md:text-2xl text-muted-foreground font-medium">
                 Master the New AI Stack — From Cloud Infrastructure to Intelligent Apps
               </p>
               
-              <p className="text-lg text-muted-foreground mb-8">
+              <p className="text-lg text-muted-foreground">
                 Transform from a beginner to a job-ready AI professional. Learn AWS, DevOps, LLM Apps, and MLOps with 6+ real-world projects and guaranteed placement support.
               </p>
 
-              {/* Buttons - Moved here */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
+              {/* Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-2">
                 <Button size="lg" className="text-lg px-8 py-6" onClick={() => setShowPricing(true)}>
                   Join Now - Start Your AI Career <ChevronRight className="ml-2 h-5 w-5" />
                 </Button>
@@ -189,9 +189,9 @@ const GenAICareerAccelerator = () => {
                 </Button>
               </div>
 
-              <div className="flex items-center justify-center lg:justify-start gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center justify-center lg:justify-start gap-2 text-sm text-muted-foreground pt-2">
                 <Users className="h-4 w-4" />
-                <span>Trusted by 45,000+ learners worldwide</span>
+                <span>Trusted by 6,000+ learners worldwide</span>
               </div>
             </div>
 
@@ -209,7 +209,7 @@ const GenAICareerAccelerator = () => {
                 </div>
               </div>
 
-              {/* Next Cohort Section - Moved here */}
+              {/* Next Cohort Section */}
               <div className="bg-gradient-to-br from-card/90 to-purple-500/10 backdrop-blur-sm border-2 border-purple-500/30 rounded-3xl p-6 shadow-xl">
                 <Badge className="mb-3 bg-gradient-to-r from-purple-500 to-violet-600 text-white border-0 px-4 py-1.5 text-sm">
                   Next Cohort
