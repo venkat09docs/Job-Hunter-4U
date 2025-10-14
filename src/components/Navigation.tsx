@@ -118,7 +118,7 @@ const Navigation = () => {
             <NavigationMenuItem>
               <NavigationMenuLink
                 className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
-                onClick={() => handleNavigate('/ai-career-level-up')}
+                onClick={() => handleNavigate('/ai-job-hunting')}
               >
                 AI-based Job Hunting
               </NavigationMenuLink>
@@ -195,7 +195,7 @@ const Navigation = () => {
                 <Button
                   variant="ghost"
                   className="justify-start"
-                  onClick={() => handleNavigate('/ai-career-level-up')}
+                  onClick={() => handleNavigate('/ai-job-hunting')}
                 >
                   AI-based Job Hunting
                 </Button>

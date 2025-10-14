@@ -9,7 +9,6 @@ import Testimonials from "@/components/Testimonials";
 import About from "@/components/About";
 import ActivityFeaturesShowcase from "@/components/ActivityFeaturesShowcase";
 import JobTrackerShowcase from "@/components/JobTrackerShowcase";
-import AIToolsSection from "@/components/AIToolsSection";
 import Pricing from "@/components/Pricing";
 import Footer from "@/components/Footer";
 import SocialProofPopup from "@/components/SocialProofPopup";
@@ -46,9 +45,6 @@ const Index = () => {
       <Testimonials />
       <ActivityFeaturesShowcase />
       <JobTrackerShowcase />
-      <div id="ai-tools">
-        <AIToolsSection />
-      </div>
       <div id="pricing">
         <Pricing />
       </div>
