@@ -42,7 +42,8 @@ import {
   Network,
   UsersRound,
   AlertTriangle,
-  X
+  X,
+  Brain
 } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
@@ -401,6 +402,61 @@ const GenAICareerAccelerator = () => {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Who Can Join */}
+      <section className="py-20 px-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-16 animate-fade-in">
+            <Badge className="mb-6 bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0">
+              Join Our Community
+            </Badge>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900 dark:text-foreground">
+              Who Can Join?
+            </h2>
+            <p className="text-xl text-gray-700 dark:text-muted-foreground mb-8 max-w-3xl mx-auto">
+              This program is designed for ambitious individuals ready to embrace AI
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <Card className="hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white dark:bg-card border-0 shadow-md h-full">
+              <CardContent className="p-8 text-center flex flex-col items-center">
+                <div className="bg-blue-500 p-5 rounded-2xl w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                  <Users className="h-10 w-10 text-white" />
+                </div>
+                <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-foreground">Fresh Graduates</h3>
+                <p className="text-gray-600 dark:text-muted-foreground leading-relaxed text-base">
+                  Recent graduates looking to enter the AI field with strong foundations
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card className="hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white dark:bg-card border-0 shadow-md h-full">
+              <CardContent className="p-8 text-center flex flex-col items-center">
+                <div className="bg-green-500 p-5 rounded-2xl w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                  <Brain className="h-10 w-10 text-white" />
+                </div>
+                <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-foreground">College Students</h3>
+                <p className="text-gray-600 dark:text-muted-foreground leading-relaxed text-base">
+                  Students wanting to get ahead with AI skills before graduation
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card className="hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white dark:bg-card border-0 shadow-md h-full">
+              <CardContent className="p-8 text-center flex flex-col items-center">
+                <div className="bg-orange-500 p-5 rounded-2xl w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                  <TrendingUp className="h-10 w-10 text-white" />
+                </div>
+                <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-foreground">IT & Non-IT Professionals</h3>
+                <p className="text-gray-600 dark:text-muted-foreground leading-relaxed text-base">
+                  Working professionals ready to transition or upskill in AI
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
