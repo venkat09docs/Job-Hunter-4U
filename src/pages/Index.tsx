@@ -12,6 +12,7 @@ import JobTrackerShowcase from "@/components/JobTrackerShowcase";
 import Pricing from "@/components/Pricing";
 import Footer from "@/components/Footer";
 import SocialProofPopup from "@/components/SocialProofPopup";
+import MasterKeyActivities from "@/components/MasterKeyActivities";
 
 const Index = () => {
   const { user, loading, hasLoggedOut } = useAuth();
@@ -41,6 +42,7 @@ const Index = () => {
       <div id="features">
         <Features />
       </div>
+      <MasterKeyActivities />
       <About />
       <Testimonials />
       <ActivityFeaturesShowcase />
