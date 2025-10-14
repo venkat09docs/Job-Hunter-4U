@@ -184,9 +184,6 @@ const GenAICareerAccelerator = () => {
                 <Button size="lg" className="text-lg px-8 py-6" onClick={() => setShowPricing(true)}>
                   Join Now - Start Your AI Career <ChevronRight className="ml-2 h-5 w-5" />
                 </Button>
-                <Button size="lg" variant="outline" className="text-lg px-8 py-6" asChild>
-                  <Link to="/auth">Book Free Info Session</Link>
-                </Button>
               </div>
 
               <div className="flex items-center justify-center lg:justify-start gap-2 text-sm text-muted-foreground pt-2">
@@ -218,7 +215,9 @@ const GenAICareerAccelerator = () => {
                   Starts on 23rd October 2025
                 </h3>
                 <p className="text-base text-muted-foreground mb-4">at 7:30AM IST</p>
-                <CountdownTimer targetDate="2025-10-23T07:30:00+05:30" />
+                <div className="flex justify-center">
+                  <CountdownTimer targetDate="2025-10-23T07:30:00+05:30" />
+                </div>
               </div>
             </div>
           </div>
@@ -826,20 +825,26 @@ const GenAICareerAccelerator = () => {
             Ready to Start Your AI Career Journey?
           </h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join 45,000+ learners who transformed their careers with Rise n Shine Technologies
+            Join 8,000+ learners who transformed their careers with Rise n Shine Technologies
           </p>
 
-          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6 mb-8 inline-block">
-            <p className="text-sm font-semibold text-muted-foreground mb-3">⏰ Early Bird Offer Ends In:</p>
-            <CountdownTimer targetDate="2025-11-30T23:59:59+05:30" />
+          {/* Next Cohort Section */}
+          <div className="bg-gradient-to-br from-card/80 to-purple-500/5 backdrop-blur-sm border-2 border-purple-500/30 rounded-3xl p-8 mb-8 inline-block shadow-xl">
+            <Badge className="mb-4 bg-gradient-to-r from-purple-500 to-violet-600 text-white border-0 px-6 py-2 text-base">
+              Next Cohort
+            </Badge>
+            <h3 className="text-3xl md:text-4xl font-bold mb-2 text-foreground">
+              Starts on 23rd October 2025
+            </h3>
+            <p className="text-lg text-muted-foreground mb-6">at 7:30AM IST</p>
+            <div className="flex justify-center">
+              <CountdownTimer targetDate="2025-10-23T07:30:00+05:30" />
+            </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex justify-center">
             <Button size="lg" className="text-lg px-8 py-6" onClick={() => setShowPricing(true)}>
-              Enroll Now - Save ₹5,000 <ChevronRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button size="lg" variant="outline" className="text-lg px-8 py-6" asChild>
-              <Link to="/auth">Book Free Info Session</Link>
+              Enroll Now <ChevronRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
 
