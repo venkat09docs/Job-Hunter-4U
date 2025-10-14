@@ -346,6 +346,72 @@ const GenAICareerAccelerator = () => {
         </div>
       </section>
 
+      {/* Four Levels to Master */}
+      <section className="py-20 px-4 bg-gradient-to-br from-white via-blue-50/30 to-cyan-50/30 dark:from-background dark:via-background dark:to-background">
+        <div className="container mx-auto max-w-7xl">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 bg-gradient-to-r from-blue-600 via-cyan-600 to-indigo-600 bg-clip-text text-transparent">
+            🎯 Four Levels to Master
+          </h2>
+          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+            Your structured path to career transformation
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <Card className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 border-2 border-yellow-500/30 hover:border-yellow-500/50 shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 group relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <CardContent className="p-6 relative z-10">
+                <div className="flex flex-col items-center text-center gap-4">
+                  <div className="bg-gradient-to-r from-yellow-500 to-orange-500 p-4 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <FileText className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground">ATS Resume</h3>
+                  <p className="text-sm text-muted-foreground">Craft a resume that beats Applicant Tracking Systems</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20 border-2 border-pink-500/30 hover:border-pink-500/50 shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 group relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <CardContent className="p-6 relative z-10">
+                <div className="flex flex-col items-center text-center gap-4">
+                  <div className="bg-gradient-to-r from-pink-500 to-purple-500 p-4 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <Sparkles className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground">AI Generalist</h3>
+                  <p className="text-sm text-muted-foreground">Master essential AI tools and become versatile</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 border-2 border-blue-500/30 hover:border-blue-500/50 shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 group relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <CardContent className="p-6 relative z-10">
+                <div className="flex flex-col items-center text-center gap-4">
+                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-4 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <Briefcase className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground">Job Hunting</h3>
+                  <p className="text-sm text-muted-foreground">Smart strategies to land your dream role faster</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-950/20 dark:to-teal-950/20 border-2 border-green-500/30 hover:border-green-500/50 shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 group relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-teal-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <CardContent className="p-6 relative z-10">
+                <div className="flex flex-col items-center text-center gap-4">
+                  <div className="bg-gradient-to-r from-green-500 to-teal-500 p-4 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <Users className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground">LinkedIn Optimization</h3>
+                  <p className="text-sm text-muted-foreground">Build a powerful professional network</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* Curriculum Structure */}
       <section className="py-20 px-4 bg-gradient-to-br from-white via-indigo-50/20 to-purple-50/20 dark:from-background dark:via-background dark:to-background">
         <div className="container mx-auto">
