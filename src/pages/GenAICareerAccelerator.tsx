@@ -174,11 +174,16 @@ const GenAICareerAccelerator = () => {
               Transform from a beginner to a job-ready AI professional. Learn AWS, DevOps, LLM Apps, and MLOps with 6+ real-world projects and guaranteed placement support.
             </p>
 
-            {/* Early Bird Countdown */}
-            <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6 mb-8 inline-block">
-              <p className="text-sm font-semibold text-muted-foreground mb-3">⏰ Early Bird Offer Ends In:</p>
-              <CountdownTimer targetDate="2025-11-30T23:59:59+05:30" />
-              <p className="text-xs text-muted-foreground mt-3">Save ₹5,000 on enrollment!</p>
+            {/* Next Cohort Section */}
+            <div className="bg-gradient-to-br from-card/80 to-purple-500/5 backdrop-blur-sm border-2 border-purple-500/30 rounded-3xl p-8 mb-8 inline-block shadow-xl">
+              <Badge className="mb-4 bg-gradient-to-r from-purple-500 to-violet-600 text-white border-0 px-6 py-2 text-base">
+                Next Cohort
+              </Badge>
+              <h3 className="text-3xl md:text-4xl font-bold mb-2 text-foreground">
+                Starts on 18th Sept 2025
+              </h3>
+              <p className="text-lg text-muted-foreground mb-6">at 8:30AM IST</p>
+              <CountdownTimer targetDate="2025-09-18T08:30:00+05:30" />
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
