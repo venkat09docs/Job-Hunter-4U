@@ -96,12 +96,6 @@ const GenAICareerAccelerator = () => {
       text: 'This program transformed my career! From a fresher to an ML Engineer in just 4 months. The hands-on projects and mentorship were invaluable.'
     },
     {
-      name: 'Rahul Verma',
-      role: 'Freelance AI Developer',
-      image: 'RV',
-      text: 'The freelancing track opened up a whole new income stream for me. Now earning $3000+ monthly while working on exciting AI projects.'
-    },
-    {
       name: 'Anjali Patel',
       role: 'DevOps Engineer at StartupXYZ',
       image: 'AP',
@@ -124,7 +118,7 @@ const GenAICareerAccelerator = () => {
     },
     {
       question: 'Are there any hidden costs?',
-      answer: 'No hidden costs! The program fee includes everything - course materials, projects, mentorship, certification, and lifetime access to content. AWS costs for projects are minimal (<₹500).'
+      answer: 'No hidden costs! The program fee includes everything - course materials, projects, mentorship, certification, and one year access to content. AWS costs for projects are minimal (<₹500).'
     },
     {
       question: 'What if I miss a live session?',
@@ -337,7 +331,7 @@ const GenAICareerAccelerator = () => {
                     'SageMaker, Feature Store, Model Tuning',
                     'MLOps Pipelines & Infrastructure as Code',
                     'Resume, LinkedIn & Portfolio Building',
-                    'Job Hunting Automation & Freelancing'
+                    'Job Hunting Automation'
                   ].map((item, index) => (
                     <div key={index} className="flex items-start gap-2">
                       <CheckCircle className="h-5 w-5 text-purple-500 mt-0.5 flex-shrink-0" />
@@ -442,7 +436,7 @@ const GenAICareerAccelerator = () => {
               { icon: Award, title: 'Internship Certificate', desc: 'Industry-recognized certification' },
               { icon: Target, title: 'Job Automation System', desc: 'AI-powered job hunting tools' },
               { icon: Users, title: 'Community + Placement Prep', desc: '24/7 support and interview preparation' },
-              { icon: Clock, title: 'Lifetime Access', desc: 'Forever access to all course materials' },
+              { icon: Clock, title: 'One Year Access', desc: 'One year access to all course materials' },
             ].map((item, index) => (
               <Card key={index} className="bg-card/50 backdrop-blur-sm border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300">
                 <CardContent className="p-6">
@@ -527,9 +521,8 @@ const GenAICareerAccelerator = () => {
                     'Job automation system',
                     'Resume & LinkedIn optimization',
                     'Mock interviews & job prep',
-                    'Freelancing track access',
                     'Priority placement support',
-                    'Lifetime career guidance'
+                    'Extended career guidance'
                   ].map((feature, index) => (
                     <li key={index} className="flex items-start gap-2">
                       <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
@@ -554,7 +547,7 @@ const GenAICareerAccelerator = () => {
         </div>
       </section>
 
-      {/* Placement & Freelancing Outcomes */}
+      {/* Career Outcomes */}
       <section className="py-20 px-4">
         <div className="container mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 bg-gradient-primary bg-clip-text text-transparent">
@@ -564,7 +557,7 @@ const GenAICareerAccelerator = () => {
             Real results from our students
           </p>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             <Card className="bg-card/50 backdrop-blur-sm border border-border/50 shadow-lg text-center">
               <CardContent className="p-8">
                 <div className="text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">85%</div>
@@ -578,14 +571,6 @@ const GenAICareerAccelerator = () => {
                 <div className="text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">₹6.5L</div>
                 <p className="text-lg font-semibold mb-2">Average Package</p>
                 <p className="text-sm text-muted-foreground">For freshers and career switchers</p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-card/50 backdrop-blur-sm border border-border/50 shadow-lg text-center">
-              <CardContent className="p-8">
-                <div className="text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">40%</div>
-                <p className="text-lg font-semibold mb-2">Choose Freelancing</p>
-                <p className="text-sm text-muted-foreground">Earning $2000+ per month</p>
               </CardContent>
             </Card>
           </div>
@@ -602,7 +587,7 @@ const GenAICareerAccelerator = () => {
             Hear from our successful graduates
           </p>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
             {testimonials.map((testimonial, index) => (
               <Card key={index} className="bg-white/70 backdrop-blur-sm border-0 shadow-lg">
                 <CardContent className="p-6">
