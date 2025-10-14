@@ -210,7 +210,7 @@ const GenAICareerAccelerator = () => {
               </div>
 
               {/* Next Cohort Section */}
-              <div className="bg-gradient-to-br from-card/90 to-purple-500/10 backdrop-blur-sm border-2 border-purple-500/30 rounded-3xl p-6 shadow-xl">
+              <div className="bg-gradient-to-br from-card/90 to-purple-500/10 backdrop-blur-sm border-2 border-purple-500/30 rounded-3xl p-6 shadow-xl text-center">
                 <Badge className="mb-3 bg-gradient-to-r from-purple-500 to-violet-600 text-white border-0 px-4 py-1.5 text-sm">
                   Next Cohort
                 </Badge>
