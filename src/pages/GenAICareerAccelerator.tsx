@@ -40,7 +40,9 @@ import {
   Server,
   Cpu,
   Network,
-  UsersRound
+  UsersRound,
+  AlertTriangle,
+  X
 } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
@@ -192,6 +194,69 @@ const GenAICareerAccelerator = () => {
               <Users className="h-4 w-4" />
               <span>Trusted by 45,000+ learners worldwide</span>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Problems Without AI Skills Section */}
+      <section className="py-20 px-4 bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center mb-16 animate-fade-in">
+            <Badge className="mb-6 bg-gradient-to-r from-red-500 to-orange-600 text-white border-0 px-6 py-2">
+              Wake-Up Call
+            </Badge>
+            <h2 className="text-4xl md:text-6xl font-bold mb-6 text-gray-900 dark:text-foreground">
+              Without AI Skills, You Risk...
+            </h2>
+            <p className="text-xl text-gray-700 dark:text-muted-foreground max-w-3xl mx-auto">
+              The AI revolution is happening now. Don't get left behind.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-8">
+            {[
+              {
+                icon: AlertTriangle,
+                title: "Job Displacement Risk",
+                description: "Traditional roles are being automated - without AI skills, you're vulnerable to replacement",
+                impact: "67% of jobs may be affected by AI automation"
+              },
+              {
+                icon: DollarSign,
+                title: "Salary Stagnation",
+                description: "Non-AI professionals see slower salary growth compared to AI-skilled counterparts",
+                impact: "AI professionals earn 40% more on average"
+              },
+              {
+                icon: X,
+                title: "Limited Career Growth",
+                description: "Companies prioritize AI-capable employees for leadership and strategic roles",
+                impact: "85% of executives prefer AI-literate candidates"
+              },
+              {
+                icon: Target,
+                title: "Missed Opportunities",
+                description: "Unable to capitalize on the $15.7 trillion AI market opportunity",
+                impact: "Missing out on the fastest-growing industry"
+              }
+            ].map((problem, index) => (
+              <Card key={index} className="border-red-200 dark:border-red-900/50 hover:border-red-300 dark:hover:border-red-800/70 transition-all duration-300 transform hover:scale-105 bg-white dark:bg-card shadow-lg hover:shadow-xl">
+                <CardContent className="p-8">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-gradient-to-br from-red-500 to-orange-600 p-3 rounded-lg flex-shrink-0">
+                      <problem.icon className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-foreground">{problem.title}</h3>
+                      <p className="text-gray-700 dark:text-muted-foreground mb-4 leading-relaxed">{problem.description}</p>
+                      <div className="bg-red-50 dark:bg-red-950/30 border-l-4 border-red-400 dark:border-red-600 p-4 rounded">
+                        <p className="text-red-800 dark:text-red-400 font-semibold text-sm">{problem.impact}</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
