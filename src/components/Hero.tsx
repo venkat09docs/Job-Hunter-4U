@@ -131,33 +131,67 @@ const Hero = () => {
             </div>
 
             {/* Build Profile CTA */}
-            <div className="bg-gradient-hero rounded-2xl p-6 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/5 to-success/5"></div>
-              <div className="text-center relative z-10">
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-primary mb-4 shadow-glow">
-                  <User className="h-6 w-6 text-primary-foreground" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Analyze Resume CTA - Left */}
+              <div className="bg-gradient-to-br from-pink-500/10 to-purple-600/10 rounded-2xl p-6 relative overflow-hidden border border-pink-500/20">
+                <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 via-purple-500/5 to-pink-500/5"></div>
+                <div className="text-center relative z-10">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 mb-4 shadow-glow">
+                    <FileText className="h-6 w-6 text-white" />
+                  </div>
+                  
+                  <h3 className="text-xl font-bold mb-3 bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
+                    Analyze Your Resume
+                  </h3>
+                  
+                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                    Get instant AI-powered insights to improve your resume and beat ATS systems.
+                  </p>
+                  
+                  <Button
+                    size="lg"
+                    className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold shadow-2xl transition-all duration-300 w-full"
+                    onClick={() => navigate('/auth')}
+                  >
+                    Analyze For Free
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                  
+                  <p className="text-xs text-muted-foreground mt-3">
+                    No credit card required • Instant results
+                  </p>
                 </div>
-                
-                <h3 className="text-2xl font-bold mb-3 bg-gradient-primary bg-clip-text text-transparent">
-                  Build Profile for Free
-                </h3>
-                
-                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                  Start your career transformation journey today. Create your professional profile and explore our tools at no cost.
-                </p>
-                
-                <Button
-                  size="lg"
-                  className="bg-gradient-primary hover:shadow-glow transition-all duration-300 w-full font-semibold"
-                  onClick={() => navigate('/auth')}
-                >
-                  Get Started for Free
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-                
-                <p className="text-xs text-muted-foreground mt-3">
-                  No credit card required • Instant access
-                </p>
+              </div>
+
+              {/* Build Profile CTA - Right */}
+              <div className="bg-gradient-hero rounded-2xl p-6 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/5 to-success/5"></div>
+                <div className="text-center relative z-10">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-primary mb-4 shadow-glow">
+                    <User className="h-6 w-6 text-primary-foreground" />
+                  </div>
+                  
+                  <h3 className="text-xl font-bold mb-3 bg-gradient-primary bg-clip-text text-transparent">
+                    Build Profile for Free
+                  </h3>
+                  
+                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                    Start your career transformation journey today. Create your professional profile and explore our tools at no cost.
+                  </p>
+                  
+                  <Button
+                    size="lg"
+                    className="bg-gradient-primary hover:shadow-glow transition-all duration-300 w-full font-semibold"
+                    onClick={() => navigate('/auth')}
+                  >
+                    Get Started for Free
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                  
+                  <p className="text-xs text-muted-foreground mt-3">
+                    No credit card required • Instant access
+                  </p>
+                </div>
               </div>
             </div>
           </div>
