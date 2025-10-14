@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Search, Target, Users, User } from "lucide-react";
+import { ArrowRight, Search, Target, Users, User, FileText, Brain, Briefcase } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import heroImage from "@/assets/hero-job-hunters.jpg";
+import careerSuccessSteps from "@/assets/career-success-steps.jpg";
 
 
 const Hero = () => {
@@ -64,33 +64,70 @@ const Hero = () => {
 
           {/* Hero image and CTA */}
           <div className="relative space-y-6">
-            <div className="relative rounded-2xl overflow-hidden shadow-elegant">
-              <img
-                src={heroImage}
-                alt="Professional job hunters"
-                className="w-full h-auto object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-primary/10" />
-              
-              {/* AI Cloud Bootcamp label */}
-              <div className="absolute top-4 left-4 bg-gradient-primary rounded-lg px-3 py-2 shadow-glow">
-                <span className="text-sm font-semibold text-primary-foreground">AI Cloud Bootcamp</span>
+            {/* Career Level Up Box from AI Career Level Up page */}
+            <div className="relative bg-gradient-to-br from-purple-600/60 via-pink-600/50 to-indigo-600/60 backdrop-blur-md rounded-3xl p-8 md:p-12 border-2 border-white/40 shadow-2xl overflow-hidden">
+              {/* Strong Animated Background Pattern */}
+              <div className="absolute inset-0 opacity-40">
+                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-yellow-400/40 via-pink-500/30 to-transparent"></div>
+                <div className="absolute top-1/4 right-0 w-96 h-96 bg-pink-500/50 rounded-full blur-3xl animate-pulse"></div>
+                <div className="absolute bottom-1/4 left-0 w-72 h-72 bg-cyan-500/50 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.5s' }}></div>
               </div>
               
-              {/* Floating cards */}
-              <div className="absolute -top-4 -left-4 bg-card rounded-lg p-4 shadow-elegant border">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-success rounded-full animate-pulse" />
-                  <span className="text-sm font-medium">Live Job Alerts</span>
+              {/* Career Success Steps Image */}
+              <div className="relative z-10 mb-8 rounded-2xl overflow-hidden shadow-2xl">
+                <img 
+                  src={careerSuccessSteps} 
+                  alt="Career success journey - climbing steps to reach goals" 
+                  className="w-full h-auto"
+                />
+              </div>
+              
+              {/* Main Text */}
+              <div className="text-center mb-6 relative z-10">
+                <h3 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-4 drop-shadow-2xl" style={{
+                  textShadow: '0 0 30px rgba(255, 255, 255, 0.5), 0 0 60px rgba(255, 105, 180, 0.3)'
+                }}>
+                  Career Level Up
+                </h3>
+              </div>
+              
+              {/* Labels Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 relative z-10">
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl p-3 md:p-4 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
+                  <div className="flex items-center justify-center gap-2">
+                    <FileText className="h-4 w-4 md:h-5 md:w-5 text-white" />
+                    <span className="text-white font-bold text-xs md:text-base drop-shadow-lg">ATS Resume</span>
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl p-3 md:p-4 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
+                  <div className="flex items-center justify-center gap-2">
+                    <Brain className="h-4 w-4 md:h-5 md:w-5 text-white" />
+                    <span className="text-white font-bold text-xs md:text-base drop-shadow-lg">AI Generalist</span>
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl p-3 md:p-4 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
+                  <div className="flex items-center justify-center gap-2">
+                    <Briefcase className="h-4 w-4 md:h-5 md:w-5 text-white" />
+                    <span className="text-white font-bold text-xs md:text-base drop-shadow-lg">Job Hunting</span>
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-r from-green-500 to-teal-500 rounded-xl p-3 md:p-4 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
+                  <div className="flex items-center justify-center gap-2">
+                    <Users className="h-4 w-4 md:h-5 md:w-5 text-white" />
+                    <span className="text-white font-bold text-xs md:text-base drop-shadow-lg">LinkedIn Optimization</span>
+                  </div>
                 </div>
               </div>
               
-              <div className="absolute -bottom-4 -right-4 bg-card rounded-lg p-4 shadow-elegant border">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">92%</div>
-                  <div className="text-sm text-muted-foreground">Success Rate</div>
-                </div>
-              </div>
+              {/* Stronger Decorative Elements */}
+              <div className="absolute -top-8 -right-8 w-40 h-40 bg-yellow-400/60 rounded-full blur-2xl animate-pulse"></div>
+              <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-pink-400/60 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+              <div className="absolute top-1/2 right-0 w-32 h-32 bg-cyan-400/50 rounded-full blur-xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+              <div className="absolute bottom-0 left-1/3 w-36 h-36 bg-purple-400/50 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1.5s' }}></div>
             </div>
 
             {/* Build Profile CTA */}
