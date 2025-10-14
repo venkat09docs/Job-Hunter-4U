@@ -151,8 +151,9 @@ const GenAICareerAccelerator = () => {
       
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-purple-500/5 to-transparent"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(79,70,229,0.1),transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-purple-500/10 to-cyan-500/5"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(124,58,237,0.15),transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(59,130,246,0.1),transparent_50%)]"></div>
         <div className="container mx-auto relative z-10">
           <div className="max-w-5xl mx-auto text-center">
             <Badge className="mb-6 px-4 py-2 text-base bg-primary/10 text-primary border-primary/20">
@@ -196,27 +197,31 @@ const GenAICareerAccelerator = () => {
       </section>
 
       {/* Program Highlights */}
-      <section className="py-20 px-4 bg-white">
+      <section className="py-20 px-4 bg-gradient-to-br from-white via-purple-50/30 to-blue-50/30 dark:from-background dark:via-background dark:to-background">
         <div className="container mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 bg-gradient-to-r from-primary via-violet-600 to-cyan-600 bg-clip-text text-transparent">
             🏆 Program Highlights
           </h2>
+          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+            Everything you need to launch your AI career
+          </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {[
-              { icon: Calendar, text: '3 Months | Live + Recorded', color: 'from-blue-500 to-cyan-500' },
-              { icon: Users, text: '1:1 Mentorship Sessions', color: 'from-purple-500 to-pink-500' },
-              { icon: Code, text: '6+ Hands-On AI Projects', color: 'from-green-500 to-emerald-500' },
-              { icon: Award, text: 'Internship Certificate', color: 'from-amber-500 to-orange-500' },
-              { icon: GitBranch, text: 'GitHub Portfolio Builder', color: 'from-indigo-500 to-blue-500' },
-              { icon: Briefcase, text: 'Job Hunting Automation', color: 'from-rose-500 to-red-500' },
+              { icon: Calendar, text: '3 Months | Live + Recorded', color: 'from-blue-500 via-cyan-500 to-blue-600', borderColor: 'border-blue-500/30' },
+              { icon: Users, text: '1:1 Mentorship Sessions', color: 'from-purple-500 via-violet-500 to-purple-600', borderColor: 'border-purple-500/30' },
+              { icon: Code, text: '6+ Hands-On AI Projects', color: 'from-green-500 via-emerald-500 to-teal-600', borderColor: 'border-green-500/30' },
+              { icon: Award, text: 'Internship Certificate', color: 'from-amber-500 via-orange-500 to-amber-600', borderColor: 'border-amber-500/30' },
+              { icon: GitBranch, text: 'GitHub Portfolio Builder', color: 'from-indigo-500 via-blue-500 to-indigo-600', borderColor: 'border-indigo-500/30' },
+              { icon: Briefcase, text: 'Job Hunting Automation', color: 'from-rose-500 via-pink-500 to-rose-600', borderColor: 'border-rose-500/30' },
             ].map((item, index) => (
-              <Card key={index} className="bg-white/80 backdrop-blur-sm border-2 border-gray-100 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-                <CardContent className="p-6 flex items-center gap-4">
-                  <div className={`bg-gradient-to-br ${item.color} p-3 rounded-xl shadow-lg group-hover:scale-110 transition-transform`}>
+              <Card key={index} className={`bg-white/90 dark:bg-card/90 backdrop-blur-sm border-2 ${item.borderColor} shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group overflow-hidden relative`}>
+                <div className={`absolute inset-0 bg-gradient-to-br ${item.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}></div>
+                <CardContent className="p-6 flex items-center gap-4 relative z-10">
+                  <div className={`bg-gradient-to-br ${item.color} p-3 rounded-xl shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
                     <item.icon className="h-6 w-6 text-white" />
                   </div>
-                  <p className="font-semibold text-gray-900 group-hover:text-primary transition-colors">{item.text}</p>
+                  <p className="font-semibold text-gray-900 dark:text-foreground group-hover:text-primary transition-colors">{item.text}</p>
                 </CardContent>
               </Card>
             ))}
@@ -225,9 +230,9 @@ const GenAICareerAccelerator = () => {
       </section>
 
       {/* What You'll Learn */}
-      <section className="py-20 px-4">
+      <section className="py-20 px-4 bg-gradient-to-br from-white via-cyan-50/20 to-blue-50/20 dark:from-background dark:via-background dark:to-background">
         <div className="container mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 bg-gradient-primary bg-clip-text text-transparent">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
             📊 What You'll Master
           </h2>
           <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
@@ -236,12 +241,13 @@ const GenAICareerAccelerator = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4 max-w-6xl mx-auto">
             {skills.map((skill, index) => (
-              <Card key={index} className="bg-white/80 backdrop-blur-sm border-2 border-transparent hover:border-primary/20 hover:shadow-xl transition-all duration-300 cursor-pointer group">
-                <CardContent className="p-5 text-center">
-                  <div className={`bg-gradient-to-br ${skill.color} p-3 rounded-2xl w-14 h-14 mx-auto mb-3 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg`}>
+              <Card key={index} className="bg-white/90 dark:bg-card/90 backdrop-blur-sm border-2 border-transparent hover:border-primary/30 hover:shadow-2xl transition-all duration-300 cursor-pointer group relative overflow-hidden">
+                <div className={`absolute inset-0 bg-gradient-to-br ${skill.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}></div>
+                <CardContent className="p-5 text-center relative z-10">
+                  <div className={`bg-gradient-to-br ${skill.color} p-3 rounded-2xl w-14 h-14 mx-auto mb-3 flex items-center justify-center group-hover:scale-125 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-2xl`}>
                     <skill.icon className="h-7 w-7 text-white" />
                   </div>
-                  <p className="font-semibold text-sm group-hover:text-primary transition-colors">{skill.name}</p>
+                  <p className="font-bold text-sm group-hover:text-primary transition-colors">{skill.name}</p>
                 </CardContent>
               </Card>
             ))}
@@ -250,114 +256,126 @@ const GenAICareerAccelerator = () => {
       </section>
 
       {/* Curriculum Structure */}
-      <section className="py-20 px-4 bg-white">
+      <section className="py-20 px-4 bg-gradient-to-br from-white via-indigo-50/20 to-purple-50/20 dark:from-background dark:via-background dark:to-background">
         <div className="container mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-gray-900">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
             🧠 3-Month Curriculum Journey
           </h2>
-          <p className="text-center text-gray-700 mb-12 max-w-2xl mx-auto">
+          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
             Structured learning path from fundamentals to production-ready AI systems
           </p>
 
-          <div className="max-w-5xl mx-auto space-y-6">
+          <div className="max-w-5xl mx-auto space-y-8">
             {/* Month 1 */}
-            <Card className="bg-white/70 backdrop-blur-sm border-2 border-primary/20 shadow-xl">
-              <CardContent className="p-8">
-                <div className="flex items-start gap-4 mb-4">
-                  <Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white text-lg px-4 py-2">
+            <Card className="bg-gradient-to-br from-white via-orange-50/30 to-amber-50/30 dark:from-card dark:via-card dark:to-card backdrop-blur-sm border-2 border-orange-500/30 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <CardContent className="p-8 relative z-10">
+                <div className="flex items-start gap-4 mb-6">
+                  <Badge className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white text-lg px-5 py-2 shadow-lg">
                     Month 1
                   </Badge>
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">DevOps + Cloud + LLM Basics</h3>
-                    <p className="text-gray-700">Foundation building with cloud infrastructure and AI fundamentals</p>
+                    <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">DevOps + Cloud + LLM Basics</h3>
+                    <p className="text-muted-foreground">Foundation building with cloud infrastructure and AI fundamentals</p>
                   </div>
                 </div>
                 
-                <div className="grid md:grid-cols-2 gap-4 mb-4">
+                <div className="grid md:grid-cols-2 gap-4 mb-6">
                   {[
                     'AWS Account Setup (EC2, S3, IAM)',
                     'DevOps Fundamentals & CI/CD',
                     'Introduction to LangChain & LLMs',
                     'Version Control with Git & GitHub'
                   ].map((item, index) => (
-                    <div key={index} className="flex items-start gap-2">
-                      <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-700">{item}</span>
+                    <div key={index} className="flex items-start gap-3 p-3 rounded-lg hover:bg-orange-500/5 transition-colors">
+                      <CheckCircle className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+                      <span className="text-foreground font-medium">{item}</span>
                     </div>
                   ))}
                 </div>
 
-                <div className="bg-gradient-to-r from-orange-500/10 to-orange-600/10 rounded-lg p-4 border-l-4 border-orange-500">
-                  <p className="font-semibold text-gray-900 mb-2">📌 Projects:</p>
-                  <p className="text-gray-700">• AI Travel Planner • CI/CD ML Pipeline</p>
+                <div className="bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-orange-500/10 rounded-xl p-5 border-l-4 border-orange-500 shadow-md">
+                  <p className="font-bold text-foreground mb-2 flex items-center gap-2">
+                    <Rocket className="h-5 w-5 text-orange-600" />
+                    Projects:
+                  </p>
+                  <p className="text-muted-foreground font-medium">• AI Travel Planner • CI/CD ML Pipeline</p>
                 </div>
               </CardContent>
             </Card>
 
             {/* Month 2 */}
-            <Card className="bg-white/70 backdrop-blur-sm border-2 border-blue-500/20 shadow-xl">
-              <CardContent className="p-8">
-                <div className="flex items-start gap-4 mb-4">
-                  <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-lg px-4 py-2">
+            <Card className="bg-gradient-to-br from-white via-blue-50/30 to-cyan-50/30 dark:from-card dark:via-card dark:to-card backdrop-blur-sm border-2 border-blue-500/30 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <CardContent className="p-8 relative z-10">
+                <div className="flex items-start gap-4 mb-6">
+                  <Badge className="bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-600 text-white text-lg px-5 py-2 shadow-lg">
                     Month 2
                   </Badge>
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">LLM Apps + RAG + Agents</h3>
-                    <p className="text-gray-700">Advanced AI application development with intelligent agents</p>
+                    <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">LLM Apps + RAG + Agents</h3>
+                    <p className="text-muted-foreground">Advanced AI application development with intelligent agents</p>
                   </div>
                 </div>
                 
-                <div className="grid md:grid-cols-2 gap-4 mb-4">
+                <div className="grid md:grid-cols-2 gap-4 mb-6">
                   {[
                     'RAG Applications with Vector DBs',
                     'Multi-Agent AI with CrewAI/LangGraph',
                     'Frontend Integration (Next.js & Vercel)',
                     'Prompt Engineering & Fine-tuning'
                   ].map((item, index) => (
-                    <div key={index} className="flex items-start gap-2">
-                      <CheckCircle className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-700">{item}</span>
+                    <div key={index} className="flex items-start gap-3 p-3 rounded-lg hover:bg-blue-500/5 transition-colors">
+                      <CheckCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                      <span className="text-foreground font-medium">{item}</span>
                     </div>
                   ))}
                 </div>
 
-                <div className="bg-blue-500/10 rounded-lg p-4 border-l-4 border-blue-500">
-                  <p className="font-semibold text-gray-900 mb-2">📌 Projects:</p>
-                  <p className="text-gray-700">• PDF Q&A Platform • Medical RAG Chart Bot • Multi-Agent Assistant</p>
+                <div className="bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-blue-500/10 rounded-xl p-5 border-l-4 border-blue-500 shadow-md">
+                  <p className="font-bold text-foreground mb-2 flex items-center gap-2">
+                    <Rocket className="h-5 w-5 text-blue-600" />
+                    Projects:
+                  </p>
+                  <p className="text-muted-foreground font-medium">• PDF Q&A Platform • Medical RAG Chart Bot • Multi-Agent Assistant</p>
                 </div>
               </CardContent>
             </Card>
 
             {/* Month 3 */}
-            <Card className="bg-white/70 backdrop-blur-sm border-2 border-purple-500/20 shadow-xl">
-              <CardContent className="p-8">
-                <div className="flex items-start gap-4 mb-4">
-                  <Badge className="bg-gradient-to-r from-purple-500 to-purple-600 text-white text-lg px-4 py-2">
+            <Card className="bg-gradient-to-br from-white via-purple-50/30 to-pink-50/30 dark:from-card dark:via-card dark:to-card backdrop-blur-sm border-2 border-purple-500/30 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <CardContent className="p-8 relative z-10">
+                <div className="flex items-start gap-4 mb-6">
+                  <Badge className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-600 text-white text-lg px-5 py-2 shadow-lg">
                     Month 3
                   </Badge>
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">MLOps + LLMOps + Career Launch</h3>
-                    <p className="text-gray-700">Production ML systems and career acceleration</p>
+                    <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">MLOps + LLMOps + Career Launch</h3>
+                    <p className="text-muted-foreground">Production ML systems and career acceleration</p>
                   </div>
                 </div>
                 
-                <div className="grid md:grid-cols-2 gap-4 mb-4">
+                <div className="grid md:grid-cols-2 gap-4 mb-6">
                   {[
                     'SageMaker, Feature Store, Model Tuning',
                     'MLOps Pipelines & Infrastructure as Code',
                     'Resume, LinkedIn & Portfolio Building',
                     'Job Hunting Automation'
                   ].map((item, index) => (
-                    <div key={index} className="flex items-start gap-2">
-                      <CheckCircle className="h-5 w-5 text-purple-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-700">{item}</span>
+                    <div key={index} className="flex items-start gap-3 p-3 rounded-lg hover:bg-purple-500/5 transition-colors">
+                      <CheckCircle className="h-5 w-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
+                      <span className="text-foreground font-medium">{item}</span>
                     </div>
                   ))}
                 </div>
 
-                <div className="bg-purple-500/5 rounded-lg p-4 border-l-4 border-purple-500">
-                  <p className="font-semibold text-gray-900 mb-2">📌 Capstone Projects:</p>
-                  <p className="text-gray-700">• Full MLOps Pipeline • SaaS AI Platform (Production-Ready)</p>
+                <div className="bg-gradient-to-r from-purple-500/10 via-violet-500/10 to-purple-500/10 rounded-xl p-5 border-l-4 border-purple-500 shadow-md">
+                  <p className="font-bold text-foreground mb-2 flex items-center gap-2">
+                    <Rocket className="h-5 w-5 text-purple-600" />
+                    Capstone Projects:
+                  </p>
+                  <p className="text-muted-foreground font-medium">• Full MLOps Pipeline • SaaS AI Platform (Production-Ready)</p>
                 </div>
               </CardContent>
             </Card>
@@ -592,38 +610,92 @@ const GenAICareerAccelerator = () => {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-20 px-4 bg-white">
+      {/* Student Success Stories - Copied from CareerLevelUp */}
+      <section className="py-20 px-4 bg-gradient-to-br from-background via-muted/10 to-background">
         <div className="container mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-gray-900">
-            🏆 Success Stories
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 bg-gradient-to-r from-primary via-purple-500 to-primary bg-clip-text text-transparent">
+            🌟 Student Success Stories
           </h2>
-          <p className="text-center text-gray-700 mb-12 max-w-2xl mx-auto">
-            Hear from our successful graduates
+          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+            Real career transformations from our alumni
           </p>
+          
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            <Card className="p-6 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card/90 to-emerald-500/5 border-2 border-emerald-500/20 hover:border-emerald-500/40">
+              <CardContent className="space-y-4 p-0">
+                <div className="text-primary text-3xl mb-4">"</div>
+                <p className="text-muted-foreground italic leading-relaxed">
+                  "The AI integration in this program is incredible! Learning GitHub Copilot and Cursor transformed my coding speed by 300%. I went from struggling with basic DevOps to building AI-powered infrastructures. Best investment ever!"
+                </p>
+                <div className="flex items-center gap-4 pt-4 border-t border-border/50">
+                  <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center shadow-lg">
+                    <Users className="h-7 w-7 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-lg">Priya Singh</p>
+                    <p className="text-sm text-muted-foreground">DevOps Engineer at Infosys</p>
+                    <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">₹8L → ₹13.2L</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="bg-white/70 backdrop-blur-sm border-0 shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-warning text-warning" />
-                    ))}
+            <Card className="p-6 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card/90 to-violet-500/5 border-2 border-violet-500/20 hover:border-violet-500/40">
+              <CardContent className="space-y-4 p-0">
+                <div className="text-primary text-3xl mb-4">"</div>
+                <p className="text-muted-foreground italic leading-relaxed">
+                  "The placement support is outstanding! They didn't just teach me DevOps, they prepared my entire portfolio, optimized my LinkedIn, and I got 3 job offers within 45 days of completing the program."
+                </p>
+                <div className="flex items-center gap-4 pt-4 border-t border-border/50">
+                  <div className="w-14 h-14 bg-gradient-to-br from-violet-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg">
+                    <Users className="h-7 w-7 text-white" />
                   </div>
-                  <p className="text-gray-700 mb-6 italic">"{testimonial.text}"</p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center text-white font-bold">
-                      {testimonial.image}
-                    </div>
-                    <div>
-                      <p className="font-bold text-gray-900">{testimonial.name}</p>
-                      <p className="text-sm text-gray-700">{testimonial.role}</p>
-                    </div>
+                  <div>
+                    <p className="font-bold text-lg">Rahul Kumar</p>
+                    <p className="text-sm text-muted-foreground">AI-DevOps Lead at TCS</p>
+                    <p className="text-sm font-semibold text-violet-600 dark:text-violet-400">₹6L → ₹18L</p>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card/90 to-blue-500/5 border-2 border-blue-500/20 hover:border-blue-500/40">
+              <CardContent className="space-y-4 p-0">
+                <div className="text-primary text-3xl mb-4">"</div>
+                <p className="text-muted-foreground italic leading-relaxed">
+                  "As a fresher, I was worried about competing with experienced developers. But the AI-enhanced learning approach and hands-on projects gave me confidence. Now I'm earning ₹15L as a Senior DevOps Engineer!"
+                </p>
+                <div className="flex items-center gap-4 pt-4 border-t border-border/50">
+                  <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center shadow-lg">
+                    <Users className="h-7 w-7 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-lg">Vikram Sharma</p>
+                    <p className="text-sm text-muted-foreground">Senior DevOps at Accenture</p>
+                    <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">Fresher → ₹15L</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card/90 to-rose-500/5 border-2 border-rose-500/20 hover:border-rose-500/40">
+              <CardContent className="space-y-4 p-0">
+                <div className="text-primary text-3xl mb-4">"</div>
+                <p className="text-muted-foreground italic leading-relaxed">
+                  "The future is AI + DevOps, and this program nailed it! Learning to build AI agents for infrastructure monitoring and automated deployments set me apart from other candidates. Remote work at ₹22L - dream come true!"
+                </p>
+                <div className="flex items-center gap-4 pt-4 border-t border-border/50">
+                  <div className="w-14 h-14 bg-gradient-to-br from-rose-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
+                    <Users className="h-7 w-7 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-lg">Sneha Reddy</p>
+                    <p className="text-sm text-muted-foreground">DevOps Architect at Microsoft</p>
+                    <p className="text-sm font-semibold text-rose-600 dark:text-rose-400">₹7L → ₹22L Remote</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
