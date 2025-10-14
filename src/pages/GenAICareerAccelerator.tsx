@@ -32,7 +32,11 @@ import {
   DollarSign,
   Clock,
   Workflow,
-  Box
+  Box,
+  Settings,
+  Container,
+  MousePointer2,
+  Sparkles
 } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
@@ -41,12 +45,15 @@ const GenAICareerAccelerator = () => {
 
   const skills = [
     { icon: Cloud, name: 'AWS Cloud', color: 'from-orange-500 to-orange-600' },
-    { icon: GitBranch, name: 'DevOps', color: 'from-blue-500 to-blue-600' },
+    { icon: Settings, name: 'DevOps', color: 'from-blue-500 to-blue-600' },
     { icon: Bot, name: 'LangChain', color: 'from-green-500 to-green-600' },
     { icon: Database, name: 'MLOps', color: 'from-purple-500 to-purple-600' },
     { icon: Code, name: 'Python', color: 'from-yellow-500 to-yellow-600' },
     { icon: Box, name: 'Bedrock', color: 'from-indigo-500 to-indigo-600' },
     { icon: Workflow, name: 'N8N', color: 'from-pink-500 to-pink-600' },
+    { icon: Container, name: 'Kubernetes', color: 'from-cyan-500 to-blue-500' },
+    { icon: MousePointer2, name: 'Cursor', color: 'from-slate-600 to-gray-700' },
+    { icon: Sparkles, name: 'GitHub Copilot', color: 'from-violet-500 to-purple-500' },
   ];
 
   const capstoneProjects = [
@@ -219,7 +226,7 @@ const GenAICareerAccelerator = () => {
             Industry-relevant skills that top companies are hiring for
           </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4 max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-6xl mx-auto">
             {skills.map((skill, index) => (
               <Card key={index} className="bg-white/80 backdrop-blur-sm border-2 border-transparent hover:border-primary/20 hover:shadow-xl transition-all duration-300 cursor-pointer group">
                 <CardContent className="p-5 text-center">
