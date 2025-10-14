@@ -188,7 +188,7 @@ const GenAICareerAccelerator = () => {
 
               <div className="flex items-center justify-center lg:justify-start gap-2 text-sm text-muted-foreground pt-2">
                 <Users className="h-4 w-4" />
-                <span>Trusted by 6,000+ learners worldwide</span>
+                <span>Trusted by 8,000+ learners worldwide</span>
               </div>
             </div>
 
