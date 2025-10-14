@@ -935,19 +935,19 @@ export default function AICareerLevelUp() {
                               )}
                               
                               {/* Content Section */}
-                              <div className={`p-6 flex flex-col flex-1 bg-gradient-to-br ${gradientClasses[index % 3]} ${!course.image ? 'pt-12' : ''}`}>
+                              <div className={`p-6 flex flex-col flex-1 bg-white ${!course.image ? 'pt-12' : ''}`}>
                                 {/* Title */}
-                                <h3 className="text-2xl font-bold text-white mb-4 leading-tight">
+                                <h3 className="text-2xl font-bold text-gray-900 mb-4 leading-tight">
                                   {course.title}
                                 </h3>
 
                                 {/* Description */}
-                                <p className="text-white/90 mb-4 leading-relaxed text-sm">
+                                <p className="text-gray-700 mb-4 leading-relaxed text-sm">
                                   {course.description || "Comprehensive course covering fundamental concepts and practical applications"}
                                 </p>
 
                                 {/* Important Course Sections Heading */}
-                                <h4 className="text-white font-semibold text-base mb-3">
+                                <h4 className="text-gray-900 font-semibold text-base mb-3">
                                   Important Course Sections
                                 </h4>
 
@@ -956,19 +956,19 @@ export default function AICareerLevelUp() {
                                   {courseSections[course.id] && courseSections[course.id].length > 0 ? (
                                     courseSections[course.id].slice(0, 4).map((section, idx) => (
                                       <div key={idx} className="flex items-start gap-2">
-                                        <CheckCircle className="h-4 w-4 text-white/90 mt-0.5 flex-shrink-0" />
-                                        <span className="text-white/90 text-sm leading-relaxed">{section.title}</span>
+                                        <CheckCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                                        <span className="text-gray-700 text-sm leading-relaxed">{section.title}</span>
                                       </div>
                                     ))
                                   ) : (
                                     <>
                                       <div className="flex items-start gap-2">
-                                        <CheckCircle className="h-4 w-4 text-white/90 mt-0.5 flex-shrink-0" />
-                                        <span className="text-white/90 text-sm">Interactive Learning Content</span>
+                                        <CheckCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                                        <span className="text-gray-700 text-sm">Interactive Learning Content</span>
                                       </div>
                                       <div className="flex items-start gap-2">
-                                        <CheckCircle className="h-4 w-4 text-white/90 mt-0.5 flex-shrink-0" />
-                                        <span className="text-white/90 text-sm">Practical Projects</span>
+                                        <CheckCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                                        <span className="text-gray-700 text-sm">Practical Projects</span>
                                       </div>
                                     </>
                                   )}
@@ -976,7 +976,7 @@ export default function AICareerLevelUp() {
 
                                 {/* Action Button */}
                                 <Button 
-                                  className="w-full bg-white/95 hover:bg-white text-gray-900 font-semibold shadow-lg rounded-xl h-12 text-sm backdrop-blur-sm transform hover:scale-[1.02] transition-all duration-200"
+                                  className="w-full bg-primary hover:bg-primary/90 text-white font-semibold shadow-lg rounded-xl h-12 text-sm transform hover:scale-[1.02] transition-all duration-200"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleCourseClick(course);
