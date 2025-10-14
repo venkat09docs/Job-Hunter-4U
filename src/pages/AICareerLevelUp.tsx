@@ -925,64 +925,45 @@ export default function AICareerLevelUp() {
                             <CardContent className="p-0 flex flex-col h-full">
                               {/* Course Image Header - Only if image exists */}
                               {course.image && (
-                                <div className="w-full h-52 bg-white/10 flex-shrink-0">
+                                <div className="w-full h-48 bg-white/10 flex-shrink-0 overflow-hidden">
                                   <img 
                                     src={course.image} 
                                     alt={course.title}
-                                    className="w-full h-full object-contain"
+                                    className="w-full h-full object-cover rounded-t-3xl"
                                   />
                                 </div>
                               )}
                               
                               {/* Content Section */}
-                              <div className={`p-8 flex flex-col flex-1 bg-gradient-to-br ${gradientClasses[index % 3]} ${!course.image ? 'pt-12' : ''}`}>
-                                {/* Icon Badge */}
-                                <div className="flex items-center gap-3 mb-6">
-                                  <div className={`${iconBgClasses[index % 3]} backdrop-blur-sm p-4 rounded-2xl`}>
-                                    <BookOpen className="h-8 w-8 text-white" />
-                                  </div>
-                                  <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm px-4 py-1 text-sm font-semibold">
-                                    {course.code}
-                                  </Badge>
-                                </div>
-
+                              <div className={`p-6 flex flex-col flex-1 bg-gradient-to-br ${gradientClasses[index % 3]} ${!course.image ? 'pt-12' : ''}`}>
                                 {/* Title */}
-                                <h3 className="text-3xl font-bold text-white mb-3 leading-tight">
+                                <h3 className="text-2xl font-bold text-white mb-4 leading-tight">
                                   {course.title}
                                 </h3>
 
-                                {/* Subtitle */}
-                                <p className="text-white/80 text-lg mb-6 font-medium">
-                                  {course.category || 'Professional Development'}
-                                </p>
-
                                 {/* Description */}
-                                <p className="text-white/90 mb-6 leading-relaxed text-base">
+                                <p className="text-white/90 mb-4 leading-relaxed text-sm">
                                   {course.description || "Comprehensive course covering fundamental concepts and practical applications"}
                                 </p>
 
                                 {/* Course Sections as Bullet Points - All sections */}
-                                <div className="mb-6 space-y-3 flex-1 overflow-y-auto max-h-64 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+                                <div className="space-y-2 flex-1">
                                   {courseSections[course.id] && courseSections[course.id].length > 0 ? (
-                                    courseSections[course.id].map((section, idx) => (
-                                      <div key={idx} className="flex items-start gap-3">
-                                        <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
-                                        <span className="text-white/90 text-base leading-relaxed">{section.title}</span>
+                                    courseSections[course.id].slice(0, 4).map((section, idx) => (
+                                      <div key={idx} className="flex items-start gap-2">
+                                        <CheckCircle className="h-4 w-4 text-white/90 mt-0.5 flex-shrink-0" />
+                                        <span className="text-white/90 text-sm leading-relaxed">{section.title}</span>
                                       </div>
                                     ))
                                   ) : (
                                     <>
-                                      <div className="flex items-start gap-3">
-                                        <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
-                                        <span className="text-white/90 text-base">Interactive Learning Content</span>
+                                      <div className="flex items-start gap-2">
+                                        <CheckCircle className="h-4 w-4 text-white/90 mt-0.5 flex-shrink-0" />
+                                        <span className="text-white/90 text-sm">Interactive Learning Content</span>
                                       </div>
-                                      <div className="flex items-start gap-3">
-                                        <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
-                                        <span className="text-white/90 text-base">Practical Projects</span>
-                                      </div>
-                                      <div className="flex items-start gap-3">
-                                        <CheckCircle className="h-5 w-5 text-white/90 mt-0.5 flex-shrink-0" />
-                                        <span className="text-white/90 text-base">Professional Certification</span>
+                                      <div className="flex items-start gap-2">
+                                        <CheckCircle className="h-4 w-4 text-white/90 mt-0.5 flex-shrink-0" />
+                                        <span className="text-white/90 text-sm">Practical Projects</span>
                                       </div>
                                     </>
                                   )}
@@ -990,14 +971,14 @@ export default function AICareerLevelUp() {
 
                                 {/* Action Button */}
                                 <Button 
-                                  className="w-full bg-white/95 hover:bg-white text-gray-900 font-semibold shadow-lg rounded-xl h-14 text-base backdrop-blur-sm transform hover:scale-[1.02] transition-all duration-200"
+                                  className="w-full mt-4 bg-white/95 hover:bg-white text-gray-900 font-semibold shadow-lg rounded-xl h-12 text-sm backdrop-blur-sm transform hover:scale-[1.02] transition-all duration-200"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleCourseClick(course);
                                   }}
                                 >
                                   View Course Content
-                                  <ArrowRight className="ml-2 h-5 w-5" />
+                                  <ArrowRight className="ml-2 h-4 w-4" />
                                 </Button>
                               </div>
                             </CardContent>
