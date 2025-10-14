@@ -323,6 +323,62 @@ const GenAICareerAccelerator = () => {
         </div>
       </section>
 
+      {/* About the Program */}
+      <section className="py-20 px-4 bg-gray-50 dark:bg-background">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center mb-16 animate-fade-in">
+            <Badge className="mb-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0">
+              About the Program
+            </Badge>
+            <h2 className="text-4xl md:text-6xl font-bold mb-6 text-gray-900 dark:text-foreground">
+              Build Your Next Gen AI Career
+            </h2>
+            <p className="text-xl text-gray-700 dark:text-muted-foreground max-w-4xl mx-auto leading-relaxed">
+              Our comprehensive program is designed to take you from where you are today to becoming a confident AI generalist, 
+              ready to tackle any challenge in the rapidly evolving tech landscape.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white dark:bg-card border-0 shadow-lg">
+              <CardContent className="p-8 text-center">
+                <div className="bg-gradient-to-br from-purple-500 to-pink-600 p-4 rounded-2xl w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                  <Zap className="h-10 w-10 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-foreground">Accelerated Learning</h3>
+                <p className="text-gray-700 dark:text-muted-foreground leading-relaxed">
+                  Cutting-edge curriculum designed for rapid skill acquisition and practical application.
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card className="hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white dark:bg-card border-0 shadow-lg">
+              <CardContent className="p-8 text-center">
+                <div className="bg-gradient-to-br from-blue-500 to-cyan-600 p-4 rounded-2xl w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                  <Award className="h-10 w-10 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-foreground">Industry Recognition</h3>
+                <p className="text-gray-700 dark:text-muted-foreground leading-relaxed">
+                  Earn certifications and build projects that employers actively seek and value.
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card className="hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white dark:bg-card border-0 shadow-lg">
+              <CardContent className="p-8 text-center">
+                <div className="bg-gradient-to-br from-green-500 to-teal-600 p-4 rounded-2xl w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                  <Rocket className="h-10 w-10 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-foreground">Career Transformation</h3>
+                <p className="text-gray-700 dark:text-muted-foreground leading-relaxed">
+                  Complete career makeover with skills, portfolio, and mindset for AI success.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* What You'll Learn */}
       <section className="py-20 px-4 bg-gradient-to-br from-white via-cyan-50/20 to-blue-50/20 dark:from-background dark:via-background dark:to-background">
         <div className="container mx-auto">
