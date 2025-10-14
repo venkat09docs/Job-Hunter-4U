@@ -925,7 +925,7 @@ export default function AICareerLevelUp() {
                             <CardContent className="p-0 flex flex-col h-full">
                               {/* Course Image Header - Only if image exists */}
                               {course.image && (
-                                <div className="w-full h-48 bg-white/10 flex-shrink-0 overflow-hidden">
+                                <div className="w-full h-56 bg-white/10 flex-shrink-0 overflow-hidden">
                                   <img 
                                     src={course.image} 
                                     alt={course.title}
