@@ -1004,43 +1004,43 @@ export default function AICareerLevelUp() {
 
             {/* Level Up Stats - Core Activities Boards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-16">
-              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/15 rounded-2xl">
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl">
                 <CardContent className="p-6 text-center">
                   <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-4 rounded-2xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                     <User className="h-8 w-8 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Profile</h3>
-                  <p className="text-gray-300">Professional Foundation</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Profile</h3>
+                  <p className="text-gray-700">Professional Foundation</p>
                 </CardContent>
               </Card>
               
-              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/15 rounded-2xl">
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl">
                 <CardContent className="p-6 text-center">
                   <div className="bg-gradient-to-br from-blue-500 to-cyan-600 p-4 rounded-2xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                     <Users className="h-8 w-8 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Network</h3>
-                  <p className="text-gray-300">Professional Connections</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Network</h3>
+                  <p className="text-gray-700">Professional Connections</p>
                 </CardContent>
               </Card>
               
-              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/15 rounded-2xl">
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl">
                 <CardContent className="p-6 text-center">
                   <div className="bg-gradient-to-br from-gray-600 to-gray-800 p-4 rounded-2xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                     <Github className="h-8 w-8 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Code</h3>
-                  <p className="text-gray-300">Technical Showcase</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Code</h3>
+                  <p className="text-gray-700">Technical Showcase</p>
                 </CardContent>
               </Card>
 
-              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/15 rounded-2xl">
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl">
                 <CardContent className="p-6 text-center">
                   <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-4 rounded-2xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                     <Globe className="h-8 w-8 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Portfolio</h3>
-                  <p className="text-gray-300">Digital Showcase</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Portfolio</h3>
+                  <p className="text-gray-700">Digital Showcase</p>
                 </CardContent>
               </Card>
             </div>
