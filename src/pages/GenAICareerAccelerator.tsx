@@ -47,6 +47,9 @@ import {
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 import heroImage from '@/assets/genai-accelerator-hero.jpg';
+import skillsImage from '@/assets/ai-skills-learning.jpg';
+import portfolioImage from '@/assets/digital-portfolio.jpg';
+import jobHuntingImage from '@/assets/smart-job-hunting.jpg';
 
 const GenAICareerAccelerator = () => {
   const [showPricing, setShowPricing] = useState(false);
@@ -346,68 +349,89 @@ const GenAICareerAccelerator = () => {
         </div>
       </section>
 
-      {/* Four Levels to Master */}
-      <section className="py-20 px-4 bg-gradient-to-br from-white via-blue-50/30 to-cyan-50/30 dark:from-background dark:via-background dark:to-background">
+      {/* Four Levels Overview */}
+      <section className="py-20 px-4 bg-white dark:bg-background">
         <div className="container mx-auto max-w-7xl">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 bg-gradient-to-r from-blue-600 via-cyan-600 to-indigo-600 bg-clip-text text-transparent">
-            🎯 Four Levels to Master
-          </h2>
-          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-            Your structured path to career transformation
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            <Card className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 border-2 border-yellow-500/30 hover:border-yellow-500/50 shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 group relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <CardContent className="p-6 relative z-10">
-                <div className="flex flex-col items-center text-center gap-4">
-                  <div className="bg-gradient-to-r from-yellow-500 to-orange-500 p-4 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    <FileText className="h-8 w-8 text-white" />
+          <div className="text-center mb-16 animate-fade-in">
+            <Badge className="mb-6 bg-gradient-to-r from-orange-500 to-pink-600 text-white border-0">
+              Learning Levels
+            </Badge>
+            <h2 className="text-4xl md:text-6xl font-bold mb-6 text-gray-900 dark:text-foreground">
+              Four Levels to Master
+            </h2>
+            <p className="text-xl text-gray-700 dark:text-muted-foreground max-w-3xl mx-auto">
+              A structured journey from learning to launching your AI career
+            </p>
+          </div>
+          
+          <div className="space-y-12">
+            {[
+              {
+                icon: Sparkles,
+                title: 'Skill Level Up with AI',
+                description: 'Master essential AI skills and become a generalist',
+                benefits: ['Learn cutting-edge AI tools', 'Hands-on projects', 'Industry-relevant skills'],
+                image: skillsImage,
+                gradient: 'from-purple-500 to-pink-500'
+              },
+              {
+                icon: Users,
+                title: 'Build a Digital Profile',
+                description: 'Showcase achievements and create professional presence',
+                benefits: ['Professional portfolio', 'Digital certifications', 'Personal branding'],
+                image: portfolioImage,
+                gradient: 'from-blue-500 to-cyan-500'
+              },
+              {
+                icon: Target,
+                title: 'Job Hunting',
+                description: 'Smart strategies and tools to land your dream job',
+                benefits: ['Resume optimization', 'Interview preparation', 'Job search automation'],
+                image: jobHuntingImage,
+                gradient: 'from-orange-500 to-red-500'
+              },
+              {
+                icon: Briefcase,
+                title: 'Land Your Dream Job',
+                description: 'Master job search strategies and ace your interviews',
+                benefits: ['Smart job search tactics', 'Interview mastery', 'Career positioning'],
+                image: jobHuntingImage,
+                gradient: 'from-green-500 to-teal-500'
+              }
+            ].map((feature, index) => (
+              <Card key={index} className="overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:scale-[1.02] border-0">
+                <CardContent className="p-0">
+                  <div className={`grid md:grid-cols-2 gap-0 ${index % 2 === 1 ? 'md:grid-flow-col-dense' : ''}`}>
+                    {/* Content */}
+                    <div className="p-12 flex flex-col justify-center bg-gradient-to-br from-gray-50 to-white dark:from-card dark:to-card/80">
+                      <div className={`bg-gradient-to-br ${feature.gradient} p-4 rounded-2xl w-16 h-16 mb-6 flex items-center justify-center`}>
+                        <feature.icon className="h-8 w-8 text-white" />
+                      </div>
+                      <h3 className="text-3xl font-bold mb-4 text-gray-900 dark:text-foreground">{feature.title}</h3>
+                      <p className="text-xl text-gray-700 dark:text-muted-foreground mb-8 leading-relaxed">{feature.description}</p>
+                      <ul className="space-y-4">
+                        {feature.benefits.map((benefit, idx) => (
+                          <li key={idx} className="flex items-center gap-3">
+                            <CheckCircle className="h-6 w-6 text-green-500 flex-shrink-0" />
+                            <span className="text-gray-700 dark:text-muted-foreground text-lg">{benefit}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    
+                    {/* Image */}
+                    <div className={`relative overflow-hidden ${index % 2 === 1 ? 'md:order-first' : ''}`}>
+                      <img 
+                        src={feature.image} 
+                        alt={feature.title}
+                        className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient}/10`}></div>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-bold text-foreground">ATS Resume</h3>
-                  <p className="text-sm text-muted-foreground">Craft a resume that beats Applicant Tracking Systems</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20 border-2 border-pink-500/30 hover:border-pink-500/50 shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 group relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <CardContent className="p-6 relative z-10">
-                <div className="flex flex-col items-center text-center gap-4">
-                  <div className="bg-gradient-to-r from-pink-500 to-purple-500 p-4 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    <Sparkles className="h-8 w-8 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-foreground">AI Generalist</h3>
-                  <p className="text-sm text-muted-foreground">Master essential AI tools and become versatile</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 border-2 border-blue-500/30 hover:border-blue-500/50 shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 group relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <CardContent className="p-6 relative z-10">
-                <div className="flex flex-col items-center text-center gap-4">
-                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-4 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    <Briefcase className="h-8 w-8 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-foreground">Job Hunting</h3>
-                  <p className="text-sm text-muted-foreground">Smart strategies to land your dream role faster</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-950/20 dark:to-teal-950/20 border-2 border-green-500/30 hover:border-green-500/50 shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 group relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-teal-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <CardContent className="p-6 relative z-10">
-                <div className="flex flex-col items-center text-center gap-4">
-                  <div className="bg-gradient-to-r from-green-500 to-teal-500 p-4 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    <Users className="h-8 w-8 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-foreground">LinkedIn Optimization</h3>
-                  <p className="text-sm text-muted-foreground">Build a powerful professional network</p>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
