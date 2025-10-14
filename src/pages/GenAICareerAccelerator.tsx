@@ -36,7 +36,11 @@ import {
   Settings,
   Container,
   MousePointer2,
-  Sparkles
+  Sparkles,
+  Server,
+  Cpu,
+  Network,
+  UsersRound
 } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
@@ -54,6 +58,10 @@ const GenAICareerAccelerator = () => {
     { icon: Container, name: 'Kubernetes', color: 'from-cyan-500 to-blue-500' },
     { icon: MousePointer2, name: 'Cursor', color: 'from-slate-600 to-gray-700' },
     { icon: Sparkles, name: 'GitHub Copilot', color: 'from-violet-500 to-purple-500' },
+    { icon: Server, name: 'MCP Servers', color: 'from-emerald-500 to-green-600' },
+    { icon: Cpu, name: 'Ollama', color: 'from-red-500 to-rose-600' },
+    { icon: Network, name: 'LangGraph', color: 'from-teal-500 to-cyan-600' },
+    { icon: UsersRound, name: 'Crew AI', color: 'from-fuchsia-500 to-pink-600' },
   ];
 
   const capstoneProjects = [
@@ -226,7 +234,7 @@ const GenAICareerAccelerator = () => {
             Industry-relevant skills that top companies are hiring for
           </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4 max-w-6xl mx-auto">
             {skills.map((skill, index) => (
               <Card key={index} className="bg-white/80 backdrop-blur-sm border-2 border-transparent hover:border-primary/20 hover:shadow-xl transition-all duration-300 cursor-pointer group">
                 <CardContent className="p-5 text-center">
