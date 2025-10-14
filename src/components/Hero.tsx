@@ -19,7 +19,7 @@ const Hero = () => {
             <div className="space-y-6 md:space-y-8 text-center lg:text-left">
               <div className="space-y-4">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight animate-fade-in">
-                  <span className="bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent animate-pulse">
+                  <span className="text-foreground">
                     Your Complete Career Success Platform
                   </span>
                 </h1>
