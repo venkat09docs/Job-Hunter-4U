@@ -396,12 +396,6 @@ const Pricing = () => {
               </div>
             </div>
             
-            <div className="bg-warning/10 border border-warning/20 rounded-lg p-4 mb-6">
-              <p className="text-sm text-warning font-medium">
-                🔥 Flash Sale: Next 50 customers get lifetime access to all future features at current price
-              </p>
-            </div>
-            
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">Perfect for:</p>
               <div className="flex flex-wrap justify-center gap-2">
