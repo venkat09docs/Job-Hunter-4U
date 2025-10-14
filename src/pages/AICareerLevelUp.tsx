@@ -919,21 +919,23 @@ export default function AICareerLevelUp() {
                       return (
                         <CarouselItem key={course.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
                           <Card 
-                            className={`h-full transition-all duration-300 bg-gradient-to-br ${gradientClasses[index % 3]} border-0 shadow-2xl cursor-pointer rounded-3xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] hover:scale-[1.02]`}
+                            className="h-full transition-all duration-300 border-0 shadow-2xl cursor-pointer rounded-3xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] hover:scale-[1.02] overflow-hidden"
                             onClick={() => handleCourseClick(course)}
                           >
-                            <CardContent className="p-0 flex flex-col h-full overflow-hidden">
+                            <CardContent className="p-0 flex flex-col h-full">
                               {/* Course Image Header - Only if image exists */}
                               {course.image && (
-                                <img 
-                                  src={course.image} 
-                                  alt={course.title}
-                                  className="w-full h-48 object-cover flex-shrink-0"
-                                />
+                                <div className="w-full h-56 bg-white/5 flex items-center justify-center flex-shrink-0">
+                                  <img 
+                                    src={course.image} 
+                                    alt={course.title}
+                                    className="w-full h-full object-contain p-4"
+                                  />
+                                </div>
                               )}
                               
                               {/* Content Section */}
-                              <div className={`p-8 flex flex-col flex-1 ${!course.image ? 'pt-12' : ''}`}>
+                              <div className={`p-8 flex flex-col flex-1 bg-gradient-to-br ${gradientClasses[index % 3]} ${!course.image ? 'pt-12' : ''}`}>
                                 {/* Icon Badge */}
                                 <div className="flex items-center gap-3 mb-6">
                                   <div className={`${iconBgClasses[index % 3]} backdrop-blur-sm p-4 rounded-2xl`}>
