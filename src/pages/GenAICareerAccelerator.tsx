@@ -46,6 +46,8 @@ import {
 } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
+import heroImage from '@/assets/genai-accelerator-hero.jpg';
+
 const GenAICareerAccelerator = () => {
   const [showPricing, setShowPricing] = useState(false);
 
@@ -156,48 +158,64 @@ const GenAICareerAccelerator = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-purple-500/10 to-cyan-500/5"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(124,58,237,0.15),transparent_50%)]"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(59,130,246,0.1),transparent_50%)]"></div>
+        
         <div className="container mx-auto relative z-10">
-          <div className="max-w-5xl mx-auto text-center">
-            <Badge className="mb-6 px-4 py-2 text-base bg-primary/10 text-primary border-primary/20">
-              🎓 3-Month Intensive Program
-            </Badge>
-            
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent leading-tight">
-              GenAI Career Accelerator
-            </h1>
-            
-            <p className="text-xl md:text-2xl text-muted-foreground mb-4 font-medium">
-              Master the New AI Stack — From Cloud Infrastructure to Intelligent Apps
-            </p>
-            
-            <p className="text-lg text-muted-foreground mb-8 max-w-3xl mx-auto">
-              Transform from a beginner to a job-ready AI professional. Learn AWS, DevOps, LLM Apps, and MLOps with 6+ real-world projects and guaranteed placement support.
-            </p>
-
-            {/* Next Cohort Section */}
-            <div className="bg-gradient-to-br from-card/80 to-purple-500/5 backdrop-blur-sm border-2 border-purple-500/30 rounded-3xl p-8 mb-8 inline-block shadow-xl">
-              <Badge className="mb-4 bg-gradient-to-r from-purple-500 to-violet-600 text-white border-0 px-6 py-2 text-base">
-                Next Cohort
+          <div className="grid lg:grid-cols-2 gap-12 items-center max-w-7xl mx-auto">
+            {/* Left Content */}
+            <div className="text-center lg:text-left">
+              <Badge className="mb-6 px-4 py-2 text-base bg-primary/10 text-primary border-primary/20">
+                🎓 3-Month Intensive Program
               </Badge>
-              <h3 className="text-3xl md:text-4xl font-bold mb-2 text-foreground">
-                Starts on 18th Sept 2025
-              </h3>
-              <p className="text-lg text-muted-foreground mb-6">at 8:30AM IST</p>
-              <CountdownTimer targetDate="2025-09-18T08:30:00+05:30" />
+              
+              <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent leading-tight">
+                GenAI Career Accelerator
+              </h1>
+              
+              <p className="text-xl md:text-2xl text-muted-foreground mb-4 font-medium">
+                Master the New AI Stack — From Cloud Infrastructure to Intelligent Apps
+              </p>
+              
+              <p className="text-lg text-muted-foreground mb-8">
+                Transform from a beginner to a job-ready AI professional. Learn AWS, DevOps, LLM Apps, and MLOps with 6+ real-world projects and guaranteed placement support.
+              </p>
+
+              {/* Next Cohort Section */}
+              <div className="bg-gradient-to-br from-card/80 to-purple-500/5 backdrop-blur-sm border-2 border-purple-500/30 rounded-3xl p-8 mb-8 inline-block shadow-xl">
+                <Badge className="mb-4 bg-gradient-to-r from-purple-500 to-violet-600 text-white border-0 px-6 py-2 text-base">
+                  Next Cohort
+                </Badge>
+                <h3 className="text-3xl md:text-4xl font-bold mb-2 text-foreground">
+                  Starts on 18th Sept 2025
+                </h3>
+                <p className="text-lg text-muted-foreground mb-6">at 8:30AM IST</p>
+                <CountdownTimer targetDate="2025-09-18T08:30:00+05:30" />
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
+                <Button size="lg" className="text-lg px-8 py-6" onClick={() => setShowPricing(true)}>
+                  Join Now - Start Your AI Career <ChevronRight className="ml-2 h-5 w-5" />
+                </Button>
+                <Button size="lg" variant="outline" className="text-lg px-8 py-6" asChild>
+                  <Link to="/auth">Book Free Info Session</Link>
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-center lg:justify-start gap-2 text-sm text-muted-foreground">
+                <Users className="h-4 w-4" />
+                <span>Trusted by 45,000+ learners worldwide</span>
+              </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-              <Button size="lg" className="text-lg px-8 py-6" onClick={() => setShowPricing(true)}>
-                Join Now - Start Your AI Career <ChevronRight className="ml-2 h-5 w-5" />
-              </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8 py-6" asChild>
-                <Link to="/auth">Book Free Info Session</Link>
-              </Button>
-            </div>
-
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-              <Users className="h-4 w-4" />
-              <span>Trusted by 45,000+ learners worldwide</span>
+            {/* Right Image */}
+            <div className="relative hidden lg:block">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 via-primary/10 to-cyan-500/20 rounded-3xl transform rotate-3 scale-105 blur-2xl"></div>
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl border-2 border-primary/20">
+                <img 
+                  src={heroImage} 
+                  alt="GenAI Career Accelerator - Professional working with AI tools" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
             </div>
           </div>
         </div>
