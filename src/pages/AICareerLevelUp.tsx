@@ -917,7 +917,7 @@ export default function AICareerLevelUp() {
                       ];
                       
                       return (
-                        <CarouselItem key={course.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                        <CarouselItem key={course.id} className="pl-2 md:pl-4 basis-[90%] sm:basis-[85%] md:basis-1/2 lg:basis-1/3">
                           <Card 
                             className="h-full transition-all duration-300 border-0 shadow-2xl cursor-pointer rounded-3xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] hover:scale-[1.02] overflow-hidden"
                             onClick={() => handleCourseClick(course)}
@@ -946,8 +946,13 @@ export default function AICareerLevelUp() {
                                   {course.description || "Comprehensive course covering fundamental concepts and practical applications"}
                                 </p>
 
-                                {/* Course Sections as Bullet Points - All sections */}
-                                <div className="space-y-2 flex-1">
+                                {/* Important Course Sections Heading */}
+                                <h4 className="text-white font-semibold text-base mb-3">
+                                  Important Course Sections
+                                </h4>
+
+                                {/* Course Sections as Bullet Points */}
+                                <div className="space-y-2 flex-1 mb-4">
                                   {courseSections[course.id] && courseSections[course.id].length > 0 ? (
                                     courseSections[course.id].slice(0, 4).map((section, idx) => (
                                       <div key={idx} className="flex items-start gap-2">
@@ -971,7 +976,7 @@ export default function AICareerLevelUp() {
 
                                 {/* Action Button */}
                                 <Button 
-                                  className="w-full mt-4 bg-white/95 hover:bg-white text-gray-900 font-semibold shadow-lg rounded-xl h-12 text-sm backdrop-blur-sm transform hover:scale-[1.02] transition-all duration-200"
+                                  className="w-full bg-white/95 hover:bg-white text-gray-900 font-semibold shadow-lg rounded-xl h-12 text-sm backdrop-blur-sm transform hover:scale-[1.02] transition-all duration-200"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleCourseClick(course);
