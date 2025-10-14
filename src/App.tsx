@@ -104,6 +104,7 @@ import ResumeAnalyzer from "./pages/ResumeAnalyzer";
 import JobHunterLevelUp from "./pages/JobHunterLevelUp";
 import AutomateJobHunting from "./pages/AutomateJobHunting";
 import ManageHRDetails from "./pages/ManageHRDetails";
+import GenAICareerAccelerator from "./pages/GenAICareerAccelerator";
 
 const queryClient = new QueryClient();
 
@@ -174,6 +175,7 @@ const AppContent = () => {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<AICareerLevelUp />} />
+          <Route path="/genai-career-accelerator" element={<GenAICareerAccelerator />} />
           <Route path="/home" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route 
