@@ -215,10 +215,10 @@ const GenAICareerAccelerator = () => {
                   Next Cohort
                 </Badge>
                 <h3 className="text-2xl md:text-3xl font-bold mb-1 text-foreground">
-                  Starts on 18th Sept 2025
+                  Starts on 23rd October 2025
                 </h3>
-                <p className="text-base text-muted-foreground mb-4">at 8:30AM IST</p>
-                <CountdownTimer targetDate="2025-09-18T08:30:00+05:30" />
+                <p className="text-base text-muted-foreground mb-4">at 7:30AM IST</p>
+                <CountdownTimer targetDate="2025-10-23T07:30:00+05:30" />
               </div>
             </div>
           </div>
