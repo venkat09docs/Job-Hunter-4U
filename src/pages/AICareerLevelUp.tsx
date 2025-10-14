@@ -869,17 +869,17 @@ export default function AICareerLevelUp() {
       </section>
 
       {/* Level Up Activities Section */}
-      <section className="py-20 px-4 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <section className="py-20 px-4 bg-white">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-16 animate-fade-in">
             <Badge className="mb-6 bg-gradient-to-r from-yellow-400 to-orange-500 text-black border-0 font-bold">
               <Trophy className="w-4 h-4 mr-2" />
               Level 2 Program
             </Badge>
-            <h2 className="text-4xl md:text-6xl font-bold mb-6 text-white">
+            <h2 className="text-4xl md:text-6xl font-bold mb-6 text-gray-900">
               Master These Key Activities
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto">
               Build your professional foundation with our three core level-up activities
             </p>
           </div>
