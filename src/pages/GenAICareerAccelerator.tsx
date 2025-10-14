@@ -30,7 +30,9 @@ import {
   Rocket,
   GraduationCap,
   DollarSign,
-  Clock
+  Clock,
+  Workflow,
+  Box
 } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
@@ -43,39 +45,46 @@ const GenAICareerAccelerator = () => {
     { icon: Bot, name: 'LangChain', color: 'from-green-500 to-green-600' },
     { icon: Database, name: 'MLOps', color: 'from-purple-500 to-purple-600' },
     { icon: Code, name: 'Python', color: 'from-yellow-500 to-yellow-600' },
-    { icon: Laptop, name: 'Next.js', color: 'from-gray-600 to-gray-800' },
+    { icon: Box, name: 'Bedrock', color: 'from-indigo-500 to-indigo-600' },
+    { icon: Workflow, name: 'N8N', color: 'from-pink-500 to-pink-600' },
   ];
 
   const capstoneProjects = [
     { 
-      title: 'AI Resume Builder', 
-      description: 'LLM-powered resume optimization with ATS scoring',
-      tech: ['LangChain', 'React', 'AWS'] 
+      title: 'AI Travel Planner', 
+      description: 'Intelligent travel planning with personalized recommendations',
+      tech: ['LangChain', 'React', 'AWS'],
+      color: 'from-cyan-500 to-blue-600'
     },
     { 
       title: 'RAG PDF Q&A Bot', 
       description: 'Document intelligence with vector databases',
-      tech: ['RAG', 'ChromaDB', 'FastAPI'] 
+      tech: ['RAG', 'ChromaDB', 'FastAPI'],
+      color: 'from-emerald-500 to-teal-600'
     },
     { 
-      title: 'Job Application Assistant', 
-      description: 'Multi-agent system for job hunting automation',
-      tech: ['CrewAI', 'LangGraph', 'Next.js'] 
+      title: 'Medical RAG Chart Bot', 
+      description: 'Healthcare AI assistant with medical chart analysis',
+      tech: ['RAG', 'LangChain', 'Medical APIs'],
+      color: 'from-rose-500 to-pink-600'
     },
     { 
       title: 'Multi-Agent Research Assistant', 
       description: 'Intelligent research automation with multiple AI agents',
-      tech: ['LangGraph', 'OpenAI', 'Supabase'] 
+      tech: ['LangGraph', 'OpenAI', 'Supabase'],
+      color: 'from-violet-500 to-purple-600'
     },
     { 
       title: 'MLOps Pipeline with SageMaker', 
       description: 'End-to-end ML deployment and monitoring',
-      tech: ['SageMaker', 'CI/CD', 'CloudWatch'] 
+      tech: ['SageMaker', 'CI/CD', 'CloudWatch'],
+      color: 'from-amber-500 to-orange-600'
     },
     { 
       title: 'SaaS AI Platform', 
       description: 'Full-stack production-ready AI application',
-      tech: ['Next.js', 'LangChain', 'Supabase', 'Vercel'] 
+      tech: ['Next.js', 'LangChain', 'Supabase', 'Vercel'],
+      color: 'from-indigo-500 to-blue-600'
     },
   ];
 
@@ -133,7 +142,8 @@ const GenAICareerAccelerator = () => {
       
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-purple-500/5 to-transparent"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(79,70,229,0.1),transparent_50%)]"></div>
         <div className="container mx-auto relative z-10">
           <div className="max-w-5xl mx-auto text-center">
             <Badge className="mb-6 px-4 py-2 text-base bg-primary/10 text-primary border-primary/20">
@@ -185,19 +195,19 @@ const GenAICareerAccelerator = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {[
-              { icon: Calendar, text: '3 Months | Live + Recorded' },
-              { icon: Users, text: '1:1 Mentorship Sessions' },
-              { icon: Code, text: '6+ Hands-On AI Projects' },
-              { icon: Award, text: 'Internship Certificate' },
-              { icon: GitBranch, text: 'GitHub Portfolio Builder' },
-              { icon: Briefcase, text: 'Job Hunting Automation' },
+              { icon: Calendar, text: '3 Months | Live + Recorded', color: 'from-blue-500 to-cyan-500' },
+              { icon: Users, text: '1:1 Mentorship Sessions', color: 'from-purple-500 to-pink-500' },
+              { icon: Code, text: '6+ Hands-On AI Projects', color: 'from-green-500 to-emerald-500' },
+              { icon: Award, text: 'Internship Certificate', color: 'from-amber-500 to-orange-500' },
+              { icon: GitBranch, text: 'GitHub Portfolio Builder', color: 'from-indigo-500 to-blue-500' },
+              { icon: Briefcase, text: 'Job Hunting Automation', color: 'from-rose-500 to-red-500' },
             ].map((item, index) => (
-              <Card key={index} className="bg-white/70 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+              <Card key={index} className="bg-white/80 backdrop-blur-sm border-2 border-gray-100 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
                 <CardContent className="p-6 flex items-center gap-4">
-                  <div className="bg-gradient-primary p-3 rounded-xl">
+                  <div className={`bg-gradient-to-br ${item.color} p-3 rounded-xl shadow-lg group-hover:scale-110 transition-transform`}>
                     <item.icon className="h-6 w-6 text-white" />
                   </div>
-                  <p className="font-semibold text-gray-900">{item.text}</p>
+                  <p className="font-semibold text-gray-900 group-hover:text-primary transition-colors">{item.text}</p>
                 </CardContent>
               </Card>
             ))}
@@ -215,14 +225,14 @@ const GenAICareerAccelerator = () => {
             Industry-relevant skills that top companies are hiring for
           </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4 max-w-6xl mx-auto">
             {skills.map((skill, index) => (
-              <Card key={index} className="bg-card/50 backdrop-blur-sm border border-border/50 hover:shadow-lg transition-all duration-300 cursor-pointer group">
-                <CardContent className="p-6 text-center">
-                  <div className={`bg-gradient-to-br ${skill.color} p-4 rounded-2xl w-16 h-16 mx-auto mb-4 flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                    <skill.icon className="h-8 w-8 text-white" />
+              <Card key={index} className="bg-white/80 backdrop-blur-sm border-2 border-transparent hover:border-primary/20 hover:shadow-xl transition-all duration-300 cursor-pointer group">
+                <CardContent className="p-5 text-center">
+                  <div className={`bg-gradient-to-br ${skill.color} p-3 rounded-2xl w-14 h-14 mx-auto mb-3 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg`}>
+                    <skill.icon className="h-7 w-7 text-white" />
                   </div>
-                  <p className="font-semibold">{skill.name}</p>
+                  <p className="font-semibold text-sm group-hover:text-primary transition-colors">{skill.name}</p>
                 </CardContent>
               </Card>
             ))}
@@ -268,9 +278,9 @@ const GenAICareerAccelerator = () => {
                   ))}
                 </div>
 
-                <div className="bg-primary/5 rounded-lg p-4 border-l-4 border-primary">
+                <div className="bg-gradient-to-r from-orange-500/10 to-orange-600/10 rounded-lg p-4 border-l-4 border-orange-500">
                   <p className="font-semibold text-gray-900 mb-2">📌 Projects:</p>
-                  <p className="text-gray-700">• Resume Builder AI App • CI/CD ML Pipeline</p>
+                  <p className="text-gray-700">• AI Travel Planner • CI/CD ML Pipeline</p>
                 </div>
               </CardContent>
             </Card>
@@ -302,9 +312,9 @@ const GenAICareerAccelerator = () => {
                   ))}
                 </div>
 
-                <div className="bg-blue-500/5 rounded-lg p-4 border-l-4 border-blue-500">
+                <div className="bg-blue-500/10 rounded-lg p-4 border-l-4 border-blue-500">
                   <p className="font-semibold text-gray-900 mb-2">📌 Projects:</p>
-                  <p className="text-gray-700">• PDF Q&A Platform • Job Application Assistant • Multi-Agent Assistant</p>
+                  <p className="text-gray-700">• PDF Q&A Platform • Medical RAG Chart Bot • Multi-Agent Assistant</p>
                 </div>
               </CardContent>
             </Card>
@@ -394,16 +404,16 @@ const GenAICareerAccelerator = () => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {capstoneProjects.map((project, index) => (
-              <Card key={index} className="bg-white/70 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer">
+              <Card key={index} className="bg-white/80 backdrop-blur-sm border-2 border-gray-100 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer overflow-hidden">
                 <CardContent className="p-6">
-                  <div className="bg-gradient-to-br from-primary to-purple-600 p-4 rounded-xl w-12 h-12 mb-4 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Rocket className="h-6 w-6 text-white" />
+                  <div className={`bg-gradient-to-br ${project.color} p-4 rounded-xl w-14 h-14 mb-4 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg`}>
+                    <Rocket className="h-7 w-7 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{project.title}</h3>
-                  <p className="text-gray-700 mb-4 text-sm">{project.description}</p>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">{project.title}</h3>
+                  <p className="text-gray-700 mb-4 text-sm leading-relaxed">{project.description}</p>
                   <div className="flex flex-wrap gap-2">
                     {project.tech.map((tech, techIndex) => (
-                      <Badge key={techIndex} variant="secondary" className="text-xs">
+                      <Badge key={techIndex} className="text-xs bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 hover:from-primary/10 hover:to-primary/20 border-0">
                         {tech}
                       </Badge>
                     ))}
