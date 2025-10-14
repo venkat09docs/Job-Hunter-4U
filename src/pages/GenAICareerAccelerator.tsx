@@ -185,7 +185,7 @@ const GenAICareerAccelerator = () => {
 
               {/* Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-2">
-                <Button size="lg" className="text-lg px-8 py-6" onClick={() => setShowPricing(true)}>
+                <Button size="lg" className="text-lg px-8 py-6" onClick={() => window.open('https://t.me/+Tll5CFBR9kA5OTk9', '_blank')}>
                   Join Telegram Now for Upcoming Demo Details <ChevronRight className="ml-2 h-5 w-5" />
                 </Button>
               </div>
