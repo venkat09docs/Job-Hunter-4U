@@ -118,6 +118,14 @@ const Navigation = () => {
             <NavigationMenuItem>
               <NavigationMenuLink
                 className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
+                onClick={() => handleNavigate('/ai-job-hunting')}
+              >
+                AI-based Job Hunting
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
                 onClick={() => handleNavigate('/careerlevelup')}
               >
                 Career Level Up
@@ -183,6 +191,13 @@ const Navigation = () => {
                   onClick={() => scrollToSection('pricing')}
                 >
                   Pricing
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="justify-start"
+                  onClick={() => handleNavigate('/ai-job-hunting')}
+                >
+                  AI-based Job Hunting
                 </Button>
                 <Button
                   variant="ghost"
