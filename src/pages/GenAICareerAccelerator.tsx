@@ -180,7 +180,7 @@ const GenAICareerAccelerator = () => {
               </p>
               
               <p className="text-lg text-muted-foreground">
-                Transform from a beginner to a job-ready AI professional. Learn AWS, DevOps, LLM Apps, and MLOps with 6+ real-world projects and guaranteed placement support.
+                Transform from a beginner to a job-ready AI professional. Learn AWS, GCP, DevOps, Generative AI, LLMOps, MLOps, and AIOps with 6+ real-world projects and guaranteed placement support.
               </p>
 
               {/* Buttons */}
