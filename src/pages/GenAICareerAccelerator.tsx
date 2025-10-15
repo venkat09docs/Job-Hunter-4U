@@ -167,6 +167,10 @@ const GenAICareerAccelerator = () => {
           <div className="grid lg:grid-cols-2 gap-8 items-start max-w-7xl mx-auto">
             {/* Left Content */}
             <div className="text-center lg:text-left space-y-6">
+              <p className="text-2xl md:text-3xl font-bold text-primary animate-fade-in">
+                Launch your AI Career in 90 Days 🚀
+              </p>
+              
               <Badge className="px-4 py-2 text-base bg-primary/10 text-primary border-primary/20">
                 🎓 3-Month Intensive Program
               </Badge>
