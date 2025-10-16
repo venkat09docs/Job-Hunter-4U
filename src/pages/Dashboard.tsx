@@ -1289,7 +1289,7 @@ const Dashboard = () => {
                   <Button
                     variant="outline" 
                     size="sm"
-                    onClick={() => navigate('/dashboard/skill-level?tab=completed-learning')}
+                    onClick={() => navigate('/dashboard/skill-level?tab=skill-programs')}
                     className="border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-600 dark:text-blue-300 dark:hover:bg-blue-900/20"
                   >
                     View All
