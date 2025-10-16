@@ -30,11 +30,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import ActivityChart from '@/components/ActivityChart';
-import LeaderBoard from '@/components/LeaderBoard';
 import { InstituteLeaderBoard } from '@/components/InstituteLeaderBoard';
 import { VerifyActivitiesButton } from '@/components/VerifyActivitiesButton';
-import { BadgeLeadersSlider } from '@/components/BadgeLeadersSlider';
 import { RecentCoursesCard } from '@/components/RecentCoursesCard';
+import { LatestInternalJobs } from '@/components/LatestInternalJobs';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useEffect, useCallback } from 'react';
 import { formatDistanceToNow, startOfWeek, endOfWeek, addDays, format } from 'date-fns';
@@ -824,85 +823,19 @@ const Dashboard = () => {
               </Button>
             </div>
 
-            {/* Badge Leaders - Premium Feature */}
+            {/* Latest Internal Job Opportunities */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5" />
-                  Badge Leaders
+                  <Briefcase className="h-5 w-5" />
+                  Latest Job Opportunities
                 </CardTitle>
+                <CardDescription>
+                  Check out the newest internal job postings
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                {canAccessBadgeLeaders() ? (
-                  <div>
-                    <div className="mb-2 text-xs text-muted-foreground">
-                      ✅ Access granted - Plan: {profile?.subscription_plan} | Active: {profile?.subscription_active ? 'Yes' : 'No'}
-                    </div>
-                    <BadgeLeadersSlider />
-                  </div>
-                ) : hasRestrictedPlanForBadgeLeaders() ? (
-                  <div className="text-center py-12">
-                    <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold mb-2">Badge Leaders</h3>
-                    <p className="text-muted-foreground mb-4">
-                      {profile?.subscription_plan && ['One Month Plan'].includes(profile.subscription_plan) 
-                        ? `Upgrade from your ${profile.subscription_plan} to access Badge Leaders` 
-                        : 'Available with 3 Months, 6 Months, or 1 Year plans'
-                      }
-                    </p>
-                    <SubscriptionUpgrade featureName="Badge Leaders" eligiblePlans={eligiblePlans}>
-                      <Button>Upgrade Plan</Button>
-                    </SubscriptionUpgrade>
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold mb-2">Badge Leaders</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Available with premium subscription plans
-                    </p>
-                    <SubscriptionUpgrade featureName="Badge Leaders" eligiblePlans={eligiblePlans}>
-                      <Button>Upgrade Plan</Button>
-                    </SubscriptionUpgrade>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Leaderboard - Premium Feature */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5" />
-                  Leaderboard
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {canAccessLeaderboard() ? (
-                  isInstituteAdmin ? <InstituteLeaderBoard /> : <LeaderBoard />
-                ) : hasNoActiveSubscription() ? (
-                  <div className="text-center py-12">
-                    <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold mb-2">Leaderboard</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Subscription required to access Leaderboard
-                    </p>
-                    <SubscriptionUpgrade featureName="Leaderboard" eligiblePlans={allSubscriptionPlans}>
-                      <Button>Upgrade Plan</Button>
-                    </SubscriptionUpgrade>
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold mb-2">Leaderboard</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Subscription required to access Leaderboard
-                    </p>
-                    <SubscriptionUpgrade featureName="Leaderboard" eligiblePlans={allSubscriptionPlans}>
-                      <Button>Upgrade Plan</Button>
-                    </SubscriptionUpgrade>
-                  </div>
-                )}
+                <LatestInternalJobs />
               </CardContent>
             </Card>
 
