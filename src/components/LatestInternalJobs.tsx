@@ -46,7 +46,7 @@ export const LatestInternalJobs = () => {
           .select('*')
           .eq('is_active', true)
           .order('created_at', { ascending: false })
-          .limit(5);
+          .limit(3);
 
         if (error) throw error;
         setJobs(data || []);
@@ -69,7 +69,7 @@ export const LatestInternalJobs = () => {
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {[...Array(5)].map((_, i) => (
+        {[...Array(3)].map((_, i) => (
           <Card key={i} className="animate-pulse">
             <CardContent className="p-4">
               <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>

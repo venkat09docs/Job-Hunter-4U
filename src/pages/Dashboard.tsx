@@ -826,13 +826,24 @@ const Dashboard = () => {
             {/* Latest Internal Job Opportunities */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Briefcase className="h-5 w-5" />
-                  Latest Job Opportunities
-                </CardTitle>
-                <CardDescription>
-                  Check out the newest internal job postings
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Briefcase className="h-5 w-5" />
+                      Latest Job Opportunities
+                    </CardTitle>
+                    <CardDescription>
+                      Check out the newest internal job postings
+                    </CardDescription>
+                  </div>
+                  <Button 
+                    onClick={() => navigate('/dashboard/find-your-next-role')}
+                    size="sm"
+                  >
+                    <Search className="h-4 w-4 mr-2" />
+                    Find Jobs
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <LatestInternalJobs />
