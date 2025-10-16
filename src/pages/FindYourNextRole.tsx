@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,6 +68,7 @@ const FindYourNextRole = () => {
   const { incrementAnalytics, profile } = useProfile();
   const { jobs: internalJobs, loading: internalJobsLoading, filters: internalFilters, updateFilter, clearFilters } = useInternalJobs();
   const { calculateJobMatch, loading: profileLoading } = useJobMatching();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [formData, setFormData] = useState<JobSearchForm>({
     query: "developer jobs in Hyderabad",
     date_posted: "all",
@@ -240,6 +241,21 @@ const FindYourNextRole = () => {
 
     updateInternalJobWishlistStatus();
   }, [user, internalJobs]);
+
+  // Check for shared job link in URL
+  useEffect(() => {
+    const jobId = searchParams.get('job');
+    if (jobId && internalJobs.length > 0 && !internalJobsLoading) {
+      const sharedJob = internalJobs.find(job => job.id === jobId);
+      if (sharedJob) {
+        setSelectedInternalJobForDetails(sharedJob);
+        setShowInternalJobDetailsDialog(true);
+        // Remove the job parameter from URL after opening
+        searchParams.delete('job');
+        setSearchParams(searchParams, { replace: true });
+      }
+    }
+  }, [searchParams, internalJobs, internalJobsLoading, setSearchParams]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
