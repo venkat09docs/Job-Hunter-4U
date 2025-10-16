@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, MapPin, Building, Clock, ExternalLink, Heart, ArrowLeft, Save, FolderOpen, Trash2, Search, BarChart3, FileText } from "lucide-react";
+import { Loader2, MapPin, Building, Clock, ExternalLink, Heart, ArrowLeft, Save, FolderOpen, Trash2, Search, BarChart3, FileText, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { JobDetailsDialog } from "@/components/JobDetailsDialog";
 import { InternalJobDetailsDialog } from "@/components/InternalJobDetailsDialog";
@@ -1193,10 +1193,53 @@ const FindYourNextRole = () => {
       job_apply_link: job.job_url || '',
       job_description: job.description || '',
       job_min_salary: job.salary_min,
-      job_max_salary: job.salary_max
+      job_max_salary: job.salary_max,
+      job_application_deadline: job.application_deadline
     };
     setProfileMatchJob(jobResult);
     setShowProfileMatchDialog(true);
+  };
+
+  const handleShareInternalJob = async (job: InternalJob) => {
+    const shareUrl = `${window.location.origin}/dashboard/find-your-next-role?job=${job.id}`;
+    const shareData = {
+      title: job.title,
+      text: `Check out this job opportunity: ${job.title} at ${job.company}`,
+      url: shareUrl,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        toast({
+          title: "Shared successfully",
+          description: "Job link has been shared!",
+        });
+      } else {
+        // Fallback: Copy to clipboard
+        await navigator.clipboard.writeText(shareUrl);
+        toast({
+          title: "Link copied",
+          description: "Job link has been copied to clipboard!",
+        });
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+      // Fallback: Copy to clipboard
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        toast({
+          title: "Link copied",
+          description: "Job link has been copied to clipboard!",
+        });
+      } catch (clipboardError) {
+        toast({
+          title: "Error sharing",
+          description: "Unable to share job link. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   const renderNoResultsMessage = () => (
@@ -2172,11 +2215,11 @@ const FindYourNextRole = () => {
                                    <Button 
                                      variant="secondary" 
                                      size="sm"
-                                     onClick={() => handleInternalProfileMatch(job)}
+                                     onClick={() => handleShareInternalJob(job)}
                                      className="flex items-center gap-2"
                                    >
-                                     <BarChart3 className="h-4 w-4" />
-                                     Profile Match
+                                     <Share2 className="h-4 w-4" />
+                                     Share
                                    </Button>
                                    <Button 
                                      variant="default" 
