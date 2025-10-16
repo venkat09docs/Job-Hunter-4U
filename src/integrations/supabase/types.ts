@@ -2969,6 +2969,7 @@ export type Database = {
           company: string
           created_at: string
           description: string
+          email: string | null
           experience_level: string | null
           id: string
           is_active: boolean
@@ -2988,6 +2989,7 @@ export type Database = {
           company: string
           created_at?: string
           description: string
+          email?: string | null
           experience_level?: string | null
           id?: string
           is_active?: boolean
@@ -3007,6 +3009,7 @@ export type Database = {
           company?: string
           created_at?: string
           description?: string
+          email?: string | null
           experience_level?: string | null
           id?: string
           is_active?: boolean

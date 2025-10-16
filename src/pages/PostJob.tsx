@@ -28,6 +28,7 @@ export default function PostJob() {
     experienceLevel: "",
     salaryMin: "",
     salaryMax: "",
+    email: "",
     description: "",
     requirements: "",
     benefits: "",
@@ -63,6 +64,7 @@ export default function PostJob() {
           experienceLevel: data.experience_level || "",
           salaryMin: data.salary_min?.toString() || "",
           salaryMax: data.salary_max?.toString() || "",
+          email: data.email || "",
           description: data.description || "",
           requirements: data.requirements || "",
           benefits: data.benefits || "",
@@ -110,6 +112,7 @@ export default function PostJob() {
         experience_level: formData.experienceLevel,
         salary_min: formData.salaryMin ? parseInt(formData.salaryMin) : null,
         salary_max: formData.salaryMax ? parseInt(formData.salaryMax) : null,
+        email: formData.email || null,
         description: formData.description,
         requirements: formData.requirements,
         benefits: formData.benefits,
@@ -158,6 +161,7 @@ export default function PostJob() {
           experienceLevel: "",
           salaryMin: "",
           salaryMax: "",
+          email: "",
           description: "",
           requirements: "",
           benefits: "",
@@ -294,6 +298,17 @@ export default function PostJob() {
                   placeholder="e.g. 800000"
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Contact Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                placeholder="e.g. hr@company.com"
+              />
             </div>
 
             <div className="space-y-2">
