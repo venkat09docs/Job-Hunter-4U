@@ -105,6 +105,7 @@ import JobHunterLevelUp from "./pages/JobHunterLevelUp";
 import AutomateJobHunting from "./pages/AutomateJobHunting";
 import ManageHRDetails from "./pages/ManageHRDetails";
 import GenAICareerAccelerator from "./pages/GenAICareerAccelerator";
+import PublicJobDetails from "./pages/PublicJobDetails";
 
 const queryClient = new QueryClient();
 
@@ -178,6 +179,7 @@ const AppContent = () => {
           <Route path="/ai-job-hunting" element={<Index />} />
           <Route path="/home" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/jobs/:id" element={<PublicJobDetails />} />
           <Route 
             path="/dashboard" 
             element={

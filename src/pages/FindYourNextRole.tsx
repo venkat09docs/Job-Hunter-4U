@@ -1217,7 +1217,7 @@ const FindYourNextRole = () => {
   };
 
   const handleShareInternalJob = async (job: InternalJob) => {
-    const shareUrl = `${window.location.origin}/dashboard/find-your-next-role?job=${job.id}`;
+    const shareUrl = `${window.location.origin}/jobs/${job.id}`;
     const shareData = {
       title: job.title,
       text: `Check out this job opportunity: ${job.title} at ${job.company}`,
