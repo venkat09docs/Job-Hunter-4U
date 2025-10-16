@@ -116,7 +116,6 @@ export default function PostJob() {
         application_deadline: formData.applicationDeadline || null,
         job_url: formData.jobUrl || null,
         posted_by: user.id,
-        related_id: null,
       };
 
       if (isEditMode && editJobId) {
