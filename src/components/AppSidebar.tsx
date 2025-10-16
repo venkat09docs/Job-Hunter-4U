@@ -51,6 +51,7 @@ import { usePremiumFeatures } from "@/hooks/usePremiumFeatures";
 import { useUserIndustry } from "@/hooks/useUserIndustry";
 import { useProfile } from "@/hooks/useProfile";
 import { useUserPoints } from "@/hooks/useUserPoints";
+import { useOptimizedLeaderboard } from "@/hooks/useOptimizedLeaderboard";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import PricingDialog from "./PricingDialog";
@@ -146,6 +147,7 @@ export function AppSidebar() {
   const { canAccessFeature } = usePremiumFeatures();
   const { isIT } = useUserIndustry();
   const { totalPoints } = useUserPoints();
+  const { leaderboard } = useOptimizedLeaderboard();
   const { theme, setTheme } = useTheme();
   const [userSlug, setUserSlug] = useState<string | null>(null);
   const [jobHunterOpen, setJobHunterOpen] = useState(false);
@@ -569,6 +571,11 @@ export function AppSidebar() {
                 </p>
                 <p className="text-xs text-primary font-medium mt-1">
                   🏆 {totalPoints} Points
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Your Leader Board Rank: {
+                    leaderboard.top_performer.find(entry => entry.user_id === user?.id)?.rank_position || 'N/A'
+                  }
                 </p>
               </div>
             )}
