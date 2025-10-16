@@ -14,6 +14,7 @@ import { toast } from "@/hooks/use-toast";
 import { Loader2, MapPin, Building, Clock, ExternalLink, Heart, ArrowLeft, Save, FolderOpen, Trash2, Search, BarChart3, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { JobDetailsDialog } from "@/components/JobDetailsDialog";
+import { InternalJobDetailsDialog } from "@/components/InternalJobDetailsDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
@@ -105,6 +106,8 @@ const FindYourNextRole = () => {
   const [currentJobDetails, setCurrentJobDetails] = useState<any>(null);
   const [loadingJobDetails, setLoadingJobDetails] = useState(false);
   const [selectedJobForDetails, setSelectedJobForDetails] = useState<JobResult | null>(null);
+  const [showInternalJobDetailsDialog, setShowInternalJobDetailsDialog] = useState(false);
+  const [selectedInternalJobForDetails, setSelectedInternalJobForDetails] = useState<InternalJob | null>(null);
 
   // Debug effect to track jobs state changes
   useEffect(() => {
@@ -2150,40 +2153,43 @@ const FindYourNextRole = () => {
                                     )}
                                   </div>
                                 </div>
-                                <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => handleAddInternalJobToWishlist(job)}
-                                    disabled={addingInternalToWishlist === job.id || wishlistedInternalJobs.has(job.id)}
-                                  >
-                                    {addingInternalToWishlist === job.id ? (
-                                      <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : wishlistedInternalJobs.has(job.id) ? (
-                                      <Heart className="h-4 w-4 fill-current" />
-                                    ) : (
-                                      <Heart className="h-4 w-4" />
-                                    )}
-                                    {wishlistedInternalJobs.has(job.id) ? 'Wishlisted' : 'Wishlist'}
-                                  </Button>
-                                  <Button 
-                                    variant="secondary" 
-                                    size="sm"
-                                    onClick={() => handleInternalProfileMatch(job)}
-                                    className="flex items-center gap-2"
-                                  >
-                                    <BarChart3 className="h-4 w-4" />
-                                    Profile Match
-                                  </Button>
-                                  <Button 
-                                    variant="default" 
-                                    size="sm"
-                                    onClick={() => handleApplyInternalJob(job)}
-                                    disabled={!job.job_url}
-                                  >
-                                    Apply Now
-                                  </Button>
-                                </div>
+                                 <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                                   <Button 
+                                     variant="outline" 
+                                     size="sm"
+                                     onClick={() => handleAddInternalJobToWishlist(job)}
+                                     disabled={addingInternalToWishlist === job.id || wishlistedInternalJobs.has(job.id)}
+                                   >
+                                     {addingInternalToWishlist === job.id ? (
+                                       <Loader2 className="h-4 w-4 animate-spin" />
+                                     ) : wishlistedInternalJobs.has(job.id) ? (
+                                       <Heart className="h-4 w-4 fill-current" />
+                                     ) : (
+                                       <Heart className="h-4 w-4" />
+                                     )}
+                                     {wishlistedInternalJobs.has(job.id) ? 'Wishlisted' : 'Wishlist'}
+                                   </Button>
+                                   <Button 
+                                     variant="secondary" 
+                                     size="sm"
+                                     onClick={() => handleInternalProfileMatch(job)}
+                                     className="flex items-center gap-2"
+                                   >
+                                     <BarChart3 className="h-4 w-4" />
+                                     Profile Match
+                                   </Button>
+                                   <Button 
+                                     variant="default" 
+                                     size="sm"
+                                     onClick={() => {
+                                       setSelectedInternalJobForDetails(job);
+                                       setShowInternalJobDetailsDialog(true);
+                                     }}
+                                   >
+                                     <FileText className="h-4 w-4 mr-1" />
+                                     More Details
+                                   </Button>
+                                 </div>
                               </div>
                               
                               {(job.salary_min || job.salary_max) && (
@@ -2551,6 +2557,13 @@ const FindYourNextRole = () => {
                 jobDetails={currentJobDetails}
                 loading={loadingJobDetails}
                 jobTitle={selectedJobForDetails?.job_title || ''}
+              />
+
+              {/* Internal Job Details Dialog */}
+              <InternalJobDetailsDialog
+                open={showInternalJobDetailsDialog}
+                onOpenChange={setShowInternalJobDetailsDialog}
+                job={selectedInternalJobForDetails}
               />
         </div>
       </main>
