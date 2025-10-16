@@ -572,10 +572,11 @@ export function AppSidebar() {
                 <p className="text-xs text-primary font-medium mt-1">
                   🏆 {totalPoints} Points
                 </p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Your Leader Board Rank: {
-                    leaderboard.top_performer.find(entry => entry.user_id === user?.id)?.rank_position || 'N/A'
-                  }
+                <p className="text-xs mt-1.5 flex items-center gap-1">
+                  <span className="text-muted-foreground">📊 Your Leader Board Rank:</span>
+                  <span className="font-bold text-amber-500 dark:text-amber-400">
+                    #{leaderboard.top_performer.find(entry => entry.user_id === user?.id)?.rank_position || 'N/A'}
+                  </span>
                 </p>
               </div>
             )}
