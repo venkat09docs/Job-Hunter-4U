@@ -55,6 +55,8 @@ import { useOptimizedLeaderboard } from "@/hooks/useOptimizedLeaderboard";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import PricingDialog from "./PricingDialog";
+import { BadgeLeadersSlider } from "./BadgeLeadersSlider";
+import LeaderBoard from "./LeaderBoard";
 
 const getMainItems = (isAdmin: boolean, isInstituteAdmin: boolean, isRecruiter: boolean) => [
   { title: "Dashboard", url: "/dashboard", icon: Home, featureKey: null },
@@ -156,6 +158,7 @@ export function AppSidebar() {
   const [careerGrowthDialogOpen, setCareerGrowthDialogOpen] = useState(false);
   const [githubToolsDialogOpen, setGithubToolsDialogOpen] = useState(false);
   const [interviewLevelUpDialogOpen, setInterviewLevelUpDialogOpen] = useState(false);
+  const [leaderboardDialogOpen, setLeaderboardDialogOpen] = useState(false);
 
   console.log('🔍 AppSidebar: All hooks called, continuing render');
 
@@ -572,7 +575,10 @@ export function AppSidebar() {
                 <p className="text-xs text-primary font-medium mt-1">
                   🏆 {totalPoints} Points
                 </p>
-                <p className="text-xs mt-1.5 flex items-center gap-1">
+                <p 
+                  className="text-xs mt-1.5 flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => setLeaderboardDialogOpen(true)}
+                >
                   <span className="text-muted-foreground">📊 Your Leader Board Rank:</span>
                   <span className="font-bold text-amber-500 dark:text-amber-400">
                     #{leaderboard.top_performer.find(entry => entry.user_id === user?.id)?.rank_position || 'N/A'}
@@ -753,6 +759,27 @@ export function AppSidebar() {
             </p>
           </DialogHeader>
           <PricingDialog eligiblePlans={["One Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"]} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Leaderboard Dialog */}
+      <Dialog open={leaderboardDialogOpen} onOpenChange={setLeaderboardDialogOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-center text-2xl">
+              🏆 Leaderboard & Badge Leaders
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-8 mt-4">
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Badge Leaders</h3>
+              <BadgeLeadersSlider />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Leaderboard</h3>
+              <LeaderBoard />
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
