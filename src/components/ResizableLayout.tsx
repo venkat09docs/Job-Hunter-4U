@@ -20,14 +20,14 @@ export function ResizableLayout({ children, className }: ResizableLayoutProps) {
           defaultSize={25}
           minSize={15}
           maxSize={50}
-          className="h-full"
+          className="h-full hidden md:block"
         >
           <AppSidebar />
         </ResizablePanel>
         
         <ResizableHandle 
           withHandle
-          className="w-1 bg-border/20 hover:bg-border/40 transition-colors cursor-col-resize"
+          className="w-1 bg-border/20 hover:bg-border/40 transition-colors cursor-col-resize hidden md:block"
         />
         
         <ResizablePanel

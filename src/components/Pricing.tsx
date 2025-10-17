@@ -271,19 +271,19 @@ const Pricing = () => {
   };
 
   return (
-    <section id="pricing" className="py-12">
-      <div className="container px-4">
+    <section id="pricing" className="py-8 sm:py-10 md:py-12">
+      <div className="container px-3 sm:px-4">
         {/* Header with FOMO */}
-        <div className="text-center space-y-6 mb-16">
+        <div className="text-center space-y-4 sm:space-y-6 mb-8 sm:mb-12 md:mb-16">
           
-          <h2 className="text-3xl md:text-4xl font-bold">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">
             Stop Competing. Start{" "}
             <span className="bg-gradient-primary bg-clip-text text-transparent">
               Dominating
             </span>
           </h2>
           
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto px-2">
             While others send 100+ applications and get ghosted, our users get hired with 40% salary increases. 
             <strong className="text-foreground">Your competitor is already using AI. Don't get left behind.</strong>
           </p>
@@ -291,12 +291,12 @@ const Pricing = () => {
         </div>
 
         {/* Pricing cards */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6 max-w-7xl mx-auto">
           {plans.map((plan, index) => (
             <Card 
               key={index} 
-              className={`relative p-8 bg-gradient-card border-0 shadow-elegant hover:shadow-glow transition-all duration-300 ${
-                plan.popular ? 'ring-2 ring-primary ring-offset-2 scale-105' : ''
+              className={`relative p-5 sm:p-6 md:p-8 bg-gradient-card border-0 shadow-elegant hover:shadow-glow transition-all duration-300 ${
+                plan.popular ? 'ring-2 ring-primary ring-offset-2 sm:scale-105' : ''
               }`}
             >
               {plan.popular && (
@@ -306,42 +306,42 @@ const Pricing = () => {
                 </Badge>
               )}
               
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-5 md:space-y-6">
                 {/* Plan header */}
-                <div className="text-center space-y-2">
-                  <h3 className="text-2xl font-bold">{plan.name}</h3>
-                  <p className="text-muted-foreground">{plan.description}</p>
+                <div className="text-center space-y-1 sm:space-y-2">
+                  <h3 className="text-lg sm:text-xl md:text-2xl font-bold">{plan.name}</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">{plan.description}</p>
                 </div>
 
                 {/* Price */}
                 <div className="text-center">
                   <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-sm text-muted-foreground">₹</span>
-                    <span className="text-4xl font-bold">{plan.price.toFixed(2)}</span>
-                    <span className="text-muted-foreground">/{plan.duration}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">₹</span>
+                    <span className="text-2xl sm:text-3xl md:text-4xl font-bold">{plan.price.toFixed(2)}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">/{plan.duration}</span>
                   </div>
                 </div>
 
                 {/* Features */}
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {plan.features.map((feature, featureIndex) => (
-                    <div key={featureIndex} className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-success flex-shrink-0" />
-                      <span className="text-sm">{feature}</span>
+                    <div key={featureIndex} className="flex items-center gap-2 sm:gap-3">
+                      <Check className="w-4 h-4 sm:w-5 sm:h-5 text-success flex-shrink-0" />
+                      <span className="text-xs sm:text-sm">{feature}</span>
                     </div>
                   ))}
                 </div>
 
                 {/* Bonuses (only for 1 Year Plan) */}
                 {'bonuses' in plan && plan.bonuses && (
-                  <div className="space-y-3 pt-2 border-t border-primary/20">
-                    <div className="text-sm font-medium text-primary text-center">
+                  <div className="space-y-2 sm:space-y-3 pt-2 border-t border-primary/20">
+                    <div className="text-xs sm:text-sm font-medium text-primary text-center">
                       🎁 EXCLUSIVE BONUSES
                     </div>
                     {plan.bonuses.map((bonus, bonusIndex) => (
-                      <div key={bonusIndex} className="flex items-center gap-3">
-                        <Star className="w-5 h-5 text-warning flex-shrink-0" />
-                        <span className="text-sm font-medium text-warning">{bonus}</span>
+                      <div key={bonusIndex} className="flex items-center gap-2 sm:gap-3">
+                        <Star className="w-4 h-4 sm:w-5 sm:h-5 text-warning flex-shrink-0" />
+                        <span className="text-xs sm:text-sm font-medium text-warning">{bonus}</span>
                       </div>
                     ))}
                   </div>
@@ -351,7 +351,7 @@ const Pricing = () => {
                 <Button 
                   variant={plan.variant}
                   size="lg" 
-                  className="w-full"
+                  className="w-full text-sm sm:text-base"
                   onClick={() => handlePayment(plan)}
                   disabled={loadingPlan === plan.name}
                 >
@@ -374,36 +374,36 @@ const Pricing = () => {
         </div>
 
         {/* Social proof and urgency */}
-        <div className="mt-16 text-center space-y-8">
-          <div className="bg-gradient-card rounded-2xl p-8 border border-primary/20">
-            <h3 className="text-2xl font-bold mb-6">Why Career Level Up Users Get Hired Faster</h3>
+        <div className="mt-8 sm:mt-12 md:mt-16 text-center space-y-6 sm:space-y-8">
+          <div className="bg-gradient-card rounded-xl sm:rounded-2xl p-5 sm:p-6 md:p-8 border border-primary/20">
+            <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 sm:mb-5 md:mb-6">Why Career Level Up Users Get Hired Faster</h3>
             
-            <div className="grid sm:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
-              <div className="space-y-1 md:space-y-2 text-center">
-                <div className="text-2xl md:text-3xl font-bold text-success">94%</div>
-                <div className="text-xs md:text-sm text-muted-foreground">Resume ATS Pass Rate</div>
-                <div className="text-xs text-muted-foreground">(vs 23% industry avg)</div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
+              <div className="space-y-1 text-center">
+                <div className="text-xl sm:text-2xl md:text-3xl font-bold text-success">94%</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Resume ATS Pass Rate</div>
+                <div className="text-[10px] sm:text-xs text-muted-foreground">(vs 23% industry avg)</div>
               </div>
-              <div className="space-y-1 md:space-y-2 text-center">
-                <div className="text-2xl md:text-3xl font-bold text-primary">20+</div>
-                <div className="text-xs md:text-sm text-muted-foreground">AI Agents</div>
-                <div className="text-xs text-muted-foreground">(5x Boost your Job Search)</div>
+              <div className="space-y-1 text-center">
+                <div className="text-xl sm:text-2xl md:text-3xl font-bold text-primary">20+</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">AI Agents</div>
+                <div className="text-[10px] sm:text-xs text-muted-foreground">(5x Boost your Job Search)</div>
               </div>
-              <div className="space-y-1 md:space-y-2 text-center">
-                <div className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold text-warning">Live Job Board</div>
-                <div className="text-xs md:text-sm text-muted-foreground">Matching to Your Profile</div>
-                <div className="text-xs text-muted-foreground">(40% above market)</div>
+              <div className="space-y-1 text-center">
+                <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-warning">Live Job Board</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Matching to Your Profile</div>
+                <div className="text-[10px] sm:text-xs text-muted-foreground">(40% above market)</div>
               </div>
             </div>
             
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Perfect for:</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Perfect for:</p>
               <div className="flex flex-wrap justify-center gap-2">
-                <span className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full">Students</span>
-                <span className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full">Fresh Graduates</span>
-                <span className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full">Career Switchers</span>
-                <span className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full">Experienced Professionals</span>
-                <span className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full">Remote Job Seekers</span>
+                <span className="px-2 sm:px-3 py-1 bg-primary/10 text-primary text-xs sm:text-sm rounded-full">Students</span>
+                <span className="px-2 sm:px-3 py-1 bg-primary/10 text-primary text-xs sm:text-sm rounded-full">Fresh Graduates</span>
+                <span className="px-2 sm:px-3 py-1 bg-primary/10 text-primary text-xs sm:text-sm rounded-full">Career Switchers</span>
+                <span className="px-2 sm:px-3 py-1 bg-primary/10 text-primary text-xs sm:text-sm rounded-full">Experienced Professionals</span>
+                <span className="px-2 sm:px-3 py-1 bg-primary/10 text-primary text-xs sm:text-sm rounded-full">Remote Job Seekers</span>
               </div>
             </div>
           </div>
