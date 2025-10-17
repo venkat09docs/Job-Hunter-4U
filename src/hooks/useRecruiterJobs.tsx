@@ -49,7 +49,6 @@ export const useRecruiterJobs = () => {
       let query = supabase
         .from('jobs')
         .select('*')
-        .eq('posted_by', user.id)
         .order('created_at', { ascending: false });
 
       // Apply status filter
@@ -89,8 +88,7 @@ export const useRecruiterJobs = () => {
       const { error } = await supabase
         .from('jobs')
         .delete()
-        .eq('id', jobId)
-        .eq('posted_by', user?.id);
+        .eq('id', jobId);
 
       if (error) throw error;
 
@@ -115,8 +113,7 @@ export const useRecruiterJobs = () => {
       const { error } = await supabase
         .from('jobs')
         .update({ is_active: !currentStatus })
-        .eq('id', jobId)
-        .eq('posted_by', user?.id);
+        .eq('id', jobId);
 
       if (error) throw error;
 
