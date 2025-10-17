@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Bold, Italic, List, Link, Quote } from 'lucide-react';
@@ -17,9 +17,13 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   height = "300px"
 }) => {
   const [showPreview, setShowPreview] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const insertFormatting = (format: string) => {
-    const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
+  const insertFormatting = (e: React.MouseEvent, format: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const textarea = textareaRef.current;
     if (!textarea) return;
 
     const start = textarea.selectionStart;
@@ -79,7 +83,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           type="button"
           variant="ghost"
           size="sm"
-          onClick={() => insertFormatting('bold')}
+          onClick={(e) => insertFormatting(e, 'bold')}
           title="Bold"
         >
           <Bold className="h-4 w-4" />
@@ -88,7 +92,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           type="button"
           variant="ghost"
           size="sm"
-          onClick={() => insertFormatting('italic')}
+          onClick={(e) => insertFormatting(e, 'italic')}
           title="Italic"
         >
           <Italic className="h-4 w-4" />
@@ -97,7 +101,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           type="button"
           variant="ghost"
           size="sm"
-          onClick={() => insertFormatting('list')}
+          onClick={(e) => insertFormatting(e, 'list')}
           title="List"
         >
           <List className="h-4 w-4" />
@@ -106,7 +110,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           type="button"
           variant="ghost"
           size="sm"
-          onClick={() => insertFormatting('quote')}
+          onClick={(e) => insertFormatting(e, 'quote')}
           title="Quote"
         >
           <Quote className="h-4 w-4" />
@@ -115,7 +119,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           type="button"
           variant="ghost"
           size="sm"
-          onClick={() => insertFormatting('link')}
+          onClick={(e) => insertFormatting(e, 'link')}
           title="Link"
         >
           <Link className="h-4 w-4" />
@@ -125,7 +129,10 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => setShowPreview(!showPreview)}
+            onClick={(e) => {
+              e.preventDefault();
+              setShowPreview(!showPreview);
+            }}
           >
             {showPreview ? 'Edit' : 'Preview'}
           </Button>
@@ -141,6 +148,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           />
         ) : (
           <Textarea
+            ref={textareaRef}
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
