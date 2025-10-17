@@ -1,7 +1,6 @@
-import React, { useMemo, useState, useRef } from 'react';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Bold, Italic, List, Link, Quote } from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 interface RichTextEditorProps {
   value: string;
@@ -14,149 +13,124 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   value, 
   onChange, 
   placeholder = "Start writing your content...",
-  height = "300px"
+  height = "400px"
 }) => {
-  const [showPreview, setShowPreview] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const quillRef = useRef<ReactQuill>(null);
 
-  const insertFormatting = (e: React.MouseEvent, format: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = value.substring(start, end);
-    
-    let newText = value;
-    let insertText = '';
-    
-    switch (format) {
-      case 'bold':
-        insertText = `**${selectedText || 'bold text'}**`;
-        break;
-      case 'italic':
-        insertText = `*${selectedText || 'italic text'}*`;
-        break;
-      case 'list':
-        insertText = `\n- ${selectedText || 'list item'}`;
-        break;
-      case 'quote':
-        insertText = `\n> ${selectedText || 'quote'}`;
-        break;
-      case 'link':
-        insertText = `[${selectedText || 'link text'}](url)`;
-        break;
-      default:
-        return;
+  const modules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'indent': '-1'}, { 'indent': '+1' }],
+      ['blockquote', 'code-block'],
+      ['link', 'image'],
+      [{ 'align': [] }],
+      [{ 'color': [] }, { 'background': [] }],
+      ['clean']
+    ],
+    clipboard: {
+      matchVisual: false,
     }
-    
-    newText = value.substring(0, start) + insertText + value.substring(end);
-    onChange(newText);
-    
-    // Set cursor position after inserted text
-    setTimeout(() => {
-      textarea.focus();
-      const newPosition = start + insertText.length;
-      textarea.setSelectionRange(newPosition, newPosition);
-    }, 0);
   };
 
-  const renderPreview = (text: string) => {
-    return text
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/^- (.+)$/gm, '<li>$1</li>')
-      .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
-      .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
-      .replace(/\n/g, '<br>');
-  };
+  const formats = [
+    'header',
+    'bold', 'italic', 'underline', 'strike',
+    'list', 'bullet', 'indent',
+    'blockquote', 'code-block',
+    'link', 'image',
+    'align',
+    'color', 'background'
+  ];
 
   return (
-    <div className="border border-input rounded-lg overflow-hidden bg-background">
-      {/* Toolbar */}
-      <div className="flex items-center gap-1 p-2 border-b border-border bg-muted/50">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={(e) => insertFormatting(e, 'bold')}
-          title="Bold"
-        >
-          <Bold className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={(e) => insertFormatting(e, 'italic')}
-          title="Italic"
-        >
-          <Italic className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={(e) => insertFormatting(e, 'list')}
-          title="List"
-        >
-          <List className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={(e) => insertFormatting(e, 'quote')}
-          title="Quote"
-        >
-          <Quote className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={(e) => insertFormatting(e, 'link')}
-          title="Link"
-        >
-          <Link className="h-4 w-4" />
-        </Button>
-        <div className="ml-auto">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.preventDefault();
-              setShowPreview(!showPreview);
-            }}
-          >
-            {showPreview ? 'Edit' : 'Preview'}
-          </Button>
-        </div>
-      </div>
-      
-      {/* Content Area */}
-      <div style={{ height }}>
-        {showPreview ? (
-          <div 
-            className="p-4 prose prose-sm max-w-none overflow-y-auto h-full"
-            dangerouslySetInnerHTML={{ __html: renderPreview(value) }}
-          />
-        ) : (
-          <Textarea
-            ref={textareaRef}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={placeholder}
-            className="border-0 rounded-none resize-none focus-visible:ring-0 h-full"
-            style={{ minHeight: height }}
-          />
-        )}
-      </div>
+    <div className="rich-text-editor-wrapper">
+      <style>{`
+        .rich-text-editor-wrapper .quill {
+          background: hsl(var(--background));
+          border: 1px solid hsl(var(--border));
+          border-radius: 0.5rem;
+          overflow: hidden;
+        }
+        
+        .rich-text-editor-wrapper .ql-toolbar {
+          background: hsl(var(--muted) / 0.5);
+          border: none;
+          border-bottom: 1px solid hsl(var(--border));
+        }
+        
+        .rich-text-editor-wrapper .ql-container {
+          border: none;
+          font-family: inherit;
+          font-size: 0.875rem;
+          min-height: ${height};
+        }
+        
+        .rich-text-editor-wrapper .ql-editor {
+          min-height: ${height};
+          color: hsl(var(--foreground));
+        }
+        
+        .rich-text-editor-wrapper .ql-editor.ql-blank::before {
+          color: hsl(var(--muted-foreground));
+          font-style: normal;
+        }
+        
+        .rich-text-editor-wrapper .ql-snow .ql-stroke {
+          stroke: hsl(var(--foreground));
+        }
+        
+        .rich-text-editor-wrapper .ql-snow .ql-fill {
+          fill: hsl(var(--foreground));
+        }
+        
+        .rich-text-editor-wrapper .ql-snow .ql-picker-label {
+          color: hsl(var(--foreground));
+        }
+        
+        .rich-text-editor-wrapper .ql-toolbar button:hover,
+        .rich-text-editor-wrapper .ql-toolbar button:focus {
+          color: hsl(var(--primary));
+        }
+        
+        .rich-text-editor-wrapper .ql-toolbar button:hover .ql-stroke,
+        .rich-text-editor-wrapper .ql-toolbar button:focus .ql-stroke {
+          stroke: hsl(var(--primary));
+        }
+        
+        .rich-text-editor-wrapper .ql-toolbar button:hover .ql-fill,
+        .rich-text-editor-wrapper .ql-toolbar button:focus .ql-fill {
+          fill: hsl(var(--primary));
+        }
+        
+        .rich-text-editor-wrapper .ql-toolbar button.ql-active,
+        .rich-text-editor-wrapper .ql-toolbar .ql-picker-label.ql-active,
+        .rich-text-editor-wrapper .ql-toolbar .ql-picker-item.ql-selected {
+          color: hsl(var(--primary));
+        }
+        
+        .rich-text-editor-wrapper .ql-toolbar button.ql-active .ql-stroke,
+        .rich-text-editor-wrapper .ql-toolbar .ql-picker-label.ql-active .ql-stroke,
+        .rich-text-editor-wrapper .ql-toolbar .ql-picker-item.ql-selected .ql-stroke {
+          stroke: hsl(var(--primary));
+        }
+        
+        .rich-text-editor-wrapper .ql-toolbar button.ql-active .ql-fill,
+        .rich-text-editor-wrapper .ql-toolbar .ql-picker-label.ql-active .ql-fill,
+        .rich-text-editor-wrapper .ql-toolbar .ql-picker-item.ql-selected .ql-fill {
+          fill: hsl(var(--primary));
+        }
+      `}</style>
+      <ReactQuill
+        ref={quillRef}
+        theme="snow"
+        value={value}
+        onChange={onChange}
+        modules={modules}
+        formats={formats}
+        placeholder={placeholder}
+      />
     </div>
   );
 };
