@@ -58,17 +58,17 @@ const MasterKeyActivities = () => {
 
   return (
     <>
-      <section className="py-20 px-4 bg-white dark:bg-background">
+      <section className="py-12 sm:py-16 md:py-20 px-3 sm:px-4 bg-white dark:bg-background">
         <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-16 animate-fade-in">
-            <Badge className="mb-6 bg-gradient-to-r from-yellow-400 to-orange-500 text-black border-0 font-bold">
-              <Trophy className="w-4 h-4 mr-2" />
+          <div className="text-center mb-8 sm:mb-12 md:mb-16 animate-fade-in">
+            <Badge className="mb-4 sm:mb-5 md:mb-6 bg-gradient-to-r from-yellow-400 to-orange-500 text-black border-0 font-bold text-xs sm:text-sm">
+              <Trophy className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               Level 2 Program
             </Badge>
-            <h2 className="text-4xl md:text-6xl font-bold mb-6 text-gray-900 dark:text-foreground">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-3 sm:mb-4 md:mb-6 text-gray-900 dark:text-foreground px-2">
               Master These Key Activities
             </h2>
-            <p className="text-xl text-gray-700 dark:text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-700 dark:text-muted-foreground max-w-3xl mx-auto px-2">
               Build your professional foundation with our three core level-up activities
             </p>
           </div>
@@ -179,44 +179,44 @@ const MasterKeyActivities = () => {
             )}
 
             {/* Level Up Stats - Core Activities Boards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-16">
-              <Card className="bg-white/70 dark:bg-card/70 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl">
-                <CardContent className="p-6 text-center">
-                  <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-4 rounded-2xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                    <User className="h-8 w-8 text-white" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6 mt-8 sm:mt-12 md:mt-16">
+              <Card className="bg-white/70 dark:bg-card/70 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl sm:rounded-2xl">
+                <CardContent className="p-4 sm:p-5 md:p-6 text-center">
+                  <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-3 sm:p-4 rounded-xl sm:rounded-2xl w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
+                    <User className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-foreground mb-2">Profile</h3>
-                  <p className="text-gray-700 dark:text-muted-foreground">Professional Foundation</p>
+                  <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-foreground mb-1 sm:mb-2">Profile</h3>
+                  <p className="text-xs sm:text-sm text-gray-700 dark:text-muted-foreground">Professional Foundation</p>
                 </CardContent>
               </Card>
               
-              <Card className="bg-white/70 dark:bg-card/70 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl">
-                <CardContent className="p-6 text-center">
-                  <div className="bg-gradient-to-br from-blue-500 to-cyan-600 p-4 rounded-2xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                    <Users className="h-8 w-8 text-white" />
+              <Card className="bg-white/70 dark:bg-card/70 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl sm:rounded-2xl">
+                <CardContent className="p-4 sm:p-5 md:p-6 text-center">
+                  <div className="bg-gradient-to-br from-blue-500 to-cyan-600 p-3 sm:p-4 rounded-xl sm:rounded-2xl w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
+                    <Users className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-foreground mb-2">Network</h3>
-                  <p className="text-gray-700 dark:text-muted-foreground">Professional Connections</p>
+                  <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-foreground mb-1 sm:mb-2">Network</h3>
+                  <p className="text-xs sm:text-sm text-gray-700 dark:text-muted-foreground">Professional Connections</p>
                 </CardContent>
               </Card>
               
-              <Card className="bg-white/70 dark:bg-card/70 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl">
-                <CardContent className="p-6 text-center">
-                  <div className="bg-gradient-to-br from-gray-600 to-gray-800 p-4 rounded-2xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                    <Github className="h-8 w-8 text-white" />
+              <Card className="bg-white/70 dark:bg-card/70 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl sm:rounded-2xl">
+                <CardContent className="p-4 sm:p-5 md:p-6 text-center">
+                  <div className="bg-gradient-to-br from-gray-600 to-gray-800 p-3 sm:p-4 rounded-xl sm:rounded-2xl w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
+                    <Github className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-foreground mb-2">Code</h3>
-                  <p className="text-gray-700 dark:text-muted-foreground">Technical Showcase</p>
+                  <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-foreground mb-1 sm:mb-2">Code</h3>
+                  <p className="text-xs sm:text-sm text-gray-700 dark:text-muted-foreground">Technical Showcase</p>
                 </CardContent>
               </Card>
 
-              <Card className="bg-white/70 dark:bg-card/70 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl">
-                <CardContent className="p-6 text-center">
-                  <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-4 rounded-2xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                    <Globe className="h-8 w-8 text-white" />
+              <Card className="bg-white/70 dark:bg-card/70 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl sm:rounded-2xl">
+                <CardContent className="p-4 sm:p-5 md:p-6 text-center">
+                  <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-3 sm:p-4 rounded-xl sm:rounded-2xl w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
+                    <Globe className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-foreground mb-2">Portfolio</h3>
-                  <p className="text-gray-700 dark:text-muted-foreground">Digital Showcase</p>
+                  <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-foreground mb-1 sm:mb-2">Portfolio</h3>
+                  <p className="text-xs sm:text-sm text-gray-700 dark:text-muted-foreground">Digital Showcase</p>
                 </CardContent>
               </Card>
             </div>
