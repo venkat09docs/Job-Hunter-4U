@@ -50,7 +50,6 @@ export default function PostJob() {
         .from('jobs')
         .select('*')
         .eq('id', editJobId)
-        .eq('posted_by', user?.id)
         .single();
 
       if (error) throw error;
@@ -127,7 +126,6 @@ export default function PostJob() {
           .from('jobs')
           .update(jobData)
           .eq('id', editJobId)
-          .eq('posted_by', user.id)
           .select()
           .single();
 
