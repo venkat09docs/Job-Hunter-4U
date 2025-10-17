@@ -64,19 +64,19 @@ const Navigation = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 sm:h-20 items-center justify-between gap-2 sm:gap-4 px-3 sm:px-4">
+      <div className="container flex h-14 sm:h-16 md:h-20 items-center justify-between gap-1 sm:gap-2 md:gap-4 px-2 sm:px-3 md:px-4">
         {/* Logo */}
-        <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer min-w-0 flex-shrink-0" onClick={() => handleNavigate('/')}>
+        <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 cursor-pointer min-w-0 flex-shrink-0" onClick={() => handleNavigate('/')}>
            <img 
              src="/lovable-uploads/2bae437e-b17b-431f-a403-e8a375913444.png" 
              alt="AI Career Level Up Logo" 
-             className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 lg:h-14 lg:w-14 flex-shrink-0"
+             className="h-7 w-7 sm:h-9 sm:w-9 md:h-11 md:w-11 lg:h-14 lg:w-14 flex-shrink-0"
            />
-          <div className="flex flex-col min-w-0">
-            <div className="font-bold text-xs sm:text-sm md:text-base lg:text-xl text-primary truncate">
+          <div className="flex flex-col min-w-0 max-w-[140px] sm:max-w-none">
+            <div className="font-bold text-[11px] sm:text-xs md:text-sm lg:text-base xl:text-xl text-primary truncate leading-tight">
               AI Career Level Up
             </div>
-            <div className="text-[10px] sm:text-xs md:text-sm lg:text-base text-primary/90 font-semibold truncate">
+            <div className="hidden sm:block text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-primary/90 font-semibold truncate leading-tight">
               Learn It. Build It. Get Hired.
             </div>
           </div>
@@ -115,10 +115,10 @@ const Navigation = () => {
         </NavigationMenu>
 
         {/* CTA Button */}
-        <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-shrink-0">
           <Button 
             onClick={() => handleNavigate('/auth')} 
-            className="hidden md:inline-flex"
+            className="hidden md:inline-flex text-xs md:text-sm"
             size="sm"
           >
             Build Resume for Free
@@ -130,9 +130,10 @@ const Navigation = () => {
               <Button
                 variant="outline"
                 size="sm"
-                className="lg:hidden"
+                className="lg:hidden h-8 w-8 sm:h-9 sm:w-9 p-0"
               >
-                <Menu className="h-4 w-4" />
+                <Menu className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span className="sr-only">Open menu</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">
