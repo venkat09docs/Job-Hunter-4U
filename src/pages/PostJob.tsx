@@ -324,14 +324,13 @@ export default function PostJob() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="requirements">Requirements*</Label>
+              <Label htmlFor="requirements">Requirements</Label>
               <Textarea
                 id="requirements"
                 value={formData.requirements}
                 onChange={(e) => handleInputChange('requirements', e.target.value)}
                 placeholder="List the required skills, experience, education, etc."
                 rows={4}
-                required
               />
             </div>
 
