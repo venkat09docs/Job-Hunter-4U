@@ -8,23 +8,21 @@ Deno.serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-    const authHeader = req.headers.get('Authorization')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    // Get user_id from request body
+    const { user_id } = await req.json();
     
-    if (userError || !user) {
+    if (!user_id) {
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'user_id is required in request body' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Fetching pending activities for user:', user.id);
+    console.log('Fetching pending activities for user:', user_id);
 
     // Calculate current week period (format: YYYY-WW)
     const now = new Date();
@@ -57,7 +55,7 @@ Deno.serve(async (req) => {
           points
         )
       `)
-      .eq('user_id', user.id)
+      .eq('user_id', user_id)
       .eq('period', currentPeriod)
       .in('status', ['ASSIGNED', 'IN_PROGRESS'])
       .order('created_at', { ascending: true });
@@ -81,7 +79,7 @@ Deno.serve(async (req) => {
           task_type
         )
       `)
-      .eq('user_id', user.id)
+      .eq('user_id', user_id)
       .eq('period', currentPeriod)
       .in('status', ['assigned', 'in_progress'])
       .order('created_at', { ascending: true });
@@ -94,7 +92,7 @@ Deno.serve(async (req) => {
     const { data: jobHunterTasks, error: jobHunterError } = await supabase
       .from('daily_job_hunting_tasks')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', user_id)
       .eq('task_date', today)
       .in('status', ['pending', 'not_started'])
       .order('created_at', { ascending: true });
@@ -108,7 +106,7 @@ Deno.serve(async (req) => {
     const { data: jobApplicationActivities, error: jobAppError } = await supabase
       .from('job_application_activities')
       .select('activity_date, task_id, value')
-      .eq('user_id', user.id)
+      .eq('user_id', user_id)
       .gte('activity_date', weekStart)
       .lte('activity_date', today);
 
@@ -118,7 +116,7 @@ Deno.serve(async (req) => {
 
     // Build response
     const response = {
-      user_id: user.id,
+      user_id: user_id,
       period: currentPeriod,
       date: today,
       linkedin: {

@@ -1,7 +1,7 @@
 project_id = "moirryvajzyriagqihbe"
 
 [functions.get-pending-activities]
-verify_jwt = true
+verify_jwt = false
 
 [functions.analyze-resume]
 verify_jwt = false

@@ -50,7 +50,7 @@ export const usePendingActivities = () => {
       const { data, error } = await supabase.functions.invoke<PendingActivitiesResponse>(
         'get-pending-activities',
         {
-          method: 'POST'
+          body: { user_id: user.id }
         }
       );
 
