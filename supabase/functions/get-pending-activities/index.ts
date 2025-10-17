@@ -12,17 +12,35 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get user_id from request body
-    const { user_id } = await req.json();
+    // Get email from request body
+    const { email } = await req.json();
     
-    if (!user_id) {
+    if (!email) {
       return new Response(
-        JSON.stringify({ error: 'user_id is required in request body' }),
+        JSON.stringify({ error: 'email is required in request body' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Fetching pending activities for user:', user_id);
+    console.log('Fetching pending activities for email:', email);
+
+    // Look up user_id from profiles table using email
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('user_id')
+      .eq('email', email)
+      .single();
+
+    if (profileError || !profile) {
+      console.error('Error finding user:', profileError);
+      return new Response(
+        JSON.stringify({ error: 'User not found for provided email' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const user_id = profile.user_id;
+    console.log('Found user_id:', user_id);
 
     // Calculate current week period (format: YYYY-WW)
     const now = new Date();

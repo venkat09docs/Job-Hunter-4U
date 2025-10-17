@@ -43,14 +43,14 @@ export const usePendingActivities = () => {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ['pending-activities', user?.id],
+    queryKey: ['pending-activities', user?.email],
     queryFn: async () => {
-      if (!user) throw new Error('User not authenticated');
+      if (!user?.email) throw new Error('User email not available');
 
       const { data, error } = await supabase.functions.invoke<PendingActivitiesResponse>(
         'get-pending-activities',
         {
-          body: { user_id: user.id }
+          body: { email: user.email }
         }
       );
 
@@ -61,7 +61,7 @@ export const usePendingActivities = () => {
 
       return data;
     },
-    enabled: !!user,
+    enabled: !!user?.email,
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: true
   });
