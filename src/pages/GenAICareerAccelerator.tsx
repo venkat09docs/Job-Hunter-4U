@@ -158,7 +158,7 @@ const GenAICareerAccelerator = () => {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="relative pt-28 sm:pt-32 md:pt-36 lg:pt-24 pb-12 sm:pb-16 px-4 overflow-hidden">
+      <section className="relative pt-32 sm:pt-36 md:pt-40 lg:pt-28 pb-12 sm:pb-16 px-4 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-purple-500/10 to-cyan-500/5"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(124,58,237,0.15),transparent_50%)]"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(59,130,246,0.1),transparent_50%)]"></div>
@@ -167,7 +167,7 @@ const GenAICareerAccelerator = () => {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start max-w-7xl mx-auto">
             {/* Left Content */}
             <div className="text-center lg:text-left space-y-4 sm:space-y-5 md:space-y-6">
-              <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-primary animate-fade-in">
+              <p className="text-xl sm:text-2xl md:text-3xl font-bold text-primary animate-fade-in leading-tight">
                 Launch your AI Career in 90 Days 🚀
               </p>
               
@@ -179,7 +179,7 @@ const GenAICareerAccelerator = () => {
                 GenAI Career Accelerator
               </h1>
               
-              <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground font-medium">
+              <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground font-medium leading-relaxed">
                 Master the New AI Stack — From Cloud Infrastructure to Intelligent Apps
               </p>
               
@@ -189,8 +189,8 @@ const GenAICareerAccelerator = () => {
 
               {/* Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-2">
-                <Button size="lg" className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6" onClick={() => window.open('https://chat.whatsapp.com/Iq12LOpdIcv3o3J41mzCJz', '_blank')}>
-                  Join WhatsApp community for more details <ChevronRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+                <Button size="lg" className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 whitespace-normal leading-tight" onClick={() => window.open('https://chat.whatsapp.com/Iq12LOpdIcv3o3J41mzCJz', '_blank')}>
+                  Join WhatsApp community for more details <ChevronRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                 </Button>
               </div>
 
