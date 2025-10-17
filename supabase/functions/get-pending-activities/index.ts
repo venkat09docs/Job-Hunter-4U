@@ -58,7 +58,6 @@ Deno.serve(async (req) => {
       .select(`
         id,
         status,
-        completed_at,
         due_at,
         linkedin_tasks (
           id,
@@ -82,14 +81,12 @@ Deno.serve(async (req) => {
       .select(`
         id,
         status,
-        completed_at,
         due_at,
         github_tasks (
           id,
           title,
           description,
-          points_base,
-          task_type
+          points_base
         )
       `)
       .eq('user_id', user_id)
@@ -150,7 +147,6 @@ Deno.serve(async (req) => {
           title: task.github_tasks?.title,
           description: task.github_tasks?.description,
           points: task.github_tasks?.points_base,
-          task_type: task.github_tasks?.task_type,
           status: task.status,
           due_at: task.due_at
         })) || []
