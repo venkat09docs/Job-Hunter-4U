@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayStr = yesterday.toISOString().split('T')[0];
 
-    // Fetch LinkedIn tasks (today's tasks + incomplete previous tasks)
+    // Fetch LinkedIn tasks (today's tasks + yesterday's incomplete tasks only)
     const { data: linkedinTasks, error: linkedinError } = await supabase
       .from('linkedin_user_tasks')
       .select(`
@@ -75,6 +75,7 @@ Deno.serve(async (req) => {
       `)
       .eq('user_id', user_id)
       .in('status', ['NOT_STARTED', 'STARTED'])
+      .gte('due_at', yesterdayStr)
       .lte('due_at', today)
       .order('due_at', { ascending: true });
 
@@ -82,7 +83,7 @@ Deno.serve(async (req) => {
       console.error('Error fetching LinkedIn tasks:', linkedinError);
     }
 
-    // Fetch GitHub tasks (today's tasks + incomplete previous tasks)
+    // Fetch GitHub tasks (today's tasks + yesterday's incomplete tasks only)
     const { data: githubTasks, error: githubError } = await supabase
       .from('github_user_tasks')
       .select(`
@@ -98,6 +99,7 @@ Deno.serve(async (req) => {
       `)
       .eq('user_id', user_id)
       .in('status', ['NOT_STARTED', 'STARTED'])
+      .gte('due_at', yesterdayStr)
       .lte('due_at', today)
       .order('due_at', { ascending: true });
 
@@ -105,12 +107,13 @@ Deno.serve(async (req) => {
       console.error('Error fetching GitHub tasks:', githubError);
     }
 
-    // Fetch Job Hunter daily tasks (today's tasks + incomplete previous tasks)
+    // Fetch Job Hunter daily tasks (today's tasks + yesterday's incomplete tasks only)
     const { data: jobHunterTasks, error: jobHunterError } = await supabase
       .from('daily_job_hunting_tasks')
       .select('*')
       .eq('user_id', user_id)
       .in('status', ['pending', 'not_started'])
+      .gte('task_date', yesterdayStr)
       .lte('task_date', today)
       .order('task_date', { ascending: true });
 
