@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
     console.log('Current day of week:', dayOfWeek, '(1=Mon, 7=Sun)');
     console.log('Yesterday day of week:', yesterdayDayOfWeek);
 
-    // Fetch LinkedIn tasks for current period
+    // Fetch LinkedIn tasks (not filtering by period to include incomplete tasks from previous weeks)
     const { data: allLinkedinTasks, error: linkedinError } = await supabase
       .from('linkedin_user_tasks')
       .select(`
@@ -77,9 +77,11 @@ Deno.serve(async (req) => {
         )
       `)
       .eq('user_id', user_id)
-      .eq('period', currentPeriod)
       .in('status', ['NOT_STARTED', 'STARTED'])
       .order('due_at', { ascending: true });
+    
+    console.log('LinkedIn tasks fetched:', allLinkedinTasks?.length || 0);
+    console.log('Sample LinkedIn task titles:', allLinkedinTasks?.slice(0, 3).map(t => t.linkedin_tasks?.title) || []);
     
     // Filter tasks by day of week from title
     const linkedinTasks = allLinkedinTasks?.filter(task => {
@@ -95,7 +97,7 @@ Deno.serve(async (req) => {
       console.error('Error fetching LinkedIn tasks:', linkedinError);
     }
 
-    // Fetch GitHub tasks for current period
+    // Fetch GitHub tasks (not filtering by period to include incomplete tasks from previous weeks)
     const { data: allGithubTasks, error: githubError } = await supabase
       .from('github_user_tasks')
       .select(`
@@ -111,9 +113,11 @@ Deno.serve(async (req) => {
         )
       `)
       .eq('user_id', user_id)
-      .eq('period', currentPeriod)
       .in('status', ['NOT_STARTED', 'STARTED'])
       .order('due_at', { ascending: true });
+    
+    console.log('GitHub tasks fetched:', allGithubTasks?.length || 0);
+    console.log('Sample GitHub task titles:', allGithubTasks?.slice(0, 3).map(t => t.github_tasks?.title) || []);
     
     // Filter tasks by day of week from title
     const githubTasks = allGithubTasks?.filter(task => {
@@ -144,6 +148,9 @@ Deno.serve(async (req) => {
       .lte('task_date', today)
       .order('task_date', { ascending: true });
 
+    console.log('Job Hunter tasks fetched:', jobHunterTasks?.length || 0);
+    console.log('Job Hunter date range:', yesterdayStr, 'to', today);
+    
     if (jobHunterError) {
       console.error('Error fetching job hunter tasks:', jobHunterError);
     }
