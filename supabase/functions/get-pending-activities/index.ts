@@ -51,8 +51,15 @@ Deno.serve(async (req) => {
 
     // Get today's date in YYYY-MM-DD format
     const today = now.toISOString().split('T')[0];
+    const todayStart = new Date(today);
+    todayStart.setHours(0, 0, 0, 0);
+    
+    // Get yesterday's date
+    const yesterday = new Date(todayStart);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
 
-    // Fetch LinkedIn tasks for current week (pending/not started)
+    // Fetch LinkedIn tasks (today's tasks + incomplete previous tasks)
     const { data: linkedinTasks, error: linkedinError } = await supabase
       .from('linkedin_user_tasks')
       .select(`
@@ -67,15 +74,15 @@ Deno.serve(async (req) => {
         )
       `)
       .eq('user_id', user_id)
-      .eq('period', currentPeriod)
       .in('status', ['NOT_STARTED', 'STARTED'])
+      .lte('due_at', today)
       .order('due_at', { ascending: true });
 
     if (linkedinError) {
       console.error('Error fetching LinkedIn tasks:', linkedinError);
     }
 
-    // Fetch GitHub tasks for current week (not started/in progress)
+    // Fetch GitHub tasks (today's tasks + incomplete previous tasks)
     const { data: githubTasks, error: githubError } = await supabase
       .from('github_user_tasks')
       .select(`
@@ -90,22 +97,22 @@ Deno.serve(async (req) => {
         )
       `)
       .eq('user_id', user_id)
-      .eq('period', currentPeriod)
       .in('status', ['NOT_STARTED', 'STARTED'])
+      .lte('due_at', today)
       .order('due_at', { ascending: true });
 
     if (githubError) {
       console.error('Error fetching GitHub tasks:', githubError);
     }
 
-    // Fetch Job Hunter daily tasks (pending/not started)
+    // Fetch Job Hunter daily tasks (today's tasks + incomplete previous tasks)
     const { data: jobHunterTasks, error: jobHunterError } = await supabase
       .from('daily_job_hunting_tasks')
       .select('*')
       .eq('user_id', user_id)
-      .eq('task_date', today)
       .in('status', ['pending', 'not_started'])
-      .order('created_at', { ascending: true });
+      .lte('task_date', today)
+      .order('task_date', { ascending: true });
 
     if (jobHunterError) {
       console.error('Error fetching job hunter tasks:', jobHunterError);
