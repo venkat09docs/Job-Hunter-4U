@@ -44,11 +44,10 @@ export const useRecruiterStats = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch jobs posted by the current user
+        // Fetch all internal jobs (not filtered by user)
         const { data: jobs, error: jobsError } = await supabase
           .from('jobs')
           .select('*')
-          .eq('posted_by', user.id)
           .order('created_at', { ascending: false });
 
         if (jobsError) throw jobsError;
@@ -62,6 +61,17 @@ export const useRecruiterStats = () => {
           created_at: job.created_at,
           is_active: job.is_active,
         })) || [];
+
+        // Fetch profile views (track when users click Apply on jobs)
+        const { data: jobApplications, error: applicationsError } = await supabase
+          .from('job_applications_tracking')
+          .select('id');
+
+        if (applicationsError && applicationsError.code !== 'PGRST116') {
+          console.error('Error fetching job applications:', applicationsError);
+        }
+
+        const profileViews = jobApplications?.length || 0;
 
         // Fetch assignment statistics - matching the same sources as VerifyAssignments page
         
@@ -172,7 +182,7 @@ export const useRecruiterStats = () => {
         setStats({
           activeJobs,
           totalApplications: 0,
-          profileViews: 0,
+          profileViews,
           pendingAssignments: totalPendingAssignments,
           verifiedAssignments: totalVerifiedAssignments,
           extensionRequests: totalExtensionRequests,
@@ -199,11 +209,10 @@ export const useRecruiterStats = () => {
       setLoading(true);
       setError(null);
 
-      // Fetch jobs posted by the current user
+      // Fetch all internal jobs
       const { data: jobs, error: jobsError } = await supabase
         .from('jobs')
         .select('*')
-        .eq('posted_by', user.id)
         .order('created_at', { ascending: false });
 
       if (jobsError) throw jobsError;
@@ -217,6 +226,17 @@ export const useRecruiterStats = () => {
         created_at: job.created_at,
         is_active: job.is_active,
       })) || [];
+
+      // Fetch profile views
+      const { data: jobApplications, error: applicationsError } = await supabase
+        .from('job_applications_tracking')
+        .select('id');
+
+      if (applicationsError && applicationsError.code !== 'PGRST116') {
+        console.error('Error fetching job applications:', applicationsError);
+      }
+
+      const profileViews = jobApplications?.length || 0;
 
       // Fetch assignment statistics - matching the same sources as VerifyAssignments page
       
@@ -303,7 +323,7 @@ export const useRecruiterStats = () => {
       setStats({
         activeJobs,
         totalApplications: 0,
-        profileViews: 0,
+        profileViews,
         pendingAssignments: totalPendingAssignments,
         verifiedAssignments: totalVerifiedAssignments,
         extensionRequests: totalExtensionRequests,
