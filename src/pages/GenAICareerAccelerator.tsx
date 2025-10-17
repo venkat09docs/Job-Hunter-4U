@@ -190,7 +190,7 @@ const GenAICareerAccelerator = () => {
               {/* Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-2">
                 <Button size="lg" className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 whitespace-normal leading-tight" onClick={() => window.open('https://chat.whatsapp.com/Iq12LOpdIcv3o3J41mzCJz', '_blank')}>
-                  Join WhatsApp community for more details <ChevronRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                  Join WhatsApp community now <ChevronRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                 </Button>
               </div>
 
@@ -202,10 +202,10 @@ const GenAICareerAccelerator = () => {
 
             {/* Right Side - Image and Next Cohort */}
             <div className="space-y-6">
-              {/* Hero Image */}
-              <div className="relative hidden lg:block">
+              {/* Hero Image - Now visible on mobile */}
+              <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 via-primary/10 to-cyan-500/20 rounded-3xl transform rotate-3 scale-105 blur-2xl"></div>
-                <div className="relative rounded-3xl overflow-hidden shadow-2xl border-2 border-primary/20">
+                <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border-2 border-primary/20">
                   <img 
                     src={heroImage} 
                     alt="GenAI Career Accelerator - Professional working with AI tools" 
@@ -1050,7 +1050,7 @@ const GenAICareerAccelerator = () => {
 
           <div className="flex justify-center">
             <Button size="lg" className="text-lg px-8 py-6" onClick={() => window.open('https://chat.whatsapp.com/Iq12LOpdIcv3o3J41mzCJz', '_blank')}>
-              Join WhatsApp community for more details <ChevronRight className="ml-2 h-5 w-5" />
+              Join WhatsApp community now <ChevronRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
 
