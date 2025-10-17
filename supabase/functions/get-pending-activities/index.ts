@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
       `)
       .eq('user_id', user_id)
       .eq('period', currentPeriod)
-      .in('status', ['NOT_STARTED', 'IN_PROGRESS'])
+      .in('status', ['NOT_STARTED', 'STARTED'])
       .order('due_at', { ascending: true });
 
     if (linkedinError) {
@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
       `)
       .eq('user_id', user_id)
       .eq('period', currentPeriod)
-      .in('status', ['not_started', 'in_progress', 'NOT_STARTED', 'IN_PROGRESS'])
+      .in('status', ['NOT_STARTED', 'STARTED'])
       .order('due_at', { ascending: true });
 
     if (githubError) {
