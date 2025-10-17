@@ -158,52 +158,52 @@ const GenAICareerAccelerator = () => {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="relative pt-24 pb-16 px-4 overflow-hidden">
+      <section className="relative pt-28 sm:pt-32 md:pt-36 lg:pt-24 pb-12 sm:pb-16 px-4 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-purple-500/10 to-cyan-500/5"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(124,58,237,0.15),transparent_50%)]"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(59,130,246,0.1),transparent_50%)]"></div>
         
         <div className="container mx-auto relative z-10">
-          <div className="grid lg:grid-cols-2 gap-8 items-start max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start max-w-7xl mx-auto">
             {/* Left Content */}
-            <div className="text-center lg:text-left space-y-6">
-              <p className="text-2xl md:text-3xl font-bold text-primary animate-fade-in">
+            <div className="text-center lg:text-left space-y-4 sm:space-y-5 md:space-y-6">
+              <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-primary animate-fade-in">
                 Launch your AI Career in 90 Days 🚀
               </p>
               
-              <Badge className="px-4 py-2 text-base bg-primary/10 text-primary border-primary/20">
+              <Badge className="px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base bg-primary/10 text-primary border-primary/20">
                 🎓 3-Month Intensive Program
               </Badge>
               
-              <h1 className="text-5xl md:text-7xl font-bold bg-gradient-primary bg-clip-text text-transparent leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold bg-gradient-primary bg-clip-text text-transparent leading-tight">
                 GenAI Career Accelerator
               </h1>
               
-              <p className="text-xl md:text-2xl text-muted-foreground font-medium">
+              <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground font-medium">
                 Master the New AI Stack — From Cloud Infrastructure to Intelligent Apps
               </p>
               
-              <p className="text-lg text-muted-foreground">
+              <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
                 Transform from a beginner to a job-ready AI professional. Learn AWS, GCP, DevOps, Generative AI, LLMOps, MLOps, and AIOps with 6+ real-world projects and guaranteed placement support.
               </p>
 
               {/* Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-2">
-                <Button size="lg" className="text-lg px-8 py-6" onClick={() => window.open('https://chat.whatsapp.com/Iq12LOpdIcv3o3J41mzCJz', '_blank')}>
-                  Join WhatsApp community for more details <ChevronRight className="ml-2 h-5 w-5" />
+                <Button size="lg" className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6" onClick={() => window.open('https://chat.whatsapp.com/Iq12LOpdIcv3o3J41mzCJz', '_blank')}>
+                  Join WhatsApp community for more details <ChevronRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </div>
 
-              <div className="flex items-center justify-center lg:justify-start gap-2 text-sm text-muted-foreground pt-2">
-                <Users className="h-4 w-4" />
+              <div className="flex items-center justify-center lg:justify-start gap-2 text-xs sm:text-sm text-muted-foreground pt-2">
+                <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span>Trusted by 8,000+ learners worldwide</span>
               </div>
             </div>
 
             {/* Right Side - Image and Next Cohort */}
-            <div className="hidden lg:block space-y-6">
+            <div className="space-y-6">
               {/* Hero Image */}
-              <div className="relative">
+              <div className="relative hidden lg:block">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 via-primary/10 to-cyan-500/20 rounded-3xl transform rotate-3 scale-105 blur-2xl"></div>
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl border-2 border-primary/20">
                   <img 
@@ -214,15 +214,15 @@ const GenAICareerAccelerator = () => {
                 </div>
               </div>
 
-              {/* Next Cohort Section */}
-              <div className="bg-gradient-to-br from-card/90 to-purple-500/10 backdrop-blur-sm border-2 border-purple-500/30 rounded-3xl p-6 shadow-xl text-center">
-                <Badge className="mb-3 bg-gradient-to-r from-purple-500 to-violet-600 text-white border-0 px-4 py-1.5 text-sm">
+              {/* Next Cohort Section - Now visible on all devices */}
+              <div className="bg-gradient-to-br from-card/90 to-purple-500/10 backdrop-blur-sm border-2 border-purple-500/30 rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 shadow-xl text-center">
+                <Badge className="mb-3 bg-gradient-to-r from-purple-500 to-violet-600 text-white border-0 px-3 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm">
                   Next Cohort
                 </Badge>
-                <h3 className="text-2xl md:text-3xl font-bold mb-1 text-foreground">
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 text-foreground">
                   Starts on 23rd October 2025
                 </h3>
-                <p className="text-base text-muted-foreground mb-4">at 7:30AM IST</p>
+                <p className="text-sm sm:text-base text-muted-foreground mb-4">at 7:30AM IST</p>
                 <div className="flex justify-center">
                   <CountdownTimer targetDate="2025-10-23T07:30:00+05:30" />
                 </div>
