@@ -52,48 +52,50 @@ Deno.serve(async (req) => {
     // Get today's date in YYYY-MM-DD format
     const today = now.toISOString().split('T')[0];
 
-    // Fetch LinkedIn tasks for current week (pending/assigned)
+    // Fetch LinkedIn tasks for current week (pending/not started)
     const { data: linkedinTasks, error: linkedinError } = await supabase
       .from('linkedin_user_tasks')
       .select(`
         id,
         status,
         completed_at,
+        due_at,
         linkedin_tasks (
           id,
           title,
           description,
-          points
+          points_base
         )
       `)
       .eq('user_id', user_id)
       .eq('period', currentPeriod)
-      .in('status', ['ASSIGNED', 'IN_PROGRESS'])
-      .order('created_at', { ascending: true });
+      .in('status', ['NOT_STARTED', 'IN_PROGRESS'])
+      .order('due_at', { ascending: true });
 
     if (linkedinError) {
       console.error('Error fetching LinkedIn tasks:', linkedinError);
     }
 
-    // Fetch GitHub tasks for current week (assigned/in_progress)
+    // Fetch GitHub tasks for current week (not started/in progress)
     const { data: githubTasks, error: githubError } = await supabase
       .from('github_user_tasks')
       .select(`
         id,
         status,
         completed_at,
+        due_at,
         github_tasks (
           id,
           title,
           description,
-          points,
+          points_base,
           task_type
         )
       `)
       .eq('user_id', user_id)
       .eq('period', currentPeriod)
-      .in('status', ['assigned', 'in_progress'])
-      .order('created_at', { ascending: true });
+      .in('status', ['not_started', 'in_progress', 'NOT_STARTED', 'IN_PROGRESS'])
+      .order('due_at', { ascending: true });
 
     if (githubError) {
       console.error('Error fetching GitHub tasks:', githubError);
@@ -136,8 +138,9 @@ Deno.serve(async (req) => {
           id: task.id,
           title: task.linkedin_tasks?.title,
           description: task.linkedin_tasks?.description,
-          points: task.linkedin_tasks?.points,
-          status: task.status
+          points: task.linkedin_tasks?.points_base,
+          status: task.status,
+          due_at: task.due_at
         })) || []
       },
       github: {
@@ -146,9 +149,10 @@ Deno.serve(async (req) => {
           id: task.id,
           title: task.github_tasks?.title,
           description: task.github_tasks?.description,
-          points: task.github_tasks?.points,
+          points: task.github_tasks?.points_base,
           task_type: task.github_tasks?.task_type,
-          status: task.status
+          status: task.status,
+          due_at: task.due_at
         })) || []
       },
       job_hunter: {
