@@ -79,6 +79,25 @@ const PublicJobDetails = () => {
   const handleApplyNow = async () => {
     const canProceed = await handleAuthRequired("apply for this job");
     if (canProceed && job?.job_url) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          // Track the application
+          const { error } = await supabase
+            .from('job_applications_tracking')
+            .insert({
+              job_id: job.id,
+              user_id: user.id,
+            });
+          
+          // Ignore unique constraint errors (user already applied)
+          if (error && error.code !== '23505') {
+            console.error('Error tracking application:', error);
+          }
+        }
+      } catch (error) {
+        console.error('Error tracking application:', error);
+      }
       window.open(job.job_url, '_blank');
     }
   };

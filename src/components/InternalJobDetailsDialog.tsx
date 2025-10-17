@@ -231,7 +231,28 @@ export const InternalJobDetailsDialog = ({
               <Button
                 variant="default"
                 className="flex-1"
-                onClick={() => window.open(job.job_url, '_blank')}
+                onClick={async () => {
+                  try {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (user) {
+                      // Track the application
+                      const { error } = await supabase
+                        .from('job_applications_tracking')
+                        .insert({
+                          job_id: job.id,
+                          user_id: user.id,
+                        });
+                      
+                      // Ignore unique constraint errors (user already applied)
+                      if (error && error.code !== '23505') {
+                        console.error('Error tracking application:', error);
+                      }
+                    }
+                  } catch (error) {
+                    console.error('Error:', error);
+                  }
+                  window.open(job.job_url, '_blank');
+                }}
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Apply Now
