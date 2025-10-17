@@ -84,7 +84,7 @@ const Navigation = () => {
 
         {/* Navigation Menu */}
         <NavigationMenu className="hidden lg:flex">
-          <NavigationMenuList className="space-x-1">
+          <NavigationMenuList className="space-x-4 xl:space-x-6">
             <NavigationMenuItem>
               <NavigationMenuLink
                 className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
