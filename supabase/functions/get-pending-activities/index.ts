@@ -54,18 +54,21 @@ Deno.serve(async (req) => {
     const todayStart = new Date(today);
     todayStart.setHours(0, 0, 0, 0);
     
-    // Get yesterday's date
-    const yesterday = new Date(todayStart);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    // Get current day of week (1=Monday, 7=Sunday)
+    const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay(); // Convert Sunday from 0 to 7
+    const yesterdayDayOfWeek = dayOfWeek === 1 ? 7 : dayOfWeek - 1;
+    
+    console.log('Current day of week:', dayOfWeek, '(1=Mon, 7=Sun)');
+    console.log('Yesterday day of week:', yesterdayDayOfWeek);
 
-    // Fetch LinkedIn tasks (today's tasks + yesterday's incomplete tasks only)
-    const { data: linkedinTasks, error: linkedinError } = await supabase
+    // Fetch LinkedIn tasks for current period
+    const { data: allLinkedinTasks, error: linkedinError } = await supabase
       .from('linkedin_user_tasks')
       .select(`
         id,
         status,
         due_at,
+        period,
         linkedin_tasks (
           id,
           title,
@@ -74,22 +77,32 @@ Deno.serve(async (req) => {
         )
       `)
       .eq('user_id', user_id)
+      .eq('period', currentPeriod)
       .in('status', ['NOT_STARTED', 'STARTED'])
-      .gte('due_at', yesterdayStr)
-      .lte('due_at', today)
       .order('due_at', { ascending: true });
+    
+    // Filter tasks by day of week from title
+    const linkedinTasks = allLinkedinTasks?.filter(task => {
+      const title = task.linkedin_tasks?.title || '';
+      const dayMatch = title.match(/Day\s+(\d+)/i);
+      if (!dayMatch) return false;
+      
+      const taskDay = parseInt(dayMatch[1]);
+      return taskDay === dayOfWeek || taskDay === yesterdayDayOfWeek;
+    }) || [];
 
     if (linkedinError) {
       console.error('Error fetching LinkedIn tasks:', linkedinError);
     }
 
-    // Fetch GitHub tasks (today's tasks + yesterday's incomplete tasks only)
-    const { data: githubTasks, error: githubError } = await supabase
+    // Fetch GitHub tasks for current period
+    const { data: allGithubTasks, error: githubError } = await supabase
       .from('github_user_tasks')
       .select(`
         id,
         status,
         due_at,
+        period,
         github_tasks (
           id,
           title,
@@ -98,16 +111,30 @@ Deno.serve(async (req) => {
         )
       `)
       .eq('user_id', user_id)
+      .eq('period', currentPeriod)
       .in('status', ['NOT_STARTED', 'STARTED'])
-      .gte('due_at', yesterdayStr)
-      .lte('due_at', today)
       .order('due_at', { ascending: true });
+    
+    // Filter tasks by day of week from title
+    const githubTasks = allGithubTasks?.filter(task => {
+      const title = task.github_tasks?.title || '';
+      const dayMatch = title.match(/Day\s+(\d+)/i);
+      if (!dayMatch) return false;
+      
+      const taskDay = parseInt(dayMatch[1]);
+      return taskDay === dayOfWeek || taskDay === yesterdayDayOfWeek;
+    }) || [];
 
     if (githubError) {
       console.error('Error fetching GitHub tasks:', githubError);
     }
 
-    // Fetch Job Hunter daily tasks (today's tasks + yesterday's incomplete tasks only)
+    // Get yesterday's date for job hunter tasks
+    const yesterday = new Date(todayStart);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    
+    // Fetch Job Hunter daily tasks (today's tasks + yesterday's incomplete tasks)
     const { data: jobHunterTasks, error: jobHunterError } = await supabase
       .from('daily_job_hunting_tasks')
       .select('*')
