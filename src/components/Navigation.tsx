@@ -91,27 +91,7 @@ const Navigation = () => {
                 asChild
               >
                 <button onClick={handleHomeClick}>
-                  Home
-                </button>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink
-                className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
-                asChild
-              >
-                <button onClick={() => scrollToSection('features')}>
-                  Features
-                </button>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink
-                className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
-                asChild
-              >
-                <button onClick={() => scrollToSection('pricing')}>
-                  Pricing
+                  Gen AI Career
                 </button>
               </NavigationMenuLink>
             </NavigationMenuItem>
@@ -168,21 +148,7 @@ const Navigation = () => {
                   className="justify-start"
                   onClick={handleHomeClick}
                 >
-                  Home
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="justify-start"
-                  onClick={() => scrollToSection('features')}
-                >
-                  Features
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="justify-start"
-                  onClick={() => scrollToSection('pricing')}
-                >
-                  Pricing
+                  Gen AI Career
                 </Button>
                 <Button
                   variant="ghost"
