@@ -8,57 +8,56 @@ const Hero = () => {
   const navigate = useNavigate();
   return (
     <>
-      <section id="hero" className="relative min-h-[60vh] sm:min-h-[70vh] lg:min-h-[75vh] flex items-center justify-center overflow-hidden pt-12 sm:pt-16 lg:pt-20 pb-6 sm:pb-8">
+      <section id="hero" className="relative min-h-0 flex items-center justify-center overflow-visible pt-20 sm:pt-24 pb-8 sm:pb-12 md:pb-16">
         {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-hero" />
+        <div className="absolute inset-0 bg-gradient-hero -z-10" />
         
         {/* Hero content */}
-        <div className="container relative z-10 px-3 sm:px-4 py-3 sm:py-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 items-center">
+        <div className="container relative z-10 px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-start lg:items-center">
             {/* Text content */}
-            <div className="space-y-3 sm:space-y-4 md:space-y-6 text-center lg:text-left order-2 lg:order-1">
-              <div className="space-y-2 sm:space-y-3 md:space-y-4">
+            <div className="space-y-4 sm:space-y-5 md:space-y-6 text-center lg:text-left order-2 lg:order-1">
+              <div className="space-y-3 sm:space-y-4">
                 <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold leading-tight animate-fade-in">
                   <span className="text-foreground">
                     Your Complete Career Success Platform
                   </span>
                 </h1>
-                <p className="text-xs sm:text-sm md:text-base lg:text-lg text-muted-foreground leading-relaxed animate-fade-in animation-delay-200">
+                <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed animate-fade-in animation-delay-200">
                   <span className="font-semibold text-foreground">Create stunning portfolios</span>, track job applications with <span className="text-primary font-semibold">smart Kanban boards</span>, and get <span className="bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent font-semibold">AI-powered career insights</span> - all in one powerful platform.
                 </p>
-                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-2 sm:p-3 md:p-4">
-                  <p className="text-[10px] sm:text-xs md:text-sm text-destructive font-medium">
+                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 sm:p-4">
+                  <p className="text-xs sm:text-sm text-destructive font-medium">
                     ⚠️ Your competitor is already using AI. Don't get left behind.
                   </p>
                 </div>
               </div>
 
               {/* Rating and trust indicators */}
-              <div className="space-y-2 sm:space-y-3 md:space-y-4">
-                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-1 text-[10px] sm:text-xs md:text-sm text-muted-foreground">
-                  <span className="text-xs sm:text-sm">⭐⭐⭐⭐⭐</span>
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-1 sm:gap-1.5 text-xs sm:text-sm text-muted-foreground">
+                  <span className="text-sm sm:text-base">⭐⭐⭐⭐⭐</span>
                   <span className="hidden sm:inline">4.6/5 and 13 Years of Trust</span>
                   <span className="sm:hidden">4.6/5 Trust</span>
                   <span className="hidden sm:inline">•</span>
-                  <span className="text-success">No credit card required</span>
+                  <span className="text-success">No credit card</span>
                 </div>
               </div>
             </div>
 
             {/* Hero image and CTA */}
-            <div className="relative order-1 lg:order-2">
-              {/* Career Level Up Box from AI Career Level Up page */}
-              <div className="relative bg-gradient-to-br from-purple-600/60 via-pink-600/50 to-indigo-600/60 backdrop-blur-md rounded-xl sm:rounded-2xl md:rounded-3xl p-3 sm:p-4 md:p-6 lg:p-8 border-2 border-white/40 shadow-2xl overflow-hidden">
-                {/* Strong Animated Background Pattern */}
-                <div className="absolute inset-0 opacity-40">
+            <div className="relative order-1 lg:order-2 w-full">
+              {/* Career Level Up Box */}
+              <div className="relative bg-gradient-to-br from-purple-600/60 via-pink-600/50 to-indigo-600/60 backdrop-blur-md rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 border-2 border-white/40 shadow-2xl overflow-visible">
+                {/* Animated Background Pattern */}
+                <div className="absolute inset-0 opacity-40 rounded-xl sm:rounded-2xl overflow-hidden">
                   <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-yellow-400/40 via-pink-500/30 to-transparent"></div>
-                  <div className="absolute top-1/4 right-0 w-64 h-64 sm:w-96 sm:h-96 bg-pink-500/50 rounded-full blur-3xl animate-pulse"></div>
-                  <div className="absolute bottom-1/4 left-0 w-48 h-48 sm:w-72 sm:h-72 bg-cyan-500/50 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 sm:w-96 sm:h-96 bg-purple-500/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                  <div className="absolute top-1/4 right-0 w-48 h-48 sm:w-64 sm:h-64 md:w-96 md:h-96 bg-pink-500/50 rounded-full blur-3xl animate-pulse"></div>
+                  <div className="absolute bottom-1/4 left-0 w-36 h-36 sm:w-48 sm:h-48 md:w-72 md:h-72 bg-cyan-500/50 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
                 </div>
                 
                 {/* Career Success Steps Image */}
-                <div className="relative z-10 mb-3 sm:mb-4 md:mb-6 rounded-lg sm:rounded-xl md:rounded-2xl overflow-hidden shadow-2xl">
+                <div className="relative z-10 mb-3 sm:mb-4 rounded-lg sm:rounded-xl overflow-hidden shadow-2xl">
                   <img 
                     src={careerSuccessSteps} 
                     alt="Career success journey - climbing steps to reach goals" 
@@ -67,57 +66,51 @@ const Hero = () => {
                 </div>
                 
                 {/* Main Text */}
-                <div className="text-center mb-2 sm:mb-3 md:mb-4 relative z-10">
-                  <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black text-white mb-1 sm:mb-2 md:mb-3 drop-shadow-2xl" style={{
+                <div className="text-center mb-2 sm:mb-3 relative z-10">
+                  <h3 className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-black text-white mb-1 sm:mb-2 drop-shadow-2xl" style={{
                     textShadow: '0 0 30px rgba(255, 255, 255, 0.5), 0 0 60px rgba(255, 105, 180, 0.3)'
                   }}>
                     Career Level Up
                   </h3>
                 </div>
                 
-                {/* Labels Grid - 5 items */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1.5 sm:gap-2 md:gap-3 relative z-10">
-                  <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg sm:rounded-xl p-1.5 sm:p-2 md:p-3 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
-                    <div className="flex items-center justify-center gap-0.5 sm:gap-1">
-                      <FileText className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 text-white flex-shrink-0" />
-                      <span className="text-white font-bold text-[8px] sm:text-[10px] md:text-xs drop-shadow-lg truncate">ATS Resume</span>
+                {/* Labels Grid - 5 items with better mobile layout */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1.5 sm:gap-2 relative z-10">
+                  <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg p-1.5 sm:p-2 transform hover:scale-105 transition-all duration-300 shadow-lg border border-white/30">
+                    <div className="flex items-center justify-center gap-1">
+                      <FileText className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white flex-shrink-0" />
+                      <span className="text-white font-bold text-[9px] sm:text-[10px] md:text-xs drop-shadow-lg truncate">Resume</span>
                     </div>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg sm:rounded-xl p-1.5 sm:p-2 md:p-3 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
-                    <div className="flex items-center justify-center gap-0.5 sm:gap-1">
-                      <User className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 text-white flex-shrink-0" />
-                      <span className="text-white font-bold text-[8px] sm:text-[10px] md:text-xs drop-shadow-lg truncate">Portfolio</span>
+                  <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg p-1.5 sm:p-2 transform hover:scale-105 transition-all duration-300 shadow-lg border border-white/30">
+                    <div className="flex items-center justify-center gap-1">
+                      <User className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white flex-shrink-0" />
+                      <span className="text-white font-bold text-[9px] sm:text-[10px] md:text-xs drop-shadow-lg truncate">Portfolio</span>
                     </div>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg sm:rounded-xl p-1.5 sm:p-2 md:p-3 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
-                    <div className="flex items-center justify-center gap-0.5 sm:gap-1">
-                      <Briefcase className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 text-white flex-shrink-0" />
-                      <span className="text-white font-bold text-[8px] sm:text-[10px] md:text-xs drop-shadow-lg truncate">Job Hunt</span>
+                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg p-1.5 sm:p-2 transform hover:scale-105 transition-all duration-300 shadow-lg border border-white/30">
+                    <div className="flex items-center justify-center gap-1">
+                      <Briefcase className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white flex-shrink-0" />
+                      <span className="text-white font-bold text-[9px] sm:text-[10px] md:text-xs drop-shadow-lg truncate">Job Hunt</span>
                     </div>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-green-500 to-teal-500 rounded-lg sm:rounded-xl p-1.5 sm:p-2 md:p-3 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30">
-                    <div className="flex items-center justify-center gap-0.5 sm:gap-1">
-                      <Users className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 text-white flex-shrink-0" />
-                      <span className="text-white font-bold text-[8px] sm:text-[10px] md:text-xs drop-shadow-lg truncate">LinkedIn</span>
+                  <div className="bg-gradient-to-r from-green-500 to-teal-500 rounded-lg p-1.5 sm:p-2 transform hover:scale-105 transition-all duration-300 shadow-lg border border-white/30">
+                    <div className="flex items-center justify-center gap-1">
+                      <Users className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white flex-shrink-0" />
+                      <span className="text-white font-bold text-[9px] sm:text-[10px] md:text-xs drop-shadow-lg truncate">LinkedIn</span>
                     </div>
                   </div>
 
-                  <div className="bg-gradient-to-r from-gray-700 to-gray-900 rounded-lg sm:rounded-xl p-1.5 sm:p-2 md:p-3 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-white/30 col-span-2 sm:col-span-1">
-                    <div className="flex items-center justify-center gap-0.5 sm:gap-1">
-                      <Target className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 text-white flex-shrink-0" />
-                      <span className="text-white font-bold text-[8px] sm:text-[10px] md:text-xs drop-shadow-lg truncate">GitHub</span>
+                  <div className="bg-gradient-to-r from-gray-700 to-gray-900 rounded-lg p-1.5 sm:p-2 transform hover:scale-105 transition-all duration-300 shadow-lg border border-white/30 col-span-2 sm:col-span-1">
+                    <div className="flex items-center justify-center gap-1">
+                      <Target className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white flex-shrink-0" />
+                      <span className="text-white font-bold text-[9px] sm:text-[10px] md:text-xs drop-shadow-lg truncate">GitHub</span>
                     </div>
                   </div>
                 </div>
-                
-                {/* Stronger Decorative Elements */}
-                <div className="absolute -top-4 -right-4 sm:-top-8 sm:-right-8 w-24 h-24 sm:w-40 sm:h-40 bg-yellow-400/60 rounded-full blur-2xl animate-pulse"></div>
-                <div className="absolute -bottom-4 -left-4 sm:-bottom-8 sm:-left-8 w-32 h-32 sm:w-48 sm:h-48 bg-pink-400/60 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-                <div className="absolute top-1/2 right-0 w-20 h-20 sm:w-32 sm:h-32 bg-cyan-400/50 rounded-full blur-xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-                <div className="absolute bottom-0 left-1/3 w-24 h-24 sm:w-36 sm:h-36 bg-purple-400/50 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1.5s' }}></div>
               </div>
             </div>
           </div>
