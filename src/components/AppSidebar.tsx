@@ -89,7 +89,6 @@ const recruiterItems = [
   { title: "Affiliate Management", url: "/admin/affiliate-management", icon: Share2 },
   { title: "Notification Analytics", url: "/admin/notification-analytics", icon: Bell },
   { title: "Notification Management", url: "/admin/notification-management", icon: Settings },
-  { title: "Post Job", url: "/recruiter/post-job", icon: PenTool },
   ...clpAdminItems,
 ];
 
@@ -122,7 +121,6 @@ const adminItems = [
   { title: "Manage Career Hub", url: "/dashboard/manage-career-hub", icon: Wrench },
   { title: "Manage Subscriptions", url: "/dashboard/manage-subscriptions", icon: Settings },
   { title: "Recruiter Dashboard", url: "/recruiter", icon: Home },
-  { title: "Post Job", url: "/recruiter/post-job", icon: PenTool },
   ...clpAdminItems,
 ];
 
