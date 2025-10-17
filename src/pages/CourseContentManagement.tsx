@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { RichTextEditor } from '@/components/RichTextEditor';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -815,12 +816,11 @@ const CourseContentManagement = () => {
                 {chapterType === 'article' && (
                   <div>
                     <Label htmlFor="article-content">Article Content</Label>
-                    <Textarea
-                      id="article-content"
+                    <RichTextEditor
                       value={chapterArticleContent}
-                      onChange={(e) => setChapterArticleContent(e.target.value)}
-                      placeholder="Enter article content"
-                      rows={6}
+                      onChange={(value) => setChapterArticleContent(value)}
+                      placeholder="Enter article content with rich formatting..."
+                      height="400px"
                     />
                   </div>
                 )}
