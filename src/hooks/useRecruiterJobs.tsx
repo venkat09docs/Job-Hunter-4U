@@ -85,12 +85,21 @@ export const useRecruiterJobs = () => {
 
   const deleteJob = async (jobId: string) => {
     try {
-      const { error } = await supabase
+      const { data, error, count } = await supabase
         .from('jobs')
         .delete()
-        .eq('id', jobId);
+        .eq('id', jobId)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Delete error:', error);
+        throw error;
+      }
+
+      // Check if any rows were actually deleted
+      if (!data || data.length === 0) {
+        throw new Error('Job not found or you do not have permission to delete this job');
+      }
 
       toast({
         title: 'Success',
@@ -102,7 +111,7 @@ export const useRecruiterJobs = () => {
       console.error('Error deleting job:', error);
       toast({
         title: 'Error',
-        description: 'Failed to delete job',
+        description: error.message || 'Failed to delete job. You may not have permission to delete this job.',
         variant: 'destructive',
       });
     }
