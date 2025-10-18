@@ -52,7 +52,14 @@ const CourseContentView: React.FC = () => {
   const [courseProgressPercentage, setCourseProgressPercentage] = useState(0);
   const { getSectionsByCourse, getChaptersBySection } = useCourseContent();
   const { getCourses } = useCareerLevelProgram();
-  const { markChapterComplete, isChapterComplete, loading: chapterLoading, getCourseProgress } = useChapterCompletion();
+  const { 
+    markChapterComplete, 
+    isChapterComplete, 
+    loading: chapterLoading, 
+    getCourseProgress,
+    saveLastViewedChapter,
+    getLastViewedChapter
+  } = useChapterCompletion();
   const { 
     getChecklistProgress, 
     updateChecklistItemProgress, 
@@ -118,13 +125,47 @@ const CourseContentView: React.FC = () => {
       console.log('All sections with chapters:', sectionsWithChapters);
       setSections(sectionsWithChapters.sort((a, b) => a.order_index - b.order_index));
       
-      // Auto-select first chapter if available
-      const firstSection = sectionsWithChapters[0];
-      if (firstSection?.chapters.length > 0) {
-        const firstChapter = firstSection.chapters[0];
-        console.log('Auto-selecting first chapter:', firstChapter);
-        setSelectedChapter(firstChapter);
-        setOpenSections(new Set([firstSection.id]));
+      // Try to restore last viewed chapter
+      const lastViewedChapterId = await getLastViewedChapter(courseId);
+      console.log('Last viewed chapter ID:', lastViewedChapterId);
+      
+      if (lastViewedChapterId) {
+        // Find the chapter and its section
+        let foundChapter: Chapter | null = null;
+        let foundSectionId: string | null = null;
+        
+        for (const section of sectionsWithChapters) {
+          const chapter = section.chapters.find(ch => ch.id === lastViewedChapterId);
+          if (chapter) {
+            foundChapter = chapter;
+            foundSectionId = section.id;
+            break;
+          }
+        }
+        
+        if (foundChapter && foundSectionId) {
+          console.log('Restoring last viewed chapter:', foundChapter.title);
+          setSelectedChapter(foundChapter);
+          setOpenSections(new Set([foundSectionId]));
+        } else {
+          // Fallback to first chapter if last viewed chapter not found
+          const firstSection = sectionsWithChapters[0];
+          if (firstSection?.chapters.length > 0) {
+            const firstChapter = firstSection.chapters[0];
+            console.log('Last viewed chapter not found, selecting first chapter:', firstChapter);
+            setSelectedChapter(firstChapter);
+            setOpenSections(new Set([firstSection.id]));
+          }
+        }
+      } else {
+        // No last viewed chapter, auto-select first chapter
+        const firstSection = sectionsWithChapters[0];
+        if (firstSection?.chapters.length > 0) {
+          const firstChapter = firstSection.chapters[0];
+          console.log('No last viewed chapter, auto-selecting first chapter:', firstChapter);
+          setSelectedChapter(firstChapter);
+          setOpenSections(new Set([firstSection.id]));
+        }
       }
     } catch (error) {
       console.error('Error loading course content:', error);
@@ -243,6 +284,9 @@ const CourseContentView: React.FC = () => {
         const nextChapter = getNextChapter();
         if (nextChapter) {
           setSelectedChapter(nextChapter);
+          if (courseId) {
+            saveLastViewedChapter(courseId, nextChapter.id);
+          }
           // Open the section containing the next chapter
           const nextSection = sections.find(section => 
             section.chapters.some(ch => ch.id === nextChapter.id)
@@ -261,6 +305,9 @@ const CourseContentView: React.FC = () => {
     const nextSection = getNextSection();
     if (nextSection && nextSection.chapters.length > 0) {
       setSelectedChapter(nextSection.chapters[0]);
+      if (courseId) {
+        saveLastViewedChapter(courseId, nextSection.chapters[0].id);
+      }
       setOpenSections(prev => new Set([...prev, nextSection.id]));
     }
   };
@@ -975,10 +1022,15 @@ const CourseContentView: React.FC = () => {
                       </Badge>
                     </CollapsibleTrigger>
                     <CollapsibleContent className="ml-8 space-y-2 mt-2">
-                      {section.chapters.map((chapter) => (
-                         <button
+                       {section.chapters.map((chapter) => (
+                          <button
                            key={chapter.id}
-                           onClick={() => setSelectedChapter(chapter)}
+                           onClick={() => {
+                             setSelectedChapter(chapter);
+                             if (courseId) {
+                               saveLastViewedChapter(courseId, chapter.id);
+                             }
+                           }}
                            className={`w-full text-left p-4 rounded-lg transition-all duration-200 group border ${
                              selectedChapter?.id === chapter.id 
                                ? 'bg-primary/10 text-primary border-primary/30 shadow-sm' 
@@ -1055,7 +1107,15 @@ const CourseContentView: React.FC = () => {
                       {getPreviousChapter() ? (
                         <Button
                           variant="outline"
-                          onClick={() => setSelectedChapter(getPreviousChapter()!)}
+                          onClick={() => {
+                            const prevChapter = getPreviousChapter();
+                            if (prevChapter) {
+                              setSelectedChapter(prevChapter);
+                              if (courseId) {
+                                saveLastViewedChapter(courseId, prevChapter.id);
+                              }
+                            }
+                          }}
                           className="flex items-center gap-2 w-full sm:w-auto"
                         >
                           <ArrowLeft className="h-4 w-4" />
@@ -1091,7 +1151,15 @@ const CourseContentView: React.FC = () => {
                      <div className="w-full sm:flex-1 sm:w-auto flex justify-end">
                        {getNextChapter() ? (
                          <Button
-                           onClick={() => setSelectedChapter(getNextChapter()!)}
+                           onClick={() => {
+                             const nextChapter = getNextChapter();
+                             if (nextChapter) {
+                               setSelectedChapter(nextChapter);
+                               if (courseId) {
+                                 saveLastViewedChapter(courseId, nextChapter.id);
+                               }
+                             }
+                           }}
                            className="flex items-center gap-2 w-full sm:w-auto"
                          >
                            Next

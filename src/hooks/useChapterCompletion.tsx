@@ -158,11 +158,57 @@ export const useChapterCompletion = () => {
     }
   };
 
+  const saveLastViewedChapter = async (courseId: string, chapterId: string): Promise<void> => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_last_viewed_chapters')
+        .upsert(
+          {
+            user_id: user.id,
+            course_id: courseId,
+            chapter_id: chapterId,
+            last_viewed_at: new Date().toISOString()
+          },
+          {
+            onConflict: 'user_id,course_id'
+          }
+        );
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error saving last viewed chapter:', error);
+    }
+  };
+
+  const getLastViewedChapter = async (courseId: string): Promise<string | null> => {
+    if (!user) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('user_last_viewed_chapters')
+        .select('chapter_id')
+        .eq('user_id', user.id)
+        .eq('course_id', courseId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      
+      return data?.chapter_id || null;
+    } catch (error) {
+      console.error('Error fetching last viewed chapter:', error);
+      return null;
+    }
+  };
+
   return {
     loading,
     markChapterComplete,
     isChapterComplete,
     getCourseProgress,
-    awardLearningGoalPoints
+    awardLearningGoalPoints,
+    saveLastViewedChapter,
+    getLastViewedChapter
   };
 };

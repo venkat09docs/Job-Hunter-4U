@@ -5373,6 +5373,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_last_viewed_chapters: {
+        Row: {
+          chapter_id: string
+          course_id: string
+          created_at: string
+          id: string
+          last_viewed_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chapter_id: string
+          course_id: string
+          created_at?: string
+          id?: string
+          last_viewed_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chapter_id?: string
+          course_id?: string
+          created_at?: string
+          id?: string
+          last_viewed_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_notification_settings: {
         Row: {
           created_at: string | null
