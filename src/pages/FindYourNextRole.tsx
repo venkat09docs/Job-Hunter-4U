@@ -1844,60 +1844,62 @@ const FindYourNextRole = () => {
                               selectedJob?.job_id === job.job_id ? 'ring-2 ring-primary' : ''
                             }`}
                           >
-                            <CardContent className="p-6" onClick={() => setSelectedJob(job)}>
-                              <div className="flex justify-between items-start mb-4">
-                                <div>
-                                  <h3 className="text-xl font-semibold text-foreground mb-2">
+                            <CardContent className="p-4 md:p-6" onClick={() => setSelectedJob(job)}>
+                              <div className="space-y-3 mb-4">
+                                <div className="space-y-2">
+                                  <h3 className="text-lg md:text-xl font-semibold text-foreground break-words">
                                     {job.job_title}
                                   </h3>
-                                  <div className="flex items-center gap-4 text-muted-foreground text-sm">
-                                    <div className="flex items-center gap-1">
-                                      <Building className="h-4 w-4" />
-                                      {job.employer_name}
+                                  <div className="flex flex-wrap items-center gap-2 md:gap-4 text-muted-foreground text-sm">
+                                    <div className="flex items-center gap-1 min-w-0">
+                                      <Building className="h-4 w-4 flex-shrink-0" />
+                                      <span className="truncate">{job.employer_name}</span>
                                     </div>
-                                    <div className="flex items-center gap-1">
-                                      <MapPin className="h-4 w-4" />
-                                      {job.job_location}
+                                    <div className="flex items-center gap-1 min-w-0">
+                                      <MapPin className="h-4 w-4 flex-shrink-0" />
+                                      <span className="truncate">{job.job_location}</span>
                                     </div>
-                                    <div className="flex items-center gap-1">
-                                      <Clock className="h-4 w-4" />
-                                      {job.job_posted_at}
+                                    <div className="flex items-center gap-1 min-w-0">
+                                      <Clock className="h-4 w-4 flex-shrink-0" />
+                                      <span className="truncate">{job.job_posted_at}</span>
                                     </div>
                                   </div>
                                 </div>
-                                <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                                <div className="flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
                                   <Button 
                                     variant="outline" 
                                     size="sm"
                                     onClick={() => handleAddToWishlist(job)}
                                     disabled={addingToWishlist === job.job_id}
-                                    className="flex items-center gap-2"
+                                    className="flex-1 sm:flex-none"
                                   >
                                     {addingToWishlist === job.job_id ? (
                                       <Loader2 className="h-4 w-4 animate-spin" />
                                     ) : (
-                                      <Heart className={`h-4 w-4 ${wishlistedJobs.has(job.job_id) ? 'fill-red-500 text-red-500' : ''}`} />
+                                      <>
+                                        <Heart className={`h-4 w-4 sm:mr-1 ${wishlistedJobs.has(job.job_id) ? 'fill-red-500 text-red-500' : ''}`} />
+                                        <span className="hidden sm:inline">Wishlist</span>
+                                      </>
                                     )}
-                                    Wishlist
                                   </Button>
                                   <Button 
                                     variant="secondary" 
                                     size="sm"
                                     onClick={() => handleProfileMatch(job)}
-                                    className="flex items-center gap-2"
+                                    className="flex-1 sm:flex-none"
                                   >
-                                    <BarChart3 className="h-4 w-4" />
-                                    Profile Match
+                                    <BarChart3 className="h-4 w-4 sm:mr-1" />
+                                    <span className="hidden sm:inline">Profile Match</span>
                                   </Button>
                                   {job.job_apply_link && (
                                     <Button 
                                       variant="default"
                                       size="sm"
                                       onClick={() => handleViewJobDetails(job)}
-                                      className="flex items-center gap-2"
+                                      className="flex-1 sm:flex-none"
                                     >
-                                      <FileText className="h-4 w-4" />
-                                      More Details
+                                      <FileText className="h-4 w-4 sm:mr-1" />
+                                      <span className="hidden sm:inline">More Details</span>
                                     </Button>
                                   )}
                                 </div>
@@ -1905,7 +1907,7 @@ const FindYourNextRole = () => {
                               
                               {(job.job_min_salary || job.job_max_salary) && (
                                 <div className="mb-3">
-                                  <span className="inline-block bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium">
+                                  <span className="inline-block bg-secondary text-secondary-foreground px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-medium break-all">
                                     {job.job_min_salary && job.job_max_salary 
                                       ? `$${job.job_min_salary.toLocaleString()} - $${job.job_max_salary.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
                                       : job.job_min_salary 
@@ -1917,7 +1919,7 @@ const FindYourNextRole = () => {
                               )}
                               
                               {job.job_description && (
-                                <p className="text-muted-foreground text-sm line-clamp-3">
+                                <p className="text-muted-foreground text-sm line-clamp-2 md:line-clamp-3 break-words">
                                   {job.job_description}
                                 </p>
                               )}
@@ -2172,7 +2174,7 @@ const FindYourNextRole = () => {
                               selectedJob?.job_id === job.id ? 'ring-2 ring-primary' : ''
                             }`}
                           >
-                            <CardContent className="p-6" onClick={() => setSelectedJob({
+                            <CardContent className="p-4 md:p-6" onClick={() => setSelectedJob({
                               job_id: job.id,
                               job_title: job.title,
                               employer_name: job.company || 'Unknown Company',
@@ -2184,58 +2186,64 @@ const FindYourNextRole = () => {
                               job_max_salary: job.salary_max,
                               job_application_deadline: job.application_deadline
                             })}>
-                              <div className="flex justify-between items-start mb-4">
-                                <div>
-                                  <h3 className="text-xl font-semibold text-foreground mb-2">
+                              <div className="space-y-3 mb-4">
+                                <div className="space-y-2">
+                                  <h3 className="text-lg md:text-xl font-semibold text-foreground break-words">
                                     {job.title}
                                   </h3>
-                                  <div className="flex items-center gap-4 text-muted-foreground text-sm">
-                                    <div className="flex items-center gap-1">
-                                      <Building className="h-4 w-4" />
-                                      {job.company}
+                                  <div className="flex flex-wrap items-center gap-2 md:gap-4 text-muted-foreground text-sm">
+                                    <div className="flex items-center gap-1 min-w-0">
+                                      <Building className="h-4 w-4 flex-shrink-0" />
+                                      <span className="truncate">{job.company}</span>
                                     </div>
                                     {job.location && (
-                                      <div className="flex items-center gap-1">
-                                        <MapPin className="h-4 w-4" />
-                                        {job.location}
+                                      <div className="flex items-center gap-1 min-w-0">
+                                        <MapPin className="h-4 w-4 flex-shrink-0" />
+                                        <span className="truncate">{job.location}</span>
                                       </div>
                                     )}
                                     {job.job_type && (
-                                      <span className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs">
+                                      <span className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs whitespace-nowrap">
                                         {job.job_type}
                                       </span>
                                     )}
                                     {job.experience_level && (
-                                      <span className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs">
+                                      <span className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs whitespace-nowrap">
                                         {job.experience_level}
                                       </span>
                                     )}
                                   </div>
                                 </div>
-                                 <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                                 <div className="flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
                                    <Button 
                                      variant="outline" 
                                      size="sm"
                                      onClick={() => handleAddInternalJobToWishlist(job)}
                                      disabled={addingInternalToWishlist === job.id || wishlistedInternalJobs.has(job.id)}
+                                     className="flex-1 sm:flex-none"
                                    >
                                      {addingInternalToWishlist === job.id ? (
                                        <Loader2 className="h-4 w-4 animate-spin" />
                                      ) : wishlistedInternalJobs.has(job.id) ? (
-                                       <Heart className="h-4 w-4 fill-current" />
+                                       <>
+                                         <Heart className="h-4 w-4 fill-current mr-1" />
+                                         <span className="hidden sm:inline">Wishlisted</span>
+                                       </>
                                      ) : (
-                                       <Heart className="h-4 w-4" />
+                                       <>
+                                         <Heart className="h-4 w-4 mr-1" />
+                                         <span className="hidden sm:inline">Wishlist</span>
+                                       </>
                                      )}
-                                     {wishlistedInternalJobs.has(job.id) ? 'Wishlisted' : 'Wishlist'}
                                    </Button>
                                    <Button 
                                      variant="secondary" 
                                      size="sm"
                                      onClick={() => handleShareInternalJob(job)}
-                                     className="flex items-center gap-2"
+                                     className="flex-1 sm:flex-none"
                                    >
-                                     <Share2 className="h-4 w-4" />
-                                     Share
+                                     <Share2 className="h-4 w-4 sm:mr-1" />
+                                     <span className="hidden sm:inline">Share</span>
                                    </Button>
                                    <Button 
                                      variant="default" 
@@ -2244,16 +2252,17 @@ const FindYourNextRole = () => {
                                        setSelectedInternalJobForDetails(job);
                                        setShowInternalJobDetailsDialog(true);
                                      }}
+                                     className="flex-1 sm:flex-none"
                                    >
-                                     <FileText className="h-4 w-4 mr-1" />
-                                     More Details
+                                     <FileText className="h-4 w-4 sm:mr-1" />
+                                     <span className="hidden sm:inline">More Details</span>
                                    </Button>
                                  </div>
                               </div>
                               
                               {(job.salary_min || job.salary_max) && (
                                 <div className="mb-3">
-                                  <span className="inline-block bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                                  <span className="inline-block bg-primary/10 text-primary px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-medium break-all">
                                     {job.salary_min && job.salary_max 
                                       ? `$${job.salary_min.toLocaleString()} - $${job.salary_max.toLocaleString()}`
                                       : job.salary_min 
@@ -2264,7 +2273,7 @@ const FindYourNextRole = () => {
                                 </div>
                               )}
                               
-                              <p className="text-muted-foreground text-sm line-clamp-3">
+                              <p className="text-muted-foreground text-sm line-clamp-2 md:line-clamp-3 break-words">
                                 {job.description}
                               </p>
                             </CardContent>
