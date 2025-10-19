@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, MapPin, Building, Clock, ExternalLink, Heart, ArrowLeft, Save, FolderOpen, Trash2, Search, BarChart3, FileText, Share2 } from "lucide-react";
+import { Loader2, MapPin, Building, Clock, ExternalLink, Heart, ArrowLeft, Save, FolderOpen, Trash2, Search, BarChart3, FileText, Share2, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { JobDetailsDialog } from "@/components/JobDetailsDialog";
 import { InternalJobDetailsDialog } from "@/components/InternalJobDetailsDialog";
@@ -22,6 +22,7 @@ import { useInternalJobs, type InternalJob } from "@/hooks/useInternalJobs";
 import { useJobMatching } from "@/hooks/useJobMatching";
 import { Progress } from "@/components/ui/progress";
 import PricingDialog from "@/components/PricingDialog";
+import { useSubscription } from "@/components/SubscriptionUpgrade";
 
 interface JobResult {
   job_id: string;
@@ -68,7 +69,9 @@ const FindYourNextRole = () => {
   const { incrementAnalytics, profile } = useProfile();
   const { jobs: internalJobs, loading: internalJobsLoading, filters: internalFilters, updateFilter, clearFilters } = useInternalJobs();
   const { calculateJobMatch, loading: profileLoading } = useJobMatching();
+  const { hasActiveSubscription } = useSubscription();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [showUpgradePricingDialog, setShowUpgradePricingDialog] = useState(false);
   const [formData, setFormData] = useState<JobSearchForm>({
     query: "developer jobs in Hyderabad",
     date_posted: "all",
@@ -758,6 +761,16 @@ const FindYourNextRole = () => {
       return;
     }
 
+    // Check subscription status for premium feature
+    if (!hasActiveSubscription) {
+      setShowUpgradePricingDialog(true);
+      toast({
+        title: "Premium Feature",
+        description: "Wishlist is available for subscribed users. Please upgrade to access this feature.",
+      });
+      return;
+    }
+
     // Check if job is already wishlisted
     if (wishlistedJobs.has(job.job_id)) {
       toast({
@@ -948,6 +961,16 @@ const FindYourNextRole = () => {
         title: "Please sign in",
         description: "You need to be signed in to add jobs to your wishlist.",
         variant: "destructive",
+      });
+      return;
+    }
+
+    // Check subscription status for premium feature
+    if (!hasActiveSubscription) {
+      setShowUpgradePricingDialog(true);
+      toast({
+        title: "Premium Feature",
+        description: "Wishlist is available for subscribed users. Please upgrade to access this feature.",
       });
       return;
     }
@@ -1217,6 +1240,16 @@ const FindYourNextRole = () => {
   };
 
   const handleShareInternalJob = async (job: InternalJob) => {
+    // Check subscription status for premium feature
+    if (!hasActiveSubscription) {
+      setShowUpgradePricingDialog(true);
+      toast({
+        title: "Premium Feature",
+        description: "Share is available for subscribed users. Please upgrade to access this feature.",
+      });
+      return;
+    }
+
     const shareUrl = `${window.location.origin}/jobs/${job.id}`;
     const shareData = {
       title: job.title,
@@ -2625,6 +2658,8 @@ const FindYourNextRole = () => {
                 jobDetails={currentJobDetails}
                 loading={loadingJobDetails}
                 jobTitle={selectedJobForDetails?.job_title || ''}
+                hasActiveSubscription={hasActiveSubscription}
+                onUpgradeClick={() => setShowUpgradePricingDialog(true)}
               />
 
               {/* Internal Job Details Dialog */}
@@ -2632,7 +2667,27 @@ const FindYourNextRole = () => {
                 open={showInternalJobDetailsDialog}
                 onOpenChange={setShowInternalJobDetailsDialog}
                 job={selectedInternalJobForDetails}
+                hasActiveSubscription={hasActiveSubscription}
+                onUpgradeClick={() => setShowUpgradePricingDialog(true)}
               />
+
+              {/* Upgrade Pricing Dialog for Premium Features */}
+              <Dialog open={showUpgradePricingDialog} onOpenChange={setShowUpgradePricingDialog}>
+                <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto p-6">
+                  <DialogHeader className="pb-4">
+                    <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2">
+                      <Crown className="h-6 w-6 text-primary" />
+                      Upgrade to Premium
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="mb-6">
+                    <p className="text-muted-foreground text-center">
+                      Unlock wishlist and sharing features to better manage your job search. Choose a plan that works for you:
+                    </p>
+                  </div>
+                  <PricingDialog />
+                </DialogContent>
+              </Dialog>
         </div>
       </main>
     </div>

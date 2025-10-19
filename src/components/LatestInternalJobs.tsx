@@ -7,6 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Briefcase, MapPin, Clock, Eye } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { InternalJobDetailsDialog } from "./InternalJobDetailsDialog";
+import { useSubscription } from "./SubscriptionUpgrade";
+import PricingDialog from "@/components/PricingDialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Crown } from "lucide-react";
 
 interface InternalJob {
   id: string;
@@ -30,10 +34,12 @@ interface InternalJob {
 
 export const LatestInternalJobs = () => {
   const { user } = useAuth();
+  const { hasActiveSubscription } = useSubscription();
   const [jobs, setJobs] = useState<InternalJob[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedJob, setSelectedJob] = useState<InternalJob | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [showUpgradePricingDialog, setShowUpgradePricingDialog] = useState(false);
 
   useEffect(() => {
     const fetchLatestJobs = async () => {
@@ -152,8 +158,28 @@ export const LatestInternalJobs = () => {
           job={selectedJob}
           open={dialogOpen}
           onOpenChange={setDialogOpen}
+          hasActiveSubscription={hasActiveSubscription}
+          onUpgradeClick={() => setShowUpgradePricingDialog(true)}
         />
       )}
+
+      {/* Upgrade Pricing Dialog for Premium Features */}
+      <Dialog open={showUpgradePricingDialog} onOpenChange={setShowUpgradePricingDialog}>
+        <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto p-6">
+          <DialogHeader className="pb-4">
+            <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2">
+              <Crown className="h-6 w-6 text-primary" />
+              Upgrade to Premium
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mb-6">
+            <p className="text-muted-foreground text-center">
+              Unlock wishlist and sharing features to better manage your job search. Choose a plan that works for you:
+            </p>
+          </div>
+          <PricingDialog />
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

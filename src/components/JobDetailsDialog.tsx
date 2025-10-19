@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ExternalLink, MapPin, Mail, Phone, Building, FileText, Eye, CheckCircle, AlertTriangle, Lightbulb, Target, Heart } from "lucide-react";
+import { Loader2, ExternalLink, MapPin, Mail, Phone, Building, FileText, Eye, CheckCircle, AlertTriangle, Lightbulb, Target, Heart, Crown } from "lucide-react";
 import { ResumeAnalyzerDialog } from "./ResumeAnalyzerDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -27,6 +27,8 @@ interface JobDetailsDialogProps {
   jobDetails: JobDetails | null;
   loading: boolean;
   jobTitle: string;
+  hasActiveSubscription: boolean;
+  onUpgradeClick: () => void;
 }
 
 export const JobDetailsDialog = ({
@@ -34,7 +36,9 @@ export const JobDetailsDialog = ({
   onOpenChange,
   jobDetails,
   loading,
-  jobTitle
+  jobTitle,
+  hasActiveSubscription,
+  onUpgradeClick
 }: JobDetailsDialogProps) => {
   const [showResumeAnalyzer, setShowResumeAnalyzer] = useState(false);
   const [existingReport, setExistingReport] = useState<any>(null);
@@ -77,6 +81,16 @@ export const JobDetailsDialog = ({
   };
 
   const handleAddToWishlist = async () => {
+    // Check subscription status for premium feature
+    if (!hasActiveSubscription) {
+      onUpgradeClick();
+      toast({
+        title: "Premium Feature",
+        description: "Wishlist is available for subscribed users. Please upgrade to access this feature.",
+      });
+      return;
+    }
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {

@@ -14,7 +14,8 @@ import {
   FileText,
   Award,
   Heart,
-  Loader2
+  Loader2,
+  Crown
 } from "lucide-react";
 import type { InternalJob } from "@/hooks/useInternalJobs";
 import { useState } from "react";
@@ -25,12 +26,16 @@ interface InternalJobDetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   job: InternalJob | null;
+  hasActiveSubscription: boolean;
+  onUpgradeClick: () => void;
 }
 
 export const InternalJobDetailsDialog = ({
   open,
   onOpenChange,
-  job
+  job,
+  hasActiveSubscription,
+  onUpgradeClick
 }: InternalJobDetailsDialogProps) => {
   const [addingToWishlist, setAddingToWishlist] = useState(false);
   const { toast } = useToast();
@@ -38,6 +43,16 @@ export const InternalJobDetailsDialog = ({
   if (!job) return null;
 
   const handleAddToWishlist = async () => {
+    // Check subscription status for premium feature
+    if (!hasActiveSubscription) {
+      onUpgradeClick();
+      toast({
+        title: "Premium Feature",
+        description: "Wishlist is available for subscribed users. Please upgrade to access this feature.",
+      });
+      return;
+    }
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
