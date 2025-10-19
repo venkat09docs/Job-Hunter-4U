@@ -53,6 +53,16 @@ import { useProfile } from "@/hooks/useProfile";
 import { useUserPoints } from "@/hooks/useUserPoints";
 import { useOptimizedLeaderboard } from "@/hooks/useOptimizedLeaderboard";
 import { useTheme } from "next-themes";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarFooter,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  useSidebar,
+} from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import PricingDialog from "./PricingDialog";
 import { BadgeLeadersSlider } from "./BadgeLeadersSlider";
@@ -127,7 +137,7 @@ const adminItems = [
 export function AppSidebar() {
   console.log('🔍 AppSidebar: Starting render');
   
-  const [isOpen, setIsOpen] = useState(true);
+  const { open: isSidebarOpen, openMobile, setOpenMobile } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
   const currentPath = location.pathname;
@@ -160,7 +170,7 @@ export function AppSidebar() {
 
   console.log('🔍 AppSidebar: All hooks called, continuing render');
 
-  const isCollapsed = !isOpen;
+  const isCollapsed = !isSidebarOpen;
 
   useEffect(() => {
     if (user) {
@@ -548,13 +558,8 @@ export function AppSidebar() {
 
   return (
     <TooltipProvider>
-      <div className={cn(
-        "h-screen border-r bg-card/50 backdrop-blur-sm transition-all duration-300 flex flex-col relative overflow-hidden",
-        isCollapsed ? "w-16" : "w-[280px]"
-      )}>
-      <div className="flex flex-col h-full">
-        {/* User Profile at Top */}
-        <div className="flex items-center p-4 border-b flex-shrink-0">
+      <Sidebar className="h-screen border-r bg-card/50 backdrop-blur-sm">
+        <SidebarHeader className="flex items-center p-4 border-b flex-shrink-0">
           <div className="flex items-center gap-3 w-full">
             <Avatar className="h-14 w-14 flex-shrink-0">
               <AvatarImage src={profile?.profile_image_url || ""} />
@@ -585,10 +590,10 @@ export function AppSidebar() {
               </div>
             )}
           </div>
-        </div>
+        </SidebarHeader>
 
         {/* Menu Content - Scrollable */}
-        <div className="flex-1 overflow-auto px-2 py-4 space-y-6 min-w-0">
+        <SidebarContent className="flex-1 overflow-auto px-2 py-4 space-y-6 min-w-0">
           {/* Admin Section */}
           {(isAdmin || isInstituteAdmin || isRecruiter) && (
             <div>
@@ -674,10 +679,10 @@ export function AppSidebar() {
               </div>
             </div>
           )}
-        </div>
+        </SidebarContent>
 
         {/* Footer with Dark Mode Toggle */}
-        <div className="p-4 border-t flex-shrink-0">
+        <SidebarFooter className="p-4 border-t flex-shrink-0">
           <div className="flex items-center gap-2">
             <Switch 
               checked={theme === 'dark'} 
@@ -685,20 +690,8 @@ export function AppSidebar() {
             />
             {!isCollapsed && <span className="text-sm text-muted-foreground">Dark Mode</span>}
           </div>
-        </div>
-      </div>
-
-      {/* Bottom Toggle Button - Always visible outside sidebar */}
-      <div className="absolute bottom-4 right-4 z-10">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setIsOpen(!isOpen)}
-          className="p-2 hover:bg-accent"
-        >
-          <Menu className="h-4 w-4" />
-        </Button>
-      </div>
+        </SidebarFooter>
+      </Sidebar>
       
       {/* Subscription Dialog for Premium Features */}
       <Dialog open={subscriptionDialogOpen} onOpenChange={setSubscriptionDialogOpen}>
@@ -780,7 +773,6 @@ export function AppSidebar() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
     </TooltipProvider>
   );
 }

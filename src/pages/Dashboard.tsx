@@ -18,7 +18,8 @@ import { useRecentEnrolledCourses } from '@/hooks/useRecentEnrolledCourses';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ResizableLayout } from '@/components/ResizableLayout';
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/AppSidebar';
 import { useCourseStatistics } from '@/hooks/useCourseStatistics';
 import { useAssignmentStatistics } from '@/hooks/useAssignmentStatistics';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
@@ -768,17 +769,19 @@ const Dashboard = () => {
   };
 
   return (
-    <ResizableLayout>
-      
-      <main className="h-full flex flex-col min-w-0">
-        {/* Header */}
-        <header className="border-b bg-background/80 backdrop-blur-sm flex-shrink-0">
-          <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
-            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0">
-              <h1 className="text-base sm:text-lg lg:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
-                AI CAREER LEVEL UP
-              </h1>
-            </div>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <main className="h-full flex flex-col min-w-0">
+          {/* Header */}
+          <header className="border-b bg-background/80 backdrop-blur-sm flex-shrink-0">
+            <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+              <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0">
+                <SidebarTrigger className="flex-shrink-0" />
+                <h1 className="text-base sm:text-lg lg:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
+                  AI CAREER LEVEL UP
+                </h1>
+              </div>
             <div className="flex items-center gap-2 sm:gap-3">
               {(!profile?.subscription_active || !hasActiveSubscription()) && (
                 <Button 
@@ -1499,7 +1502,8 @@ const Dashboard = () => {
           <PricingDialog />
         </DialogContent>
       </Dialog>
-    </ResizableLayout>
+      </SidebarInset>
+    </SidebarProvider>
   );
 };
 
