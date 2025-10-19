@@ -770,40 +770,41 @@ const Dashboard = () => {
 
   return (
     <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <main className="h-full flex flex-col min-w-0">
-          {/* Header */}
-          <header className="border-b bg-background/80 backdrop-blur-sm flex-shrink-0">
-            <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
-              <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0">
-                <SidebarTrigger className="flex-shrink-0" />
-                <h1 className="text-base sm:text-lg lg:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
-                  AI CAREER LEVEL UP
-                </h1>
+      <div className="flex min-h-screen w-full">
+        <AppSidebar />
+        <SidebarInset className="flex-1 overflow-hidden">
+          <div className="h-screen flex flex-col">
+            {/* Header */}
+            <header className="border-b bg-background/80 backdrop-blur-sm flex-shrink-0">
+              <div className="container mx-auto flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+                <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0">
+                  <SidebarTrigger className="flex-shrink-0" />
+                  <h1 className="text-base sm:text-lg lg:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
+                    AI CAREER LEVEL UP
+                  </h1>
+                </div>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  {(!profile?.subscription_active || !hasActiveSubscription()) && (
+                    <Button 
+                      onClick={() => navigate('/dashboard/resume-builder?tab=resume')}
+                      variant="default"
+                      className="hidden sm:flex"
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      Build a Free Resume
+                    </Button>
+                  )}
+                  <div className="hidden sm:flex">
+                    <SubscriptionStatus />
+                  </div>
+                  <UserProfileDropdown />
+                </div>
               </div>
-            <div className="flex items-center gap-2 sm:gap-3">
-              {(!profile?.subscription_active || !hasActiveSubscription()) && (
-                <Button 
-                  onClick={() => navigate('/dashboard/resume-builder?tab=resume')}
-                  variant="default"
-                  className="hidden sm:flex"
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  Build a Free Resume
-                </Button>
-              )}
-              <div className="hidden sm:flex">
-                <SubscriptionStatus />
-              </div>
-              <UserProfileDropdown />
-            </div>
-          </div>
-        </header>
+            </header>
 
-        {/* Main Content Area */}
-        <div className="flex-1 overflow-auto">
-          <div className="p-3 sm:p-4 lg:p-6 space-y-4 lg:space-y-6">
+            {/* Main Content Area */}
+            <main className="flex-1 overflow-auto">
+              <div className="container mx-auto p-3 sm:p-4 lg:p-6 space-y-4 lg:space-y-6">
             {/* Welcome Section */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
@@ -1454,10 +1455,14 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-          </div>
-        </div>
-      </main>
+              </div>
+            </main>
 
+          </div>
+        </SidebarInset>
+      </div>
+
+      {/* Dialogs - outside main content */}
       {/* Job Search Pricing Dialog */}
       <Dialog open={jobSearchPricingOpen} onOpenChange={setJobSearchPricingOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -1502,7 +1507,6 @@ const Dashboard = () => {
           <PricingDialog />
         </DialogContent>
       </Dialog>
-      </SidebarInset>
     </SidebarProvider>
   );
 };
