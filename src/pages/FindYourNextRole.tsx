@@ -1201,6 +1201,14 @@ const FindYourNextRole = () => {
     }
   };
 
+  const handleRegularSearchButtonClick = () => {
+    if (!isRegularSearchAccessible()) {
+      setShowUpgradePricingDialog(true);
+    } else {
+      setSearchType("regular-search");
+    }
+  };
+
   // Check if user has access to LinkedIn 24-hour Jobs
   const isLinkedInJobsAccessible = () => {
     if (!profile?.subscription_plan) {
@@ -1210,6 +1218,22 @@ const FindYourNextRole = () => {
     const eligiblePlans = ["One Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"];
     const hasAccess = eligiblePlans.includes(profile.subscription_plan);
     console.log('LinkedIn Jobs Access Check:', {
+      currentPlan: profile.subscription_plan,
+      hasAccess,
+      eligiblePlans
+    });
+    return hasAccess;
+  };
+
+  // Check if user has access to Regular Job Search (Find Your Next Role)
+  const isRegularSearchAccessible = () => {
+    if (!profile?.subscription_plan) {
+      console.log('No subscription plan found, access denied');
+      return false;
+    }
+    const eligiblePlans = ["One Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"];
+    const hasAccess = eligiblePlans.includes(profile.subscription_plan);
+    console.log('Regular Search Access Check:', {
       currentPlan: profile.subscription_plan,
       hasAccess,
       eligiblePlans
@@ -1346,13 +1370,40 @@ const FindYourNextRole = () => {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-4">
-                  <Button
-                    onClick={() => setSearchType("regular-search")}
-                    variant={searchType === "regular-search" ? "default" : "outline"}
-                    className="flex-1 min-w-[200px]"
-                  >
-                    Find Your Next Role
-                  </Button>
+                  {!isRegularSearchAccessible() ? (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            onClick={handleRegularSearchButtonClick}
+                            variant={searchType === "regular-search" ? "default" : "outline"}
+                            className="flex-1 min-w-[200px]"
+                          >
+                            Find Your Next Role
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent 
+                          side="top" 
+                          className="max-w-xs p-3 bg-gradient-to-r from-primary to-primary-glow text-primary-foreground border-primary/20 shadow-lg"
+                        >
+                          <div className="text-center">
+                            <p className="font-semibold mb-1">Premium Feature</p>
+                            <p className="text-sm opacity-90">
+                              Find Your Next Role is available for subscribed users only.
+                            </p>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ) : (
+                    <Button
+                      onClick={handleRegularSearchButtonClick}
+                      variant={searchType === "regular-search" ? "default" : "outline"}
+                      className="flex-1 min-w-[200px]"
+                    >
+                      Find Your Next Role
+                    </Button>
+                  )}
                   {!isLinkedInJobsAccessible() ? (
                     <TooltipProvider>
                       <Tooltip>
@@ -1489,7 +1540,17 @@ const FindYourNextRole = () => {
 
                     <div className="flex flex-wrap gap-3 pt-4">
                       <Button 
-                        onClick={handleSubmit} 
+                        onClick={() => {
+                          if (!isRegularSearchAccessible()) {
+                            setShowUpgradePricingDialog(true);
+                            toast({
+                              title: "Premium Feature",
+                              description: "Job search is available for subscribed users. Please upgrade to access this feature.",
+                            });
+                          } else {
+                            handleSubmit();
+                          }
+                        }} 
                         disabled={loading}
                         className="flex-1 md:flex-none"
                       >
@@ -1503,7 +1564,17 @@ const FindYourNextRole = () => {
                         )}
                       </Button>
 
-                      <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+                      <Dialog open={showSaveDialog} onOpenChange={(open) => {
+                        if (open && !isRegularSearchAccessible()) {
+                          setShowUpgradePricingDialog(true);
+                          toast({
+                            title: "Premium Feature",
+                            description: "Save Search is available for subscribed users. Please upgrade to access this feature.",
+                          });
+                        } else {
+                          setShowSaveDialog(open);
+                        }
+                      }}>
                         <DialogTrigger asChild>
                           <Button variant="outline" className="flex-1 md:flex-none">
                             <Save className="mr-2 h-4 w-4" />
@@ -1554,8 +1625,16 @@ const FindYourNextRole = () => {
                       </Dialog>
 
                       <Dialog open={showLoadDialog} onOpenChange={(open) => {
-                        setShowLoadDialog(open);
-                        if (open) fetchSavedSearches();
+                        if (open && !isRegularSearchAccessible()) {
+                          setShowUpgradePricingDialog(true);
+                          toast({
+                            title: "Premium Feature",
+                            description: "Load Search is available for subscribed users. Please upgrade to access this feature.",
+                          });
+                        } else {
+                          setShowLoadDialog(open);
+                          if (open) fetchSavedSearches();
+                        }
                       }}>
                         <DialogTrigger asChild>
                           <Button variant="outline" className="flex-1 md:flex-none">
