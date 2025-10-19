@@ -1152,6 +1152,7 @@ export type Database = {
           industry_type: string | null
           is_active: boolean
           is_free: boolean
+          is_published: boolean
           order_index: number | null
           subscription_plan_id: string | null
           title: string
@@ -1168,6 +1169,7 @@ export type Database = {
           industry_type?: string | null
           is_active?: boolean
           is_free?: boolean
+          is_published?: boolean
           order_index?: number | null
           subscription_plan_id?: string | null
           title: string
@@ -1184,6 +1186,7 @@ export type Database = {
           industry_type?: string | null
           is_active?: boolean
           is_free?: boolean
+          is_published?: boolean
           order_index?: number | null
           subscription_plan_id?: string | null
           title?: string

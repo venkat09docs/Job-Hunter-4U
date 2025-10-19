@@ -113,7 +113,8 @@ const CLPDashboard = () => {
     industry_type: 'both' as 'IT' | 'non-IT' | 'both',
     image: null as File | null,
     is_free: false,
-    subscription_plan_id: ''
+    subscription_plan_id: '',
+    is_published: false
   });
   const [categories, setCategories] = useState<string[]>([]);
   const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
@@ -330,6 +331,7 @@ const CLPDashboard = () => {
           image: imageUrl,
           is_free: courseForm.is_free,
           subscription_plan_id: courseForm.is_free ? null : courseForm.subscription_plan_id || null,
+          is_published: courseForm.is_published,
           created_by: user?.id
         }])
         .select()
@@ -347,7 +349,8 @@ const CLPDashboard = () => {
         industry_type: 'both', 
         image: null,
         is_free: false,
-        subscription_plan_id: ''
+        subscription_plan_id: '',
+        is_published: false
       });
       setIsCreateCourseOpen(false);
       toast.success('Course created successfully');
@@ -398,7 +401,8 @@ const CLPDashboard = () => {
           industry_type: courseForm.industry_type,
           image: imageUrl,
           is_free: courseForm.is_free,
-          subscription_plan_id: courseForm.is_free ? null : courseForm.subscription_plan_id || null
+          subscription_plan_id: courseForm.is_free ? null : courseForm.subscription_plan_id || null,
+          is_published: courseForm.is_published
         })
         .eq('id', editingCourse.id)
         .select()
@@ -416,7 +420,8 @@ const CLPDashboard = () => {
         industry_type: 'both', 
         image: null,
         is_free: false,
-        subscription_plan_id: ''
+        subscription_plan_id: '',
+        is_published: false
       });
       setEditingCourse(null);
       toast.success('Course updated successfully');
@@ -509,8 +514,9 @@ const CLPDashboard = () => {
       order_index: (course as any).order_index || 0,
       industry_type: (course as any).industry_type || 'both',
       image: null,
-      is_free: (course as any).is_free || false, // Load from course data
-      subscription_plan_id: (course as any).subscription_plan_id || '' // Load from course data
+      is_free: (course as any).is_free || false,
+      subscription_plan_id: (course as any).subscription_plan_id || '',
+      is_published: (course as any).is_published || false
     });
   };
 
@@ -524,7 +530,8 @@ const CLPDashboard = () => {
       industry_type: 'both',
       image: null,
       is_free: false,
-      subscription_plan_id: ''
+      subscription_plan_id: '',
+      is_published: false
     });
     setIsCreateCourseOpen(true);
   };
@@ -1032,6 +1039,21 @@ const CLPDashboard = () => {
                         </Select>
                       </div>
                     )}
+                    
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="is-published"
+                        checked={courseForm.is_published}
+                        onCheckedChange={(checked) => setCourseForm(prev => ({ 
+                          ...prev, 
+                          is_published: checked
+                        }))}
+                      />
+                      <Label htmlFor="is-published">Publish Course</Label>
+                      <p className="text-xs text-muted-foreground ml-2">
+                        (Draft courses are only visible to admins)
+                      </p>
+                    </div>
                   </div>
                   <DialogFooter>
                     <Button variant="outline" onClick={() => setIsCreateCourseOpen(false)}>
@@ -1097,9 +1119,13 @@ const CLPDashboard = () => {
                           <BookOpen className="h-12 w-12 text-primary/40" />
                         </div>
                       )}
-                      {/* Published Badge */}
-                      <Badge className="absolute top-3 left-3 bg-green-600 hover:bg-green-700 text-white">
-                        PUBLISHED
+                      {/* Published/Draft Badge */}
+                      <Badge className={`absolute top-3 left-3 ${
+                        (course as any).is_published 
+                          ? 'bg-green-600 hover:bg-green-700' 
+                          : 'bg-orange-600 hover:bg-orange-700'
+                      } text-white`}>
+                        {(course as any).is_published ? 'PUBLISHED' : 'DRAFT'}
                       </Badge>
                     </div>
                     
@@ -1127,9 +1153,7 @@ const CLPDashboard = () => {
                         <Button 
                           variant="outline" 
                           className="flex-1"
-                          onClick={() => {
-                            toast.info('Course detail view coming soon!');
-                          }}
+                          onClick={() => openEditCourse(course)}
                         >
                           Edit course
                         </Button>
@@ -1374,27 +1398,42 @@ const CLPDashboard = () => {
                     <Label htmlFor="edit-is-free">Is it Free?</Label>
                   </div>
                   
-                  {!courseForm.is_free && (
-                    <div>
-                      <Label htmlFor="edit-subscription-plan">Subscription Plan *</Label>
-                      <Select 
-                        value={courseForm.subscription_plan_id} 
-                        onValueChange={(value) => setCourseForm(prev => ({ ...prev, subscription_plan_id: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select subscription plan" />
-                        </SelectTrigger>
-                        <SelectContent className="z-50 bg-background border shadow-lg pointer-events-auto">
-                          {(plansWithPrices || []).map((plan) => (
-                            <SelectItem key={plan.id} value={plan.id}>
-                              {plan.name} - ₹{plan.price} ({plan.duration})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    {!courseForm.is_free && (
+                      <div>
+                        <Label htmlFor="edit-subscription-plan">Subscription Plan *</Label>
+                        <Select 
+                          value={courseForm.subscription_plan_id} 
+                          onValueChange={(value) => setCourseForm(prev => ({ ...prev, subscription_plan_id: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select subscription plan" />
+                          </SelectTrigger>
+                          <SelectContent className="z-50 bg-background border shadow-lg pointer-events-auto">
+                            {(plansWithPrices || []).map((plan) => (
+                              <SelectItem key={plan.id} value={plan.id}>
+                                {plan.name} - ₹{plan.price} ({plan.duration})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="edit-is-published"
+                        checked={courseForm.is_published}
+                        onCheckedChange={(checked) => setCourseForm(prev => ({ 
+                          ...prev, 
+                          is_published: checked
+                        }))}
+                      />
+                      <Label htmlFor="edit-is-published">Publish Course</Label>
+                      <p className="text-xs text-muted-foreground ml-2">
+                        (Draft courses are only visible to admins)
+                      </p>
                     </div>
-                  )}
-                </div>
+                  </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setEditingCourse(null)}>
                     Cancel

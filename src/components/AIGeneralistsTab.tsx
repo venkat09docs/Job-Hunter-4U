@@ -4,19 +4,30 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
+import { useRole } from '@/hooks/useRole';
 import type { Course } from '@/types/clp';
 
 const AIGeneralistsTab: React.FC = () => {
   const { getCourses, loading } = useCareerLevelProgram();
+  const { role: userRole } = useRole();
   const [courses, setCourses] = useState<Course[]>([]);
 
   useEffect(() => {
     loadCourses();
-  }, []);
+  }, [userRole]);
 
   const loadCourses = async () => {
     const coursesData = await getCourses();
-    setCourses(coursesData);
+    
+    // Filter courses based on user role
+    // Admins/recruiters/institute_admins see all courses (including drafts)
+    // Regular users only see published courses
+    const isAdmin = userRole === 'admin' || userRole === 'recruiter' || userRole === 'institute_admin';
+    const filteredCourses = isAdmin 
+      ? coursesData 
+      : coursesData.filter((course: any) => course.is_published === true);
+    
+    setCourses(filteredCourses);
   };
 
   const formatDuration = (hours: number) => {
