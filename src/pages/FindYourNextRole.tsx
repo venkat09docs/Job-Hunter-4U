@@ -15,6 +15,7 @@ import { Loader2, MapPin, Building, Clock, ExternalLink, Heart, ArrowLeft, Save,
 import { supabase } from "@/integrations/supabase/client";
 import { JobDetailsDialog } from "@/components/JobDetailsDialog";
 import { InternalJobDetailsDialog } from "@/components/InternalJobDetailsDialog";
+import { ResumeAnalyzerDialog } from "@/components/ResumeAnalyzerDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
@@ -112,6 +113,8 @@ const FindYourNextRole = () => {
   const [selectedJobForDetails, setSelectedJobForDetails] = useState<JobResult | null>(null);
   const [showInternalJobDetailsDialog, setShowInternalJobDetailsDialog] = useState(false);
   const [selectedInternalJobForDetails, setSelectedInternalJobForDetails] = useState<InternalJob | null>(null);
+  const [showResumeAnalyzerDialog, setShowResumeAnalyzerDialog] = useState(false);
+  const [selectedJobForAnalyzer, setSelectedJobForAnalyzer] = useState<InternalJob | null>(null);
 
   // Debug effect to track jobs state changes
   useEffect(() => {
@@ -1315,6 +1318,22 @@ const FindYourNextRole = () => {
     }
   };
 
+  const handleResumeAnalyzerClick = (job: InternalJob) => {
+    // Check subscription status for premium feature
+    if (!hasActiveSubscription) {
+      setShowUpgradePricingDialog(true);
+      toast({
+        title: "Premium Feature",
+        description: "Resume Analyzer is available for subscribed users. Please upgrade to access this feature.",
+      });
+      return;
+    }
+
+    // Open Resume Analyzer dialog
+    setSelectedJobForAnalyzer(job);
+    setShowResumeAnalyzerDialog(true);
+  };
+
   const renderNoResultsMessage = () => (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <Search className="h-16 w-16 text-muted-foreground mb-4" />
@@ -2325,8 +2344,17 @@ const FindYourNextRole = () => {
                                       </span>
                                     )}
                                   </div>
-                                </div>
-                                 <div className="flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
+                                 </div>
+                                  <div className="flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
+                                   <Button 
+                                     variant="outline" 
+                                     size="sm"
+                                     onClick={() => handleResumeAnalyzerClick(job)}
+                                     className="flex-1 sm:flex-none"
+                                   >
+                                     <BarChart3 className="h-4 w-4 sm:mr-1" />
+                                     <span className="hidden sm:inline">Analyze Resume</span>
+                                   </Button>
                                    <Button 
                                      variant="outline" 
                                      size="sm"
@@ -2369,7 +2397,7 @@ const FindYourNextRole = () => {
                                      <FileText className="h-4 w-4 sm:mr-1" />
                                      <span className="hidden sm:inline">More Details</span>
                                    </Button>
-                                 </div>
+                                  </div>
                               </div>
                               
                               {(job.salary_min || job.salary_max) && (
@@ -2749,6 +2777,18 @@ const FindYourNextRole = () => {
                 hasActiveSubscription={hasActiveSubscription}
                 onUpgradeClick={() => setShowUpgradePricingDialog(true)}
               />
+
+              {/* Resume Analyzer Dialog */}
+              {selectedJobForAnalyzer && (
+                <ResumeAnalyzerDialog
+                  open={showResumeAnalyzerDialog}
+                  onOpenChange={setShowResumeAnalyzerDialog}
+                  jobDescription={`${selectedJobForAnalyzer.description || ''}\n\nRequirements:\n${selectedJobForAnalyzer.requirements || ''}`}
+                  keySkills={[]}
+                  jobTitle={selectedJobForAnalyzer.title}
+                  companyName={selectedJobForAnalyzer.company}
+                />
+              )}
 
               {/* Upgrade Pricing Dialog for Premium Features */}
               <Dialog open={showUpgradePricingDialog} onOpenChange={setShowUpgradePricingDialog}>
