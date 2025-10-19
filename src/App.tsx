@@ -382,9 +382,9 @@ const AppContent = () => {
           <Route 
             path="/dashboard/find-your-next-role" 
             element={
-              <PremiumProtectedRoute featureKey="page_find_your_next_role">
+              <ProtectedRoute>
                 <FindYourNextRole />
-              </PremiumProtectedRoute>
+              </ProtectedRoute>
             } 
           />
           <Route 
