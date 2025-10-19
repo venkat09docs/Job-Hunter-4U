@@ -7,14 +7,15 @@ import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
 import { useGitHubProgress } from '@/hooks/useGitHubProgress';
-import { ResizableLayout } from '@/components/ResizableLayout';
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/AppSidebar';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { SubscriptionStatus } from '@/components/SubscriptionUpgrade';
 import BadgeProgressionMap from '@/components/BadgeProgressionMap';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import PricingDialog from '@/components/PricingDialog';
-import { Crown, Sparkles } from 'lucide-react';
+import { Crown, Sparkles, Menu } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -271,70 +272,78 @@ const LevelUp = () => {
   // Show upgrade page for users without eligible subscription (excluding admins)
   if (!loading && !canAccessLevelUp()) {
     return (
-      <ResizableLayout>
-        <main className="h-full flex flex-col">
-          {/* Header */}
-          <header className="border-b bg-background/80 backdrop-blur-sm">
-            <div className="flex items-center justify-between px-4 py-4">
-              <div className="flex items-center gap-2 sm:gap-4">
-                <h1 className="text-lg sm:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                  Level Up
-                </h1>
-              </div>
-              
-              <div className="flex items-center gap-2 sm:gap-4">
-                <div className="hidden sm:flex">
-                  <SubscriptionStatus />
+      <SidebarProvider>
+        <div className="flex min-h-screen w-full">
+          <AppSidebar />
+          <SidebarInset className="flex-1 overflow-hidden">
+            <main className="h-full flex flex-col">
+              {/* Header */}
+              <header className="border-b bg-background/80 backdrop-blur-sm">
+                <div className="container mx-auto flex items-center justify-between px-4 py-4">
+                  <div className="flex items-center gap-2 sm:gap-4">
+                    <SidebarTrigger className="lg:hidden">
+                      <Menu className="h-5 w-5" />
+                    </SidebarTrigger>
+                    <h1 className="text-lg sm:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                      Level Up
+                    </h1>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 sm:gap-4">
+                    <div className="hidden sm:flex">
+                      <SubscriptionStatus />
+                    </div>
+                    <UserProfileDropdown />
+                  </div>
                 </div>
-                <UserProfileDropdown />
-              </div>
-            </div>
-          </header>
+              </header>
 
-          {/* Upgrade Required Content */}
-          <div className="flex-1 flex items-center justify-center p-4">
-            <div className="text-center space-y-6 max-w-2xl">
-              <div className="text-6xl mb-4">🚀</div>
-              <h2 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                Upgrade Required
-              </h2>
-              <p className="text-muted-foreground text-lg">
-                The Level Up program is available exclusively for users with our premium subscription plans.
-              </p>
-              <p className="text-muted-foreground">
-                Unlock advanced career growth tools, personalized coaching, and exclusive resources.
-              </p>
-              
-              <Button 
-                onClick={() => setUpgradeDialogOpen(true)}
-                className="bg-gradient-primary hover:bg-gradient-primary/90 text-white px-8 py-3 text-lg"
-                size="lg"
-              >
-                <Crown className="h-5 w-5 mr-2" />
-                Upgrade Plan
-              </Button>
-            </div>
-          </div>
-
-          {/* Upgrade Dialog */}
-          <Dialog open={upgradeDialogOpen} onOpenChange={setUpgradeDialogOpen}>
-            <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto p-6">
-              <DialogHeader className="pb-4">
-                <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2">
-                  <Sparkles className="h-6 w-6 text-primary" />
-                  Upgrade to Access Level Up
-                </DialogTitle>
-              </DialogHeader>
-              <div className="mb-6">
-                <p className="text-muted-foreground text-center">
-                  Choose from our premium plans to unlock the Level Up program and advanced career growth features:
-                </p>
+              {/* Upgrade Required Content */}
+              <div className="flex-1 flex items-center justify-center p-4 overflow-auto">
+                <div className="text-center space-y-6 max-w-2xl">
+                  <div className="text-6xl mb-4">🚀</div>
+                  <h2 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                    Upgrade Required
+                  </h2>
+                  <p className="text-muted-foreground text-lg">
+                    The Level Up program is available exclusively for users with our premium subscription plans.
+                  </p>
+                  <p className="text-muted-foreground">
+                    Unlock advanced career growth tools, personalized coaching, and exclusive resources.
+                  </p>
+                  
+                  <Button 
+                    onClick={() => setUpgradeDialogOpen(true)}
+                    className="bg-gradient-primary hover:bg-gradient-primary/90 text-white px-8 py-3 text-lg"
+                    size="lg"
+                  >
+                    <Crown className="h-5 w-5 mr-2" />
+                    Upgrade Plan
+                  </Button>
+                </div>
               </div>
-              <PricingDialog eligiblePlans={eligiblePlans} />
-            </DialogContent>
-          </Dialog>
-        </main>
-      </ResizableLayout>
+            </main>
+          </SidebarInset>
+        </div>
+
+        {/* Upgrade Dialog */}
+        <Dialog open={upgradeDialogOpen} onOpenChange={setUpgradeDialogOpen}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto p-6">
+            <DialogHeader className="pb-4">
+              <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2">
+                <Sparkles className="h-6 w-6 text-primary" />
+                Upgrade to Access Level Up
+              </DialogTitle>
+            </DialogHeader>
+            <div className="mb-6">
+              <p className="text-muted-foreground text-center">
+                Choose from our premium plans to unlock the Level Up program and advanced career growth features:
+              </p>
+            </div>
+            <PricingDialog eligiblePlans={eligiblePlans} />
+          </DialogContent>
+        </Dialog>
+      </SidebarProvider>
     );
   }
 
@@ -352,78 +361,88 @@ const LevelUp = () => {
   }
 
   return (
-    <ResizableLayout>
-      <main className="h-full flex flex-col">
-        {/* Header */}
-        <header className="border-b bg-background/80 backdrop-blur-sm">
-          <div className="flex items-center justify-between px-4 py-4">
-            <div className="flex items-center gap-2 sm:gap-4">
-              <h1 className="text-lg sm:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                Level Up
-              </h1>
-            </div>
-            
-            <div className="flex items-center gap-2 sm:gap-4">
-              <div className="hidden sm:flex">
-                <SubscriptionStatus />
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <AppSidebar />
+        <SidebarInset className="flex-1 overflow-hidden">
+          <main className="h-full flex flex-col">
+            {/* Header */}
+            <header className="border-b bg-background/80 backdrop-blur-sm">
+              <div className="container mx-auto flex items-center justify-between px-4 py-4">
+                <div className="flex items-center gap-2 sm:gap-4">
+                  <SidebarTrigger className="lg:hidden">
+                    <Menu className="h-5 w-5" />
+                  </SidebarTrigger>
+                  <h1 className="text-lg sm:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                    Level Up
+                  </h1>
+                </div>
+                
+                <div className="flex items-center gap-2 sm:gap-4">
+                  <div className="hidden sm:flex">
+                    <SubscriptionStatus />
+                  </div>
+                  <UserProfileDropdown />
+                </div>
               </div>
-              <UserProfileDropdown />
-            </div>
-          </div>
-        </header>
+            </header>
 
-        {/* Main Content */}
-        <div className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto min-h-0">
-          {/* Welcome Section */}
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold mb-2">
-              Level Up Your Career
-            </h2>
-            <p className="text-muted-foreground">
-              Track your progress and unlock achievements as you advance your career journey.
+            {/* Main Content */}
+            <div className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto min-h-0">
+              <div className="container mx-auto">
+                {/* Welcome Section */}
+                <div className="mb-8">
+                  <h2 className="text-3xl font-bold mb-2">
+                    Level Up Your Career
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Track your progress and unlock achievements as you advance your career journey.
+                  </p>
+                </div>
+
+                {/* Badge Progression Map */}
+                <div className="mb-8">
+                 <BadgeProgressionMap
+                  resumeProgress={resumeProgress}
+                  completedProfileTasks={completedProfileTasks}
+                  linkedinProgress={linkedinProgress}
+                  linkedinProfileProgress={linkedinProfileProgress}
+                  digitalProfileProgress={digitalProfileProgress}
+                  githubProfileProgress={githubProfileProgress}
+                  githubProgress={githubProgress}
+                  jobApplicationsCount={totalJobApplications}
+                  networkConnections={networkMetrics?.totalConnections || 0}
+                  profileViews={0} // Profile views not available in current metrics
+                  githubRepos={githubRepoCount}
+                  githubCommits={totalGitHubCommits}
+                  subscriptionPlan={profile?.subscription_plan}
+                  careerLoading={careerLoading}
+                />
+                </div>
+              </div>
+            </div>
+          </main>
+        </SidebarInset>
+      </div>
+
+      {/* Gold Badge Upgrade Dialog for 3-Months Plan Users */}
+      <Dialog open={goldBadgeUpgradeDialogOpen} onOpenChange={setGoldBadgeUpgradeDialogOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto p-6">
+          <DialogHeader className="pb-4">
+            <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2">
+              <Crown className="h-6 w-6 text-yellow-500" />
+              Upgrade to Access Gold Badge
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mb-6">
+            <p className="text-muted-foreground text-center">
+              Unlock the Gold Badge - Profile Perfectionist with our premium plans:
             </p>
           </div>
-
-          {/* Badge Progression Map */}
-          <div className="mb-8">
-           <BadgeProgressionMap
-            resumeProgress={resumeProgress}
-            completedProfileTasks={completedProfileTasks}
-            linkedinProgress={linkedinProgress}
-            linkedinProfileProgress={linkedinProfileProgress}
-            digitalProfileProgress={digitalProfileProgress}
-            githubProfileProgress={githubProfileProgress}
-            githubProgress={githubProgress}
-            jobApplicationsCount={totalJobApplications}
-            networkConnections={networkMetrics?.totalConnections || 0}
-            profileViews={0} // Profile views not available in current metrics
-            githubRepos={githubRepoCount}
-            githubCommits={totalGitHubCommits}
-            subscriptionPlan={profile?.subscription_plan}
-            careerLoading={careerLoading}
-          />
-          </div>
-        </div>
-
-        {/* Gold Badge Upgrade Dialog for 3-Months Plan Users */}
-        <Dialog open={goldBadgeUpgradeDialogOpen} onOpenChange={setGoldBadgeUpgradeDialogOpen}>
-          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto p-6">
-            <DialogHeader className="pb-4">
-              <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2">
-                <Crown className="h-6 w-6 text-yellow-500" />
-                Upgrade to Access Gold Badge
-              </DialogTitle>
-            </DialogHeader>
-            <div className="mb-6">
-              <p className="text-muted-foreground text-center">
-                Unlock the Gold Badge - Profile Perfectionist with our premium plans:
-              </p>
-            </div>
-            <PricingDialog eligiblePlans={goldBadgeUpgradePlans} />
-          </DialogContent>
-        </Dialog>
-      </main>
-    </ResizableLayout>
+          <PricingDialog eligiblePlans={goldBadgeUpgradePlans} />
+        </DialogContent>
+      </Dialog>
+    </SidebarProvider>
   );
 };
 
