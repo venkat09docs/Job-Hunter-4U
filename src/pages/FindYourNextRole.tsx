@@ -2291,245 +2291,132 @@ const FindYourNextRole = () => {
                     </CardContent>
                   </Card>
                 ) : internalJobs.length > 0 ? (
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Jobs List */}
-                    <div className="lg:col-span-2">
-                      <h2 className="text-2xl font-bold text-foreground mb-4">
-                        Internal Job Opportunities ({internalJobs.length} found)
-                      </h2>
-                      <div className="space-y-4">
-                        {internalJobs.map((job: InternalJob) => (
-                          <Card 
-                            key={job.id} 
-                            className={`hover:shadow-lg transition-shadow cursor-pointer ${
-                              selectedJob?.job_id === job.id ? 'ring-2 ring-primary' : ''
-                            }`}
-                          >
-                            <CardContent className="p-4 md:p-6" onClick={() => setSelectedJob({
-                              job_id: job.id,
-                              job_title: job.title,
-                              employer_name: job.company || 'Unknown Company',
-                              job_location: job.location || '',
-                              job_posted_at: new Date(job.created_at).toLocaleDateString(),
-                              job_apply_link: job.job_url || '',
-                              job_description: job.description || '',
-                              job_min_salary: job.salary_min,
-                              job_max_salary: job.salary_max,
-                              job_application_deadline: job.application_deadline
-                            })}>
-                              <div className="space-y-3 mb-4">
-                                <div className="space-y-2">
-                                  <h3 className="text-lg md:text-xl font-semibold text-foreground break-words">
-                                    {job.title}
-                                  </h3>
-                                  <div className="flex flex-wrap items-center gap-2 md:gap-4 text-muted-foreground text-sm">
+                  <div>
+                    <h2 className="text-2xl font-bold text-foreground mb-4">
+                      Internal Job Opportunities ({internalJobs.length} found)
+                    </h2>
+                    <div className="space-y-4">
+                      {internalJobs.map((job: InternalJob) => (
+                        <Card 
+                          key={job.id} 
+                          className={`hover:shadow-lg transition-shadow cursor-pointer ${
+                            selectedJob?.job_id === job.id ? 'ring-2 ring-primary' : ''
+                          }`}
+                        >
+                          <CardContent className="p-4 md:p-6" onClick={() => setSelectedJob({
+                            job_id: job.id,
+                            job_title: job.title,
+                            employer_name: job.company || 'Unknown Company',
+                            job_location: job.location || '',
+                            job_posted_at: new Date(job.created_at).toLocaleDateString(),
+                            job_apply_link: job.job_url || '',
+                            job_description: job.description || '',
+                            job_min_salary: job.salary_min,
+                            job_max_salary: job.salary_max,
+                            job_application_deadline: job.application_deadline
+                          })}>
+                            <div className="space-y-3 mb-4">
+                              <div className="space-y-2">
+                                <h3 className="text-lg md:text-xl font-semibold text-foreground break-words">
+                                  {job.title}
+                                </h3>
+                                <div className="flex flex-wrap items-center gap-2 md:gap-4 text-muted-foreground text-sm">
+                                  <div className="flex items-center gap-1 min-w-0">
+                                    <Building className="h-4 w-4 flex-shrink-0" />
+                                    <span className="truncate">{job.company}</span>
+                                  </div>
+                                  {job.location && (
                                     <div className="flex items-center gap-1 min-w-0">
-                                      <Building className="h-4 w-4 flex-shrink-0" />
-                                      <span className="truncate">{job.company}</span>
+                                      <MapPin className="h-4 w-4 flex-shrink-0" />
+                                      <span className="truncate">{job.location}</span>
                                     </div>
-                                    {job.location && (
-                                      <div className="flex items-center gap-1 min-w-0">
-                                        <MapPin className="h-4 w-4 flex-shrink-0" />
-                                        <span className="truncate">{job.location}</span>
-                                      </div>
-                                    )}
-                                    {job.job_type && (
-                                      <span className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs whitespace-nowrap">
-                                        {job.job_type}
-                                      </span>
-                                    )}
-                                    {job.experience_level && (
-                                      <span className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs whitespace-nowrap">
-                                        {job.experience_level}
-                                      </span>
-                                    )}
-                                  </div>
-                                 </div>
-                                  <div className="flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
-                                   <Button 
-                                     variant="outline" 
-                                     size="sm"
-                                     onClick={() => handleResumeAnalyzerClick(job)}
-                                     className="flex-1 sm:flex-none"
-                                   >
-                                     <BarChart3 className="h-4 w-4 sm:mr-1" />
-                                     <span className="hidden sm:inline">Analyze Resume</span>
-                                   </Button>
-                                   <Button 
-                                     variant="outline" 
-                                     size="sm"
-                                     onClick={() => handleAddInternalJobToWishlist(job)}
-                                     disabled={addingInternalToWishlist === job.id || wishlistedInternalJobs.has(job.id)}
-                                     className="flex-1 sm:flex-none"
-                                   >
-                                     {addingInternalToWishlist === job.id ? (
-                                       <Loader2 className="h-4 w-4 animate-spin" />
-                                     ) : wishlistedInternalJobs.has(job.id) ? (
-                                       <>
-                                         <Heart className="h-4 w-4 fill-current mr-1" />
-                                         <span className="hidden sm:inline">Wishlisted</span>
-                                       </>
-                                     ) : (
-                                       <>
-                                         <Heart className="h-4 w-4 mr-1" />
-                                         <span className="hidden sm:inline">Wishlist</span>
-                                       </>
-                                     )}
-                                   </Button>
-                                   <Button 
-                                     variant="secondary" 
-                                     size="sm"
-                                     onClick={() => handleShareInternalJob(job)}
-                                     className="flex-1 sm:flex-none"
-                                   >
-                                     <Share2 className="h-4 w-4 sm:mr-1" />
-                                     <span className="hidden sm:inline">Share</span>
-                                   </Button>
-                                   <Button 
-                                     variant="default" 
-                                     size="sm"
-                                     onClick={() => {
-                                       setSelectedInternalJobForDetails(job);
-                                       setShowInternalJobDetailsDialog(true);
-                                     }}
-                                     className="flex-1 sm:flex-none"
-                                   >
-                                     <FileText className="h-4 w-4 sm:mr-1" />
-                                     <span className="hidden sm:inline">More Details</span>
-                                   </Button>
-                                  </div>
-                              </div>
-                              
-                              {(job.salary_min || job.salary_max) && (
-                                <div className="mb-3">
-                                  <span className="inline-block bg-primary/10 text-primary px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-medium break-all">
-                                    {job.salary_min && job.salary_max 
-                                      ? `$${job.salary_min.toLocaleString()} - $${job.salary_max.toLocaleString()}`
-                                      : job.salary_min 
-                                      ? `$${job.salary_min.toLocaleString()}+`
-                                      : `Up to $${job.salary_max?.toLocaleString()}`
-                                    }
-                                  </span>
+                                  )}
+                                  {job.job_type && (
+                                    <span className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs whitespace-nowrap">
+                                      {job.job_type}
+                                    </span>
+                                  )}
+                                  {job.experience_level && (
+                                    <span className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs whitespace-nowrap">
+                                      {job.experience_level}
+                                    </span>
+                                  )}
                                 </div>
-                              )}
-                              
-                              <p className="text-muted-foreground text-sm line-clamp-2 md:line-clamp-3 break-words">
-                                {job.description}
-                              </p>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Profile Matching Column */}
-                    <div className="lg:col-span-1">
-                      {selectedJob ? (
-                        <div className="sticky top-4">
-                          <Card>
-                            <CardHeader>
-                              <CardTitle className="text-lg flex items-center gap-2">
-                                <Search className="h-5 w-5" />
-                                Profile Match Analysis
-                              </CardTitle>
-                              <CardDescription>
-                                How well does your profile match this job?
-                              </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                              {(() => {
-                                const matchResult = calculateJobMatch(
-                                  selectedJob.job_title,
-                                  selectedJob.job_description || '',
-                                  selectedJob.employer_name
-                                );
-                                
-                                return (
-                                  <>
-                                    {/* Match Percentage */}
-                                    <div className="text-center">
-                                      <div className="text-3xl font-bold text-primary mb-2">
-                                        {matchResult.matchPercentage}%
-                                      </div>
-                                      <Progress value={matchResult.matchPercentage} className="h-3 mb-2" />
-                                      <p className="text-sm text-muted-foreground">
-                                        {matchResult.matchPercentage >= 80 ? 'Excellent match!' : 
-                                         matchResult.matchPercentage >= 60 ? 'Good match' : 
-                                         'Needs improvement'}
-                                      </p>
-                                    </div>
-
-                                    {/* Strengths */}
-                                    {matchResult.strengths.length > 0 && (
-                                      <div>
-                                        <h4 className="font-semibold text-green-600 mb-2">Your Strengths</h4>
-                                        <ul className="space-y-1">
-                                          {matchResult.strengths.map((strength, index) => (
-                                            <li key={index} className="text-sm flex items-start gap-2">
-                                              <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0" />
-                                              {strength}
-                                            </li>
-                                          ))}
-                                        </ul>
-                                      </div>
-                                    )}
-
-                                    {/* Suggestions */}
-                                    <div>
-                                      <h4 className="font-semibold text-orange-600 mb-2">
-                                        {matchResult.matchPercentage >= 80 ? 'Additional Tips' : 'Improvement Suggestions'}
-                                      </h4>
-                                      <ul className="space-y-1">
-                                        {matchResult.suggestions.map((suggestion, index) => (
-                                          <li key={index} className="text-sm flex items-start gap-2">
-                                            <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 flex-shrink-0" />
-                                            {suggestion}
-                                          </li>
-                                        ))}
-                                      </ul>
-                                    </div>
-
-                                    {/* Missing Skills */}
-                                    {matchResult.missingSkills.length > 0 && (
-                                      <div>
-                                        <h4 className="font-semibold text-red-600 mb-2">Skills to Develop</h4>
-                                        <div className="flex flex-wrap gap-1">
-                                          {matchResult.missingSkills.slice(0, 6).map((skill, index) => (
-                                            <span key={index} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">
-                                              {skill}
-                                            </span>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    )}
-
-                                    {/* Matched Skills */}
-                                    {matchResult.matchedSkills.length > 0 && (
-                                      <div>
-                                        <h4 className="font-semibold text-green-600 mb-2">Your Matching Skills</h4>
-                                        <div className="flex flex-wrap gap-1">
-                                          {matchResult.matchedSkills.slice(0, 6).map((skill, index) => (
-                                            <span key={index} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-                                              {skill}
-                                            </span>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    )}
-                                  </>
-                                );
-                              })()}
-                            </CardContent>
-                          </Card>
-                        </div>
-                      ) : (
-                        <Card>
-                          <CardContent className="p-6 text-center text-muted-foreground">
-                            <Search className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                            <p>Click on a job to see how well your profile matches</p>
+                              </div>
+                              <div className="flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleResumeAnalyzerClick(job)}
+                                  className="flex-1 sm:flex-none"
+                                >
+                                  <BarChart3 className="h-4 w-4 sm:mr-1" />
+                                  <span className="hidden sm:inline">Analyze Resume</span>
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleAddInternalJobToWishlist(job)}
+                                  disabled={addingInternalToWishlist === job.id || wishlistedInternalJobs.has(job.id)}
+                                  className="flex-1 sm:flex-none"
+                                >
+                                  {addingInternalToWishlist === job.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : wishlistedInternalJobs.has(job.id) ? (
+                                    <>
+                                      <Heart className="h-4 w-4 fill-current mr-1" />
+                                      <span className="hidden sm:inline">Wishlisted</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Heart className="h-4 w-4 mr-1" />
+                                      <span className="hidden sm:inline">Wishlist</span>
+                                    </>
+                                  )}
+                                </Button>
+                                <Button 
+                                  variant="secondary" 
+                                  size="sm"
+                                  onClick={() => handleShareInternalJob(job)}
+                                  className="flex-1 sm:flex-none"
+                                >
+                                  <Share2 className="h-4 w-4 sm:mr-1" />
+                                  <span className="hidden sm:inline">Share</span>
+                                </Button>
+                                <Button 
+                                  variant="default" 
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedInternalJobForDetails(job);
+                                    setShowInternalJobDetailsDialog(true);
+                                  }}
+                                  className="flex-1 sm:flex-none"
+                                >
+                                  <FileText className="h-4 w-4 sm:mr-1" />
+                                  <span className="hidden sm:inline">More Details</span>
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            {(job.salary_min || job.salary_max) && (
+                              <div className="mb-3">
+                                <span className="inline-block bg-primary/10 text-primary px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-medium break-all">
+                                  {job.salary_min && job.salary_max 
+                                    ? `$${job.salary_min.toLocaleString()} - $${job.salary_max.toLocaleString()}`
+                                    : job.salary_min 
+                                    ? `$${job.salary_min.toLocaleString()}+`
+                                    : `Up to $${job.salary_max?.toLocaleString()}`
+                                  }
+                                </span>
+                              </div>
+                            )}
+                            
+                            <p className="text-muted-foreground text-sm line-clamp-2 md:line-clamp-3 break-words">
+                              {job.description}
+                            </p>
                           </CardContent>
                         </Card>
-                      )}
+                      ))}
                     </div>
                   </div>
                 ) : !internalJobsLoading && searchType === "internal-jobs" && (
