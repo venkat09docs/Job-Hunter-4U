@@ -5,6 +5,7 @@ import {
   ResizableHandle 
 } from '@/components/ui/resizable';
 import { AppSidebar } from '@/components/AppSidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 
 interface ResizableLayoutProps {
@@ -14,30 +15,32 @@ interface ResizableLayoutProps {
 
 export function ResizableLayout({ children, className }: ResizableLayoutProps) {
   return (
-    <div className={cn("h-screen w-full bg-gradient-hero overflow-hidden", className)}>
-      <ResizablePanelGroup direction="horizontal" className="h-full">
-        <ResizablePanel
-          defaultSize={25}
-          minSize={15}
-          maxSize={50}
-          className="h-full hidden md:block"
-        >
-          <AppSidebar />
-        </ResizablePanel>
-        
-        <ResizableHandle 
-          withHandle
-          className="w-1 bg-border/20 hover:bg-border/40 transition-colors cursor-col-resize hidden md:block"
-        />
-        
-        <ResizablePanel
-          defaultSize={75}
-          minSize={50}
-          className="h-full flex flex-col overflow-hidden"
-        >
-          {children}
-        </ResizablePanel>
-      </ResizablePanelGroup>
-    </div>
+    <SidebarProvider>
+      <div className={cn("h-screen w-full bg-gradient-hero overflow-hidden", className)}>
+        <ResizablePanelGroup direction="horizontal" className="h-full">
+          <ResizablePanel
+            defaultSize={25}
+            minSize={15}
+            maxSize={50}
+            className="h-full hidden md:block"
+          >
+            <AppSidebar />
+          </ResizablePanel>
+          
+          <ResizableHandle 
+            withHandle
+            className="w-1 bg-border/20 hover:bg-border/40 transition-colors cursor-col-resize hidden md:block"
+          />
+          
+          <ResizablePanel
+            defaultSize={75}
+            minSize={50}
+            className="h-full flex flex-col overflow-hidden"
+          >
+            {children}
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
+    </SidebarProvider>
   );
 }
