@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, BookOpen, Users, Star, ArrowRight, Filter, Plus, Lock } from 'lucide-react';
+import { Clock, BookOpen, Users, Star, ArrowRight, Filter, Plus, Lock, FileText } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,7 @@ import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import { useLearningGoals } from '@/hooks/useLearningGoals';
 import { useProfile } from '@/hooks/useProfile';
 import { useNavigate } from 'react-router-dom';
+import { useCourseContent } from '@/hooks/useCourseContent';
 import type { Course } from '@/types/clp';
 import PricingDialog from '@/components/PricingDialog';
 
@@ -17,10 +18,12 @@ const CourseCard: React.FC<{
   course: Course; 
   isEnrolled: boolean;
   canAccess: boolean;
+  sectionsCount: number;
+  lecturesCount: number;
   onEnrollCourse?: (course: Course) => void;
   onViewCourse?: (courseId: string) => void;
   onShowUpgrade?: () => void;
-}> = ({ course, isEnrolled, canAccess, onEnrollCourse, onViewCourse, onShowUpgrade }) => {
+}> = ({ course, isEnrolled, canAccess, sectionsCount, lecturesCount, onEnrollCourse, onViewCourse, onShowUpgrade }) => {
   const isLocked = !canAccess;
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden">
@@ -77,6 +80,17 @@ const CourseCard: React.FC<{
             </p>
           </div>
           
+          {/* Course Stats */}
+          <div className="flex items-center gap-4 text-sm text-muted-foreground pt-2 border-t">
+            <div className="flex items-center gap-1">
+              <BookOpen className="h-4 w-4" />
+              <span>{sectionsCount} {sectionsCount === 1 ? 'Section' : 'Sections'}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <FileText className="h-4 w-4" />
+              <span>{lecturesCount} {lecturesCount === 1 ? 'Lecture' : 'Lectures'}</span>
+            </div>
+          </div>
           
           <div className="flex items-start justify-between pt-2 gap-3">
             <div className="flex flex-wrap gap-2 flex-1">
@@ -135,11 +149,13 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
   const { getCourses, loading } = useCareerLevelProgram();
   const { goals, loading: goalsLoading } = useLearningGoals();
   const { hasActiveSubscription, subscriptionPlan } = useProfile();
+  const { getSectionsByCourse, getChaptersBySection } = useCourseContent();
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedSubscriptionPlan, setSelectedSubscriptionPlan] = useState<string>('all');
   const [categories, setCategories] = useState<string[]>([]);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  const [courseCounts, setCourseCounts] = useState<Record<string, { sections: number; lectures: number }>>({});
 
   // Subscription plan hierarchy mapping
   const subscriptionHierarchy = {
@@ -207,6 +223,30 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
       // Extract unique categories
       const uniqueCategories = [...new Set(coursesData.map(course => course.category || 'General'))];
       setCategories(uniqueCategories);
+      
+      // Load sections and lectures count for each course
+      const counts: Record<string, { sections: number; lectures: number }> = {};
+      await Promise.all(
+        coursesData.map(async (course) => {
+          const sections = await getSectionsByCourse(course.id);
+          let totalLectures = 0;
+          
+          // Get all chapters for all sections
+          await Promise.all(
+            sections.map(async (section) => {
+              const chapters = await getChaptersBySection(section.id);
+              totalLectures += chapters.length;
+            })
+          );
+          
+          counts[course.id] = {
+            sections: sections.length,
+            lectures: totalLectures
+          };
+        })
+      );
+      
+      setCourseCounts(counts);
     } catch (error) {
       console.error('Error loading courses:', error);
       setCourses([]);
@@ -535,15 +575,17 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {categoryCourses.map((course) => (
-                <CourseCard 
-                  key={course.id} 
-                  course={course}
-                  isEnrolled={isUserEnrolled(course.id)}
-                  canAccess={canAccessCourse(course)}
-                  onEnrollCourse={handleEnrollCourse}
-                  onViewCourse={handleViewCourse}
-                  onShowUpgrade={() => setShowUpgradeDialog(true)}
-                />
+                    <CourseCard
+                      key={course.id}
+                      course={course}
+                      isEnrolled={isUserEnrolled(course.id)}
+                      canAccess={canAccessCourse(course)}
+                      sectionsCount={courseCounts[course.id]?.sections || 0}
+                      lecturesCount={courseCounts[course.id]?.lectures || 0}
+                      onEnrollCourse={handleEnrollCourse}
+                      onViewCourse={handleViewCourse}
+                      onShowUpgrade={() => setShowUpgradeDialog(true)}
+                    />
                 ))}
               </div>
             </div>
@@ -553,15 +595,17 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
         // Display filtered courses when specific category is selected
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {filteredCourses.map((course) => (
-          <CourseCard 
-            key={course.id} 
-            course={course}
-            isEnrolled={isUserEnrolled(course.id)}
-            canAccess={canAccessCourse(course)}
-            onEnrollCourse={handleEnrollCourse}
-            onViewCourse={handleViewCourse}
-            onShowUpgrade={() => setShowUpgradeDialog(true)}
-          />
+                <CourseCard
+                  key={course.id}
+                  course={course}
+                  isEnrolled={isUserEnrolled(course.id)}
+                  canAccess={canAccessCourse(course)}
+                  sectionsCount={courseCounts[course.id]?.sections || 0}
+                  lecturesCount={courseCounts[course.id]?.lectures || 0}
+                  onEnrollCourse={handleEnrollCourse}
+                  onViewCourse={handleViewCourse}
+                  onShowUpgrade={() => setShowUpgradeDialog(true)}
+                />
           ))}
         </div>
       )}

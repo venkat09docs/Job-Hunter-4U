@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, BookOpen, Users, Star, ArrowRight, MessageSquare, ExternalLink } from 'lucide-react';
+import { Clock, BookOpen, Users, Star, ArrowRight, MessageSquare, ExternalLink, FileText } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import { useRole } from '@/hooks/useRole';
+import { useCourseContent } from '@/hooks/useCourseContent';
 import type { Course } from '@/types/clp';
 
 const AIGeneralistsTab: React.FC = () => {
   const { getCourses, loading } = useCareerLevelProgram();
   const { role: userRole } = useRole();
+  const { getSectionsByCourse, getChaptersBySection } = useCourseContent();
   const [courses, setCourses] = useState<Course[]>([]);
+  const [courseCounts, setCourseCounts] = useState<Record<string, { sections: number; lectures: number }>>({});
 
   useEffect(() => {
     loadCourses();
@@ -28,6 +31,30 @@ const AIGeneralistsTab: React.FC = () => {
       : coursesData.filter((course: any) => course.is_published === true);
     
     setCourses(filteredCourses);
+    
+    // Load sections and lectures count for each course
+    const counts: Record<string, { sections: number; lectures: number }> = {};
+    await Promise.all(
+      filteredCourses.map(async (course) => {
+        const sections = await getSectionsByCourse(course.id);
+        let totalLectures = 0;
+        
+        // Get all chapters for all sections
+        await Promise.all(
+          sections.map(async (section) => {
+            const chapters = await getChaptersBySection(section.id);
+            totalLectures += chapters.length;
+          })
+        );
+        
+        counts[course.id] = {
+          sections: sections.length,
+          lectures: totalLectures
+        };
+      })
+    );
+    
+    setCourseCounts(counts);
   };
 
   const formatDuration = (hours: number) => {
@@ -191,20 +218,14 @@ const AIGeneralistsTab: React.FC = () => {
                     </p>
                   </div>
                   
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        <span>{formatDuration(8)}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Users className="h-4 w-4" />
-                        <span>124</span>
-                      </div>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground border-t pt-3">
+                    <div className="flex items-center gap-1">
+                      <BookOpen className="h-4 w-4" />
+                      <span>{courseCounts[course.id]?.sections || 0} {(courseCounts[course.id]?.sections || 0) === 1 ? 'Section' : 'Sections'}</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-amber text-amber" />
-                      <span className="text-sm font-medium">4.8</span>
+                      <FileText className="h-4 w-4" />
+                      <span>{courseCounts[course.id]?.lectures || 0} {(courseCounts[course.id]?.lectures || 0) === 1 ? 'Lecture' : 'Lectures'}</span>
                     </div>
                   </div>
                   
