@@ -308,6 +308,18 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
     return 'one_month';
   };
 
+  // Helper function to check if course matches selected plan (cumulative/hierarchical)
+  const courseMatchesSelectedPlan = (course: Course) => {
+    if (selectedSubscriptionPlan === 'all') return true;
+    
+    const coursePlan = getCourseSubscriptionPlan(course);
+    const courseTier = subscriptionHierarchy[coursePlan as keyof typeof subscriptionHierarchy] || 0;
+    const selectedTier = subscriptionHierarchy[selectedSubscriptionPlan as keyof typeof subscriptionHierarchy] || 0;
+    
+    // Show courses from selected tier and all lower tiers (cumulative)
+    return courseTier <= selectedTier;
+  };
+
   // Filter courses by selected category and subscription plan, then sort by order_index
   const filteredCourses = courses
     .filter(course => {
@@ -315,9 +327,8 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
       const categoryMatch = selectedCategory === 'all' || 
         (course.category || 'General') === selectedCategory;
       
-      // Subscription plan filter
-      const planMatch = selectedSubscriptionPlan === 'all' || 
-        getCourseSubscriptionPlan(course) === selectedSubscriptionPlan;
+      // Subscription plan filter (cumulative/hierarchical)
+      const planMatch = courseMatchesSelectedPlan(course);
       
       return categoryMatch && planMatch;
     })
@@ -330,10 +341,8 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
   // Group courses by category for display and sort each category by order_index
   const coursesByCategory = courses
     .filter(course => {
-      // Apply subscription plan filter to grouped courses too
-      const planMatch = selectedSubscriptionPlan === 'all' || 
-        getCourseSubscriptionPlan(course) === selectedSubscriptionPlan;
-      return planMatch;
+      // Apply subscription plan filter to grouped courses too (cumulative/hierarchical)
+      return courseMatchesSelectedPlan(course);
     })
     .reduce((acc, course) => {
       const category = course.category || 'General';
