@@ -74,11 +74,7 @@ const CLPAssignmentManagementTab = () => {
   }, [selectedCategory]);
 
   useEffect(() => {
-    if (selectedCourse !== 'all') {
-      loadSections(selectedCourse);
-    } else {
-      setSections([]);
-    }
+    // Don't clear sections when filter changes - we need all sections for display
     setSelectedSection('all');
   }, [selectedCourse]);
 
@@ -95,6 +91,18 @@ const CLPAssignmentManagementTab = () => {
       // Extract unique categories from courses
       const uniqueCategories = [...new Set(coursesData.map(course => course.category).filter(Boolean))];
       setCategories(uniqueCategories);
+
+      // Load all sections for all courses to display assignment course/section info
+      const allSections: CourseSection[] = [];
+      for (const course of coursesData) {
+        try {
+          const courseSections = await getSectionsByCourse(course.id);
+          allSections.push(...courseSections);
+        } catch (error) {
+          console.error(`Failed to load sections for course ${course.id}:`, error);
+        }
+      }
+      setSections(allSections);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({
