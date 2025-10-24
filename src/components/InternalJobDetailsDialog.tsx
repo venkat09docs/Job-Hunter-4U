@@ -21,6 +21,7 @@ import type { InternalJob } from "@/hooks/useInternalJobs";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useInternalJobApplicationLimit } from "@/hooks/useInternalJobApplicationLimit";
 
 interface InternalJobDetailsDialogProps {
   open: boolean;
@@ -39,6 +40,7 @@ export const InternalJobDetailsDialog = ({
 }: InternalJobDetailsDialogProps) => {
   const [addingToWishlist, setAddingToWishlist] = useState(false);
   const { toast } = useToast();
+  const { canApply, getRemainingApplications, refetch: refetchApplicationCount } = useInternalJobApplicationLimit();
 
   if (!job) return null;
 
@@ -247,6 +249,16 @@ export const InternalJobDetailsDialog = ({
                 variant="default"
                 className="flex-1"
                 onClick={async () => {
+                  // Check if user can apply based on subscription and limit
+                  if (!canApply(hasActiveSubscription)) {
+                    onUpgradeClick();
+                    toast({
+                      title: "Application Limit Reached",
+                      description: "You've reached the limit of 5 job applications per month for free users. Upgrade to apply to unlimited jobs.",
+                    });
+                    return;
+                  }
+
                   try {
                     const { data: { user } } = await supabase.auth.getUser();
                     if (user) {
@@ -261,6 +273,20 @@ export const InternalJobDetailsDialog = ({
                       // Ignore unique constraint errors (user already applied)
                       if (error && error.code !== '23505') {
                         console.error('Error tracking application:', error);
+                      } else if (!error) {
+                        // Refetch application count after successful tracking
+                        refetchApplicationCount();
+                        
+                        // Show remaining applications if not subscribed
+                        if (!hasActiveSubscription) {
+                          const remaining = getRemainingApplications(hasActiveSubscription) - 1;
+                          if (remaining <= 2) {
+                            toast({
+                              title: "Application Tracked",
+                              description: `You have ${remaining} free application${remaining !== 1 ? 's' : ''} remaining this month.`,
+                            });
+                          }
+                        }
                       }
                     }
                   } catch (error) {
