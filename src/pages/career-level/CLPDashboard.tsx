@@ -176,7 +176,7 @@ const CLPDashboard = () => {
             *,
             assignment:clp_assignments(
               title,
-              module:clp_modules(
+              section:course_sections(
                 title,
                 course:clp_courses(title)
               )
