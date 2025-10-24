@@ -655,7 +655,7 @@ const SkillLevelUpProgram: React.FC = () => {
         {/* Page Header - moved above tabs */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-3">
-            Skill Developer Programs
+            Skill Level Up Programs
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             Master in-demand skills with our comprehensive courses. Build your expertise and advance your career.
