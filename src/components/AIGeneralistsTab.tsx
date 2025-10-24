@@ -20,41 +20,53 @@ const AIGeneralistsTab: React.FC = () => {
   }, [userRole]);
 
   const loadCourses = async () => {
-    const coursesData = await getCourses();
-    
-    // Filter courses based on user role
-    // Admins/recruiters/institute_admins see all courses (including drafts)
-    // Regular users only see published courses
-    const isAdmin = userRole === 'admin' || userRole === 'recruiter' || userRole === 'institute_admin';
-    const filteredCourses = isAdmin 
-      ? coursesData 
-      : coursesData.filter((course: any) => course.is_published === true);
-    
-    setCourses(filteredCourses);
-    
-    // Load sections and lectures count for each course
-    const counts: Record<string, { sections: number; lectures: number }> = {};
-    await Promise.all(
-      filteredCourses.map(async (course) => {
-        const sections = await getSectionsByCourse(course.id);
-        let totalLectures = 0;
-        
-        // Get all chapters for all sections
-        await Promise.all(
-          sections.map(async (section) => {
+    try {
+      const coursesData = await getCourses();
+      
+      // Filter courses based on user role
+      // Admins/recruiters/institute_admins see all courses (including drafts)
+      // Regular users only see published courses
+      const isAdmin = userRole === 'admin' || userRole === 'recruiter' || userRole === 'institute_admin';
+      const filteredCourses = isAdmin 
+        ? coursesData 
+        : coursesData.filter((course: any) => course.is_published === true);
+      
+      setCourses(filteredCourses);
+      
+      // Load sections and lectures count for each course
+      const counts: Record<string, { sections: number; lectures: number }> = {};
+      
+      for (const course of filteredCourses) {
+        try {
+          const sections = await getSectionsByCourse(course.id);
+          let totalLectures = 0;
+          
+          // Get all chapters for all sections
+          for (const section of sections) {
             const chapters = await getChaptersBySection(section.id);
             totalLectures += chapters.length;
-          })
-        );
-        
-        counts[course.id] = {
-          sections: sections.length,
-          lectures: totalLectures
-        };
-      })
-    );
-    
-    setCourseCounts(counts);
+          }
+          
+          counts[course.id] = {
+            sections: sections.length,
+            lectures: totalLectures
+          };
+          
+          console.log(`Course ${course.title}: ${sections.length} sections, ${totalLectures} lectures`);
+        } catch (error) {
+          console.error(`Error loading counts for course ${course.id}:`, error);
+          counts[course.id] = {
+            sections: 0,
+            lectures: 0
+          };
+        }
+      }
+      
+      console.log('Final course counts:', counts);
+      setCourseCounts(counts);
+    } catch (error) {
+      console.error('Error loading courses:', error);
+    }
   };
 
   const formatDuration = (hours: number) => {
