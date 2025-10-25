@@ -73,7 +73,6 @@ const getMainItems = (isAdmin: boolean, isInstituteAdmin: boolean, isRecruiter: 
   { title: "Skill Level Up", url: "/dashboard/skill-level", icon: Award, featureKey: null },
   { title: "Profile Level Up", url: "/dashboard/level-up", icon: Trophy, featureKey: null },
   { title: "Interview Level Up", url: "/dashboard/interview-preparation", icon: MessageSquare, featureKey: null },
-  { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap, featureKey: "digital-career-hub" },
   { title: "Resource Library", url: "/dashboard/library", icon: Archive, featureKey: "page_resources_library" },
   { title: "Knowledge Base", url: "/dashboard/knowledge-base", icon: BookOpen, featureKey: null },
   { title: "Affiliate Income Level Up", url: "/affiliate", icon: Share2, featureKey: null },
@@ -224,8 +223,6 @@ export function AppSidebar() {
           return 'text-[hsl(var(--amber))]';
         case 'Interview Level Up':
           return 'text-[hsl(var(--rose))]';
-        case 'AI-Powered Career Tools':
-          return 'text-[hsl(var(--cyan))]';
         case 'Resource Library':
           return 'text-[hsl(var(--emerald))]';
         case 'Knowledge Base':
@@ -331,9 +328,6 @@ export function AppSidebar() {
 
     const colors = getSectionColors(sectionColor || 'default');
     
-    // Special handling for AI-Powered Career Tools to check subscription before opening
-    const isAICareerTools = item.title === "AI-Powered Career Tools";
-    
     // Special handling for Skill Level Up to check subscription
     const isSkillLevelUp = false; // Remove subscription check for Skill Level Up
     
@@ -388,17 +382,6 @@ export function AppSidebar() {
       }
     };
     
-    const handleAICareerToolsClick = (e: React.MouseEvent) => {
-      e.preventDefault();
-      // Check if user has active subscription
-      if (!hasActiveSubscription()) {
-        setSubscriptionDialogOpen(true);
-      } else {
-        // User has subscription, proceed to open in new tab
-        window.open(item.url, '_blank', 'noopener,noreferrer');
-      }
-    };
-    
     const handleSkillLevelUpClick = (e: React.MouseEvent) => {
       e.preventDefault();
       
@@ -406,27 +389,7 @@ export function AppSidebar() {
       navigate(item.url);
     };
     
-    const menuItem = isAICareerTools ? (
-      <div
-        onClick={handleAICareerToolsClick}
-        className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer text-foreground hover:text-accent-foreground ${colors.hoverBg}`}
-      >
-        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 ${getIconColor(item.title)}`} />
-        {!isCollapsed && (
-          <div className="flex items-center justify-between flex-1 min-w-0">
-            <span className="text-sm truncate">
-              {item.title}
-            </span>
-            <div className="flex items-center gap-2">
-              <ExternalLink className="h-3 w-3 flex-shrink-0 text-muted-foreground" />
-              {!hasActiveSubscription() && 
-                <Lock className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-              }
-            </div>
-          </div>
-        )}
-      </div>
-    ) : isInterviewLevelUp ? (
+    const menuItem = isInterviewLevelUp ? (
       <div
         onClick={handleInterviewLevelUpClick}
         className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer ${
