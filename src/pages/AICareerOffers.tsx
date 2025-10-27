@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, CheckCircle, ArrowRight, X, Sparkles } from "lucide-react";
+import { Trophy, CheckCircle, ArrowRight, X, Sparkles, Briefcase, MapPin, Clock, DollarSign } from "lucide-react";
 import { 
   Carousel,
   CarouselContent,
@@ -10,12 +10,16 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCareerLevelProgram } from "@/hooks/useCareerLevelProgram";
 import { useCourseContent } from "@/hooks/useCourseContent";
 import { useSubscriptionPlans } from "@/hooks/useSubscriptionPlans";
+import { useInternalJobs } from "@/hooks/useInternalJobs";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import type { Course } from "@/types/clp";
+import type { InternalJob } from "@/hooks/useInternalJobs";
 import { useNavigate } from "react-router-dom";
 import PaymentGatewaySelector from "@/components/PaymentGatewaySelector";
 import { useAuth } from "@/hooks/useAuth";
@@ -25,6 +29,7 @@ const AICareerOffers = () => {
   const { getCourses, loading } = useCareerLevelProgram();
   const { getSectionsByCourse, getChaptersBySection } = useCourseContent();
   const { plansWithPrices, loading: plansLoading } = useSubscriptionPlans();
+  const { jobs, loading: jobsLoading } = useInternalJobs();
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -39,11 +44,14 @@ const AICareerOffers = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [courseSections, setCourseSections] = useState<Record<string, any[]>>({});
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [selectedJob, setSelectedJob] = useState<InternalJob | null>(null);
+  const [itemType, setItemType] = useState<'course' | 'job'>('course');
   const [courseContent, setCourseContent] = useState<any[]>([]);
   const [showSplitView, setShowSplitView] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [contentLoading, setContentLoading] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   useEffect(() => {
     loadCourses();
@@ -86,8 +94,17 @@ const AICareerOffers = () => {
   };
 
   const handleCourseClick = async (course: Course) => {
+    setItemType('course');
     setSelectedCourse(course);
+    setSelectedJob(null);
     await loadCourseContent(course.id);
+    setShowSplitView(true);
+  };
+
+  const handleJobClick = (job: InternalJob) => {
+    setItemType('job');
+    setSelectedJob(job);
+    setSelectedCourse(null);
     setShowSplitView(true);
   };
 
@@ -136,6 +153,14 @@ const AICareerOffers = () => {
     return acc;
   }, {} as Record<string, Course[]>);
 
+  // Get all categories
+  const categories = ['all', ...Object.keys(coursesByCategory)];
+
+  // Filter courses based on selected category
+  const filteredCourses = selectedCategory === 'all' 
+    ? courses 
+    : coursesByCategory[selectedCategory] || [];
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-primary/5">
       {/* Hero Section */}
@@ -159,35 +184,49 @@ const AICareerOffers = () => {
             </div>
           </div>
 
-          {/* Courses by Category */}
-          {loading ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map(i => (
-                <Card key={i} className="h-full animate-pulse">
-                  <CardContent className="p-0">
-                    <div className="h-48 bg-muted"></div>
-                    <div className="p-6 space-y-4">
-                      <div className="h-6 bg-muted rounded"></div>
-                      <div className="h-4 bg-muted rounded w-3/4"></div>
-                      <div className="h-10 bg-muted rounded"></div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            Object.entries(coursesByCategory).map(([category, categoryCourses]) => (
-              <div key={category} className="mb-16">
-                <div className="mb-8">
-                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 text-foreground">
-                    {category}
-                  </h2>
-                  <div className="h-1 w-24 bg-gradient-to-r from-primary to-purple-600 rounded-full"></div>
-                </div>
+          {/* Tabs for Courses and Jobs */}
+          <Tabs defaultValue="courses" className="w-full">
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
+              <TabsTrigger value="courses">Courses</TabsTrigger>
+              <TabsTrigger value="jobs">Internal Jobs</TabsTrigger>
+            </TabsList>
 
+            {/* Courses Tab */}
+            <TabsContent value="courses">
+              <div className="mb-6 flex justify-center">
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-64">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category === 'all' ? 'All Categories' : category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {loading ? (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[1, 2, 3].map(i => (
+                    <Card key={i} className="h-full animate-pulse">
+                      <CardContent className="p-0">
+                        <div className="h-48 bg-muted"></div>
+                        <div className="p-6 space-y-4">
+                          <div className="h-6 bg-muted rounded"></div>
+                          <div className="h-4 bg-muted rounded w-3/4"></div>
+                          <div className="h-10 bg-muted rounded"></div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
                 <Carousel className="w-full" opts={{ align: "start", loop: true }}>
                   <CarouselContent className="-ml-2 md:-ml-4">
-                    {categoryCourses.map((course) => (
+                    {filteredCourses.map((course) => (
                       <CarouselItem key={course.id} className="pl-2 md:pl-4 basis-[90%] sm:basis-[85%] md:basis-1/2 lg:basis-1/3">
                         <Card 
                           className="h-full transition-all duration-300 border-0 shadow-2xl cursor-pointer rounded-3xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] hover:scale-[1.02] overflow-hidden bg-gradient-to-br from-card via-card to-primary/5"
@@ -258,16 +297,112 @@ const AICareerOffers = () => {
                   <CarouselPrevious className="hidden lg:flex -left-12 h-12 w-12 bg-card/90 hover:bg-card border-0 shadow-xl" />
                   <CarouselNext className="hidden lg:flex -right-12 h-12 w-12 bg-card/90 hover:bg-card border-0 shadow-xl" />
                 </Carousel>
-              </div>
-            ))
-          )}
+              )}
+            </TabsContent>
+
+            {/* Internal Jobs Tab */}
+            <TabsContent value="jobs">
+              {jobsLoading ? (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[1, 2, 3].map(i => (
+                    <Card key={i} className="h-full animate-pulse">
+                      <CardContent className="p-6 space-y-4">
+                        <div className="h-6 bg-muted rounded"></div>
+                        <div className="h-4 bg-muted rounded w-3/4"></div>
+                        <div className="h-4 bg-muted rounded w-1/2"></div>
+                        <div className="h-10 bg-muted rounded"></div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : jobs.length > 0 ? (
+                <Carousel className="w-full" opts={{ align: "start", loop: true }}>
+                  <CarouselContent className="-ml-2 md:-ml-4">
+                    {jobs.map((job) => (
+                      <CarouselItem key={job.id} className="pl-2 md:pl-4 basis-[90%] sm:basis-[85%] md:basis-1/2 lg:basis-1/3">
+                        <Card 
+                          className="h-full transition-all duration-300 border-0 shadow-2xl cursor-pointer rounded-3xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] hover:scale-[1.02] overflow-hidden bg-gradient-to-br from-card via-card to-primary/5"
+                          onClick={() => handleJobClick(job)}
+                        >
+                          <CardContent className="p-6 flex flex-col h-full">
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="flex-1">
+                                <h3 className="text-xl font-bold text-foreground mb-2 leading-tight">
+                                  {job.title}
+                                </h3>
+                                <p className="text-lg text-primary font-semibold">
+                                  {job.company}
+                                </p>
+                              </div>
+                              <Briefcase className="h-8 w-8 text-primary flex-shrink-0" />
+                            </div>
+
+                            <div className="space-y-2 mb-4 flex-1">
+                              {job.location && (
+                                <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                                  <MapPin className="h-4 w-4" />
+                                  <span>{job.location}</span>
+                                </div>
+                              )}
+                              {job.job_type && (
+                                <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                                  <Clock className="h-4 w-4" />
+                                  <span>{job.job_type}</span>
+                                </div>
+                              )}
+                              {(job.salary_min || job.salary_max) && (
+                                <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                                  <DollarSign className="h-4 w-4" />
+                                  <span>
+                                    {job.salary_min && job.salary_max 
+                                      ? `₹${job.salary_min.toLocaleString()} - ₹${job.salary_max.toLocaleString()}`
+                                      : job.salary_min 
+                                      ? `₹${job.salary_min.toLocaleString()}+`
+                                      : `Up to ₹${job.salary_max?.toLocaleString()}`
+                                    }
+                                  </span>
+                                </div>
+                              )}
+                              {job.experience_level && (
+                                <Badge variant="secondary" className="mt-2">
+                                  {job.experience_level}
+                                </Badge>
+                              )}
+                            </div>
+
+                            <Button 
+                              className="w-full bg-gradient-to-r from-primary via-purple-600 to-pink-600 hover:from-primary/90 hover:via-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg rounded-xl h-12 text-sm transform hover:scale-[1.02] transition-all duration-200"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleJobClick(job);
+                              }}
+                            >
+                              View Details & Apply
+                              <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious className="hidden lg:flex -left-12 h-12 w-12 bg-card/90 hover:bg-card border-0 shadow-xl" />
+                  <CarouselNext className="hidden lg:flex -right-12 h-12 w-12 bg-card/90 hover:bg-card border-0 shadow-xl" />
+                </Carousel>
+              ) : (
+                <div className="text-center py-12">
+                  <Briefcase className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-lg text-muted-foreground">No internal jobs available at the moment</p>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
       </section>
 
-      {/* Split View Dialog - Course Content + Pricing */}
+      {/* Split View Dialog - Course/Job Content + Pricing */}
       <Dialog open={showSplitView} onOpenChange={setShowSplitView}>
         <DialogContent className="max-w-7xl h-[90vh] p-0 gap-0 overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
-          <DialogTitle className="sr-only">Course Details and Pricing</DialogTitle>
+          <DialogTitle className="sr-only">{itemType === 'course' ? 'Course' : 'Job'} Details and Pricing</DialogTitle>
           <style>{`
             .dialog-scroll::-webkit-scrollbar {
               width: 14px;
@@ -297,16 +432,25 @@ const AICareerOffers = () => {
             }
           `}</style>
           <div className="flex h-full w-full">
-            {/* Left Side - Course Content (Read-only) */}
+            {/* Left Side - Course/Job Content */}
             <div className="flex-1 border-r-2 border-primary/10 flex flex-col bg-card/50 backdrop-blur-sm overflow-hidden">
               <div className="p-4 sm:p-6 border-b-2 border-primary/10 flex items-center justify-between bg-gradient-to-r from-primary/10 via-purple-500/10 to-pink-500/10 flex-shrink-0 backdrop-blur-sm">
                 <div>
                   <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                    {selectedCourse?.title}
+                    {itemType === 'course' ? selectedCourse?.title : selectedJob?.title}
                   </h2>
                   <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-primary" />
-                    Course Content Preview
+                    {itemType === 'course' ? (
+                      <>
+                        <CheckCircle className="w-4 h-4 text-primary" />
+                        Course Content Preview
+                      </>
+                    ) : (
+                      <>
+                        <Briefcase className="w-4 h-4 text-primary" />
+                        Job Details
+                      </>
+                    )}
                   </p>
                 </div>
                 <Button
@@ -321,54 +465,152 @@ const AICareerOffers = () => {
 
               <div className="flex-1 overflow-y-scroll dialog-scroll min-h-0" style={{ maxHeight: 'calc(90vh - 120px)' }}>
                 <div className="p-4 sm:p-6 space-y-6 pb-12 pr-6">
-                  {contentLoading ? (
-                    <div className="space-y-4">
-                      {[1, 2, 3].map(i => (
-                        <div key={i} className="animate-pulse">
-                          <div className="h-6 bg-muted rounded mb-2"></div>
-                          <div className="h-4 bg-muted rounded w-3/4"></div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : courseContent.length > 0 ? (
-                    courseContent.map((section, sectionIdx) => (
-                      <Card key={section.id} className="overflow-hidden border-2">
-                        <div className="bg-gradient-to-r from-primary/10 to-purple-600/10 p-4 border-b">
-                          <h3 className="text-lg font-bold text-foreground">
-                            Section {sectionIdx + 1}: {section.title}
-                          </h3>
-                          {section.description && (
-                            <p className="text-sm text-muted-foreground mt-1">{section.description}</p>
-                          )}
-                        </div>
-                        <CardContent className="p-4">
-                          {section.chapters && section.chapters.length > 0 ? (
-                            <div className="space-y-3">
-                              {section.chapters.map((chapter: any, chapterIdx: number) => (
-                                <div key={chapter.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
-                                    {chapterIdx + 1}
+                  {itemType === 'course' ? (
+                    // Course Content
+                    contentLoading ? (
+                      <div className="space-y-4">
+                        {[1, 2, 3].map(i => (
+                          <div key={i} className="animate-pulse">
+                            <div className="h-6 bg-muted rounded mb-2"></div>
+                            <div className="h-4 bg-muted rounded w-3/4"></div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : courseContent.length > 0 ? (
+                      courseContent.map((section, sectionIdx) => (
+                        <Card key={section.id} className="overflow-hidden border-2">
+                          <div className="bg-gradient-to-r from-primary/10 to-purple-600/10 p-4 border-b">
+                            <h3 className="text-lg font-bold text-foreground">
+                              Section {sectionIdx + 1}: {section.title}
+                            </h3>
+                            {section.description && (
+                              <p className="text-sm text-muted-foreground mt-1">{section.description}</p>
+                            )}
+                          </div>
+                          <CardContent className="p-4">
+                            {section.chapters && section.chapters.length > 0 ? (
+                              <div className="space-y-3">
+                                {section.chapters.map((chapter: any, chapterIdx: number) => (
+                                  <div key={chapter.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
+                                      {chapterIdx + 1}
+                                    </div>
+                                    <div className="flex-1">
+                                      <h4 className="font-semibold text-foreground">{chapter.title}</h4>
+                                      {chapter.description && (
+                                        <p className="text-sm text-muted-foreground mt-1">{chapter.description}</p>
+                                      )}
+                                    </div>
                                   </div>
-                                  <div className="flex-1">
-                                    <h4 className="font-semibold text-foreground">{chapter.title}</h4>
-                                    {chapter.description && (
-                                      <p className="text-sm text-muted-foreground mt-1">{chapter.description}</p>
-                                    )}
-                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-muted-foreground">No chapters available</p>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))
+                    ) : (
+                      <div className="text-center py-12">
+                        <p className="text-muted-foreground">No content available for this course yet.</p>
+                      </div>
+                    )
+                  ) : selectedJob ? (
+                    // Job Details
+                    <>
+                      <Card className="border-2">
+                        <CardContent className="p-6 space-y-4">
+                          <div>
+                            <h3 className="text-lg font-bold text-foreground mb-2">Company</h3>
+                            <p className="text-xl text-primary font-semibold">{selectedJob.company}</p>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            {selectedJob.location && (
+                              <div>
+                                <h4 className="text-sm font-semibold text-foreground mb-1">Location</h4>
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <MapPin className="h-4 w-4" />
+                                  <span>{selectedJob.location}</span>
                                 </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="text-sm text-muted-foreground">No chapters available</p>
-                          )}
+                              </div>
+                            )}
+                            {selectedJob.job_type && (
+                              <div>
+                                <h4 className="text-sm font-semibold text-foreground mb-1">Job Type</h4>
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <Clock className="h-4 w-4" />
+                                  <span>{selectedJob.job_type}</span>
+                                </div>
+                              </div>
+                            )}
+                            {selectedJob.experience_level && (
+                              <div>
+                                <h4 className="text-sm font-semibold text-foreground mb-1">Experience Level</h4>
+                                <Badge variant="secondary">{selectedJob.experience_level}</Badge>
+                              </div>
+                            )}
+                            {(selectedJob.salary_min || selectedJob.salary_max) && (
+                              <div>
+                                <h4 className="text-sm font-semibold text-foreground mb-1">Salary Range</h4>
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <DollarSign className="h-4 w-4" />
+                                  <span>
+                                    {selectedJob.salary_min && selectedJob.salary_max 
+                                      ? `₹${selectedJob.salary_min.toLocaleString()} - ₹${selectedJob.salary_max.toLocaleString()}`
+                                      : selectedJob.salary_min 
+                                      ? `₹${selectedJob.salary_min.toLocaleString()}+`
+                                      : `Up to ₹${selectedJob.salary_max?.toLocaleString()}`
+                                    }
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </CardContent>
                       </Card>
-                    ))
-                  ) : (
-                    <div className="text-center py-12">
-                      <p className="text-muted-foreground">No content available for this course yet.</p>
-                    </div>
-                  )}
+
+                      <Card className="border-2">
+                        <CardContent className="p-6">
+                          <h3 className="text-lg font-bold text-foreground mb-3">Job Description</h3>
+                          <div className="prose prose-sm max-w-none text-muted-foreground">
+                            <p className="whitespace-pre-wrap">{selectedJob.description}</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-2">
+                        <CardContent className="p-6">
+                          <h3 className="text-lg font-bold text-foreground mb-3">Requirements</h3>
+                          <div className="prose prose-sm max-w-none text-muted-foreground">
+                            <p className="whitespace-pre-wrap">{selectedJob.requirements}</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {selectedJob.benefits && (
+                        <Card className="border-2">
+                          <CardContent className="p-6">
+                            <h3 className="text-lg font-bold text-foreground mb-3">Benefits</h3>
+                            <div className="prose prose-sm max-w-none text-muted-foreground">
+                              <p className="whitespace-pre-wrap">{selectedJob.benefits}</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {selectedJob.job_url && (
+                        <Button 
+                          onClick={() => window.open(selectedJob.job_url, '_blank')}
+                          className="w-full bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-700"
+                          size="lg"
+                        >
+                          Visit Job Page
+                          <ArrowRight className="ml-2 h-5 w-5" />
+                        </Button>
+                      )}
+                    </>
+                  ) : null}
                 </div>
               </div>
             </div>
