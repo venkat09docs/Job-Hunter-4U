@@ -513,7 +513,7 @@ export type Database = {
         Row: {
           action: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           table_name: string
           timestamp: string | null
           user_agent: string | null
@@ -522,7 +522,7 @@ export type Database = {
         Insert: {
           action: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           table_name: string
           timestamp?: string | null
           user_agent?: string | null
@@ -531,7 +531,7 @@ export type Database = {
         Update: {
           action?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           table_name?: string
           timestamp?: string | null
           user_agent?: string | null
@@ -1055,7 +1055,7 @@ export type Database = {
           created_at: string
           device_info: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           review_status: Database["public"]["Enums"]["review_status"] | null
           score_numeric: number | null
           score_points: number | null
@@ -1072,7 +1072,7 @@ export type Database = {
           created_at?: string
           device_info?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           review_status?: Database["public"]["Enums"]["review_status"] | null
           score_numeric?: number | null
           score_points?: number | null
@@ -1089,7 +1089,7 @@ export type Database = {
           created_at?: string
           device_info?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           review_status?: Database["public"]["Enums"]["review_status"] | null
           score_numeric?: number | null
           score_points?: number | null
@@ -3982,7 +3982,7 @@ export type Database = {
           action: string
           details: Json | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           payment_id: string
           performed_by_role: string
           timestamp: string
@@ -3993,7 +3993,7 @@ export type Database = {
           action: string
           details?: Json | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           payment_id: string
           performed_by_role: string
           timestamp?: string
@@ -4004,7 +4004,7 @@ export type Database = {
           action?: string
           details?: Json | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           payment_id?: string
           performed_by_role?: string
           timestamp?: string
@@ -4651,7 +4651,7 @@ export type Database = {
         Row: {
           action: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           new_role: Database["public"]["Enums"]["app_role"]
           old_role: Database["public"]["Enums"]["app_role"] | null
           target_user_id: string
@@ -4662,7 +4662,7 @@ export type Database = {
         Insert: {
           action: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_role: Database["public"]["Enums"]["app_role"]
           old_role?: Database["public"]["Enums"]["app_role"] | null
           target_user_id: string
@@ -4673,7 +4673,7 @@ export type Database = {
         Update: {
           action?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_role?: Database["public"]["Enums"]["app_role"]
           old_role?: Database["public"]["Enums"]["app_role"] | null
           target_user_id?: string
@@ -4811,7 +4811,7 @@ export type Database = {
           action_type: string
           created_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           new_values: Json | null
           old_values: Json | null
           record_id: string | null
@@ -4823,7 +4823,7 @@ export type Database = {
           action_type: string
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           record_id?: string | null
@@ -4835,7 +4835,7 @@ export type Database = {
           action_type?: string
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           record_id?: string | null
@@ -5574,10 +5574,7 @@ export type Database = {
         }
         Returns: string
       }
-      generate_affiliate_code: {
-        Args: { user_email: string }
-        Returns: string
-      }
+      generate_affiliate_code: { Args: { user_email: string }; Returns: string }
       get_affiliate_referral_users: {
         Args: { user_ids: string[] }
         Returns: {
@@ -5588,7 +5585,7 @@ export type Database = {
         }[]
       }
       get_all_users_for_admin: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           created_at: string
           email: string
@@ -5612,7 +5609,7 @@ export type Database = {
         Returns: string
       }
       get_badge_leaders_github_repository: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           badge_type: string
           commits_count: number
@@ -5625,7 +5622,7 @@ export type Database = {
         }[]
       }
       get_badge_leaders_job_apply: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           badge_type: string
           full_name: string
@@ -5637,7 +5634,7 @@ export type Database = {
         }[]
       }
       get_badge_leaders_linkedin_growth: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           badge_type: string
           full_name: string
@@ -5649,7 +5646,7 @@ export type Database = {
         }[]
       }
       get_badge_leaders_profile_build: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           awarded_at: string
           badge_type: string
@@ -5740,7 +5737,7 @@ export type Database = {
         }[]
       }
       get_institute_directory: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           code: string
           description: string
@@ -5763,7 +5760,7 @@ export type Database = {
         Returns: number
       }
       get_institutes_admin_access: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           address: string
           code: string
@@ -5829,10 +5826,7 @@ export type Database = {
           total_sent: number
         }[]
       }
-      get_resume_analysis_usage: {
-        Args: { p_user_id: string }
-        Returns: Json
-      }
+      get_resume_analysis_usage: { Args: { p_user_id: string }; Returns: Json }
       get_safe_admin_profiles: {
         Args: { user_ids?: string[] }
         Returns: {
@@ -5853,7 +5847,7 @@ export type Database = {
         }[]
       }
       get_safe_institute_data_for_user: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           code: string
           description: string
@@ -5873,7 +5867,7 @@ export type Database = {
         }[]
       }
       get_safe_institute_info_for_users: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           code: string
           description: string
@@ -5899,7 +5893,7 @@ export type Database = {
         }[]
       }
       get_safe_leaderboard_profiles: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           full_name: string
           profile_image_url: string
@@ -5922,7 +5916,7 @@ export type Database = {
         }[]
       }
       get_safe_public_profiles: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           bio: string
           blog_url: string
@@ -5940,7 +5934,7 @@ export type Database = {
         Returns: number
       }
       get_user_accessible_institutes: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           code: string
           description: string
@@ -5950,7 +5944,7 @@ export type Database = {
         }[]
       }
       get_user_accessible_institutes_safe: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           code: string
           created_at: string
@@ -6038,10 +6032,7 @@ export type Database = {
         Args: { portfolio_user_id: string }
         Returns: boolean
       }
-      is_reasonable_profile_access: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      is_reasonable_profile_access: { Args: never; Returns: boolean }
       is_user_in_admin_institute: {
         Args: { target_user_id: string }
         Returns: boolean
@@ -6063,44 +6054,35 @@ export type Database = {
         }
         Returns: undefined
       }
-      process_affiliate_referral: {
-        Args:
-          | {
+      process_affiliate_referral:
+        | {
+            Args: {
+              p_payment_amount: number
+              p_payment_id?: string
+              p_referred_user_id: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
               p_payment_amount: number
               p_payment_id?: string
               p_plan_name?: string
               p_referred_user_id: string
             }
-          | {
-              p_payment_amount: number
-              p_payment_id?: string
-              p_referred_user_id: string
-            }
-        Returns: Json
-      }
-      process_pending_webhooks: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+            Returns: Json
+          }
+      process_pending_webhooks: { Args: never; Returns: Json }
       queue_missed_webhooks: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           message: string
           queued_count: number
         }[]
       }
-      recalculate_affiliate_totals: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      refresh_github_weekly_assignments: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      refresh_student_statistics: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      recalculate_affiliate_totals: { Args: never; Returns: string }
+      refresh_github_weekly_assignments: { Args: never; Returns: Json }
+      refresh_student_statistics: { Args: never; Returns: undefined }
       send_admin_notification: {
         Args: {
           notification_category?: string
@@ -6111,18 +6093,9 @@ export type Database = {
         }
         Returns: number
       }
-      send_learning_goal_reminders: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      send_profile_completion_reminders: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      send_weekly_progress_summaries: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      send_learning_goal_reminders: { Args: never; Returns: undefined }
+      send_profile_completion_reminders: { Args: never; Returns: undefined }
+      send_weekly_progress_summaries: { Args: never; Returns: undefined }
       should_send_notification: {
         Args: { notif_type: string; target_user_id: string }
         Returns: boolean
@@ -6132,16 +6105,13 @@ export type Database = {
         Returns: boolean
       }
       sync_missing_user_profiles: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           message: string
           synced_count: number
         }[]
       }
-      sync_student_data_now: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      sync_student_data_now: { Args: never; Returns: string }
       test_institute_admin_assignments: {
         Args: { admin_user_id: string }
         Returns: {
@@ -6188,10 +6158,7 @@ export type Database = {
         }
         Returns: string
       }
-      validate_user_metadata: {
-        Args: { metadata: Json }
-        Returns: Json
-      }
+      validate_user_metadata: { Args: { metadata: Json }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "user" | "institute_admin" | "recruiter"
