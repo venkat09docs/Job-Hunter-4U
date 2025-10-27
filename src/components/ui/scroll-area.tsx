@@ -15,7 +15,8 @@ const ScrollArea = React.forwardRef<
     <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-[inherit]">
       {children}
     </ScrollAreaPrimitive.Viewport>
-    <ScrollBar />
+    <ScrollBar orientation="vertical" />
+    <ScrollBar orientation="horizontal" />
     <ScrollAreaPrimitive.Corner />
   </ScrollAreaPrimitive.Root>
 ))
@@ -28,17 +29,18 @@ const ScrollBar = React.forwardRef<
   <ScrollAreaPrimitive.ScrollAreaScrollbar
     ref={ref}
     orientation={orientation}
+    forceMount
     className={cn(
-      "flex touch-none select-none transition-colors cursor-pointer z-50",
+      "flex touch-none select-none cursor-pointer z-50 bg-muted/30 backdrop-blur-sm",
       orientation === "vertical" &&
-        "h-full w-4 border-l border-l-transparent p-[2px]",
+        "h-full w-3.5 border-l border-l-border/20 p-[3px]",
       orientation === "horizontal" &&
-        "h-4 flex-col border-t border-t-transparent p-[2px]",
+        "h-3.5 flex-col border-t border-t-border/20 p-[3px]",
       className
     )}
     {...props}
   >
-    <ScrollAreaPrimitive.ScrollAreaThumb className="relative flex-1 rounded-full bg-primary/60 hover:bg-primary/80 transition-colors cursor-grab active:cursor-grabbing shadow-lg" />
+    <ScrollAreaPrimitive.ScrollAreaThumb className="relative flex-1 rounded-full bg-gradient-to-b from-primary/70 to-primary/50 hover:from-primary/90 hover:to-primary/70 transition-all cursor-grab active:cursor-grabbing shadow-md border border-primary/20" />
   </ScrollAreaPrimitive.ScrollAreaScrollbar>
 ))
 ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName

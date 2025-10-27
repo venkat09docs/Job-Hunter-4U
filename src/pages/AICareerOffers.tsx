@@ -243,22 +243,25 @@ const AICareerOffers = () => {
 
       {/* Split View Dialog - Course Content + Pricing */}
       <Dialog open={showSplitView} onOpenChange={setShowSplitView}>
-        <DialogContent className="max-w-7xl h-[90vh] p-0 gap-0 overflow-hidden">
+        <DialogContent className="max-w-7xl h-[90vh] p-0 gap-0 overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
           <div className="flex h-full w-full">
             {/* Left Side - Course Content (Read-only) */}
-            <div className="flex-1 border-r border-border flex flex-col min-w-0">
-              <div className="p-4 sm:p-6 border-b border-border flex items-center justify-between bg-muted/50 flex-shrink-0">
+            <div className="flex-1 border-r-2 border-primary/10 flex flex-col min-w-0 bg-card/50 backdrop-blur-sm">
+              <div className="p-4 sm:p-6 border-b-2 border-primary/10 flex items-center justify-between bg-gradient-to-r from-primary/10 via-purple-500/10 to-pink-500/10 flex-shrink-0 backdrop-blur-sm">
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-foreground">
+                  <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">
                     {selectedCourse?.title}
                   </h2>
-                  <p className="text-sm text-muted-foreground mt-1">Course Content Preview</p>
+                  <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-primary" />
+                    Course Content Preview
+                  </p>
                 </div>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowSplitView(false)}
-                  className="rounded-full"
+                  className="rounded-full hover:bg-destructive/10 hover:text-destructive transition-colors"
                 >
                   <X className="h-5 w-5" />
                 </Button>
@@ -266,7 +269,7 @@ const AICareerOffers = () => {
 
               <div className="flex-1 overflow-hidden relative">
                 <ScrollArea className="h-full w-full">
-                  <div className="p-4 sm:p-6 space-y-6 pb-12 pr-6">
+                  <div className="p-4 sm:p-6 space-y-6 pb-12 pr-5">
                   {contentLoading ? (
                     <div className="space-y-4">
                       {[1, 2, 3].map(i => (
@@ -321,19 +324,21 @@ const AICareerOffers = () => {
             </div>
 
             {/* Right Side - Pricing Plans */}
-            <div className="w-[400px] bg-gradient-to-b from-primary/5 to-purple-600/5 flex flex-col flex-shrink-0">
-              <div className="p-4 sm:p-6 border-b border-border flex-shrink-0">
-                <Badge className="mb-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-black border-0 font-bold">
-                  <Trophy className="w-3 h-3 mr-1" />
-                  Special Offer
+            <div className="w-[420px] bg-gradient-to-b from-yellow-500/5 via-orange-500/5 to-pink-500/5 flex flex-col flex-shrink-0 backdrop-blur-sm">
+              <div className="p-4 sm:p-6 border-b-2 border-primary/10 flex-shrink-0 bg-gradient-to-r from-yellow-500/10 via-orange-500/10 to-pink-500/10 backdrop-blur-sm">
+                <Badge className="mb-3 bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 text-white border-0 font-bold shadow-lg animate-pulse">
+                  <Trophy className="w-4 h-4 mr-1.5" />
+                  Limited Time Offer
                 </Badge>
-                <h3 className="text-xl font-bold text-foreground mb-1">Upgrade Your Access</h3>
-                <p className="text-sm text-muted-foreground">Get full access to all courses and features</p>
+                <h3 className="text-xl font-bold bg-gradient-to-r from-yellow-600 via-orange-600 to-pink-600 bg-clip-text text-transparent mb-1">
+                  Upgrade Your Access
+                </h3>
+                <p className="text-sm text-muted-foreground">Get lifetime access to all courses and premium features</p>
               </div>
 
               <div className="flex-1 overflow-hidden relative">
                 <ScrollArea className="h-full w-full">
-                  <div className="p-4 space-y-4 pb-12 pr-6">
+                  <div className="p-4 space-y-4 pb-12 pr-5">
                   {plansLoading ? (
                     <div className="space-y-4">
                       {[1, 2, 3].map(i => (
