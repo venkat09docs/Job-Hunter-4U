@@ -14,7 +14,7 @@ import { useCareerLevelProgram } from "@/hooks/useCareerLevelProgram";
 import { useCourseContent } from "@/hooks/useCourseContent";
 import { useSubscriptionPlans } from "@/hooks/useSubscriptionPlans";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 import type { Course } from "@/types/clp";
 import { useNavigate } from "react-router-dom";
 import PaymentGatewaySelector from "@/components/PaymentGatewaySelector";
@@ -244,6 +244,28 @@ const AICareerOffers = () => {
       {/* Split View Dialog - Course Content + Pricing */}
       <Dialog open={showSplitView} onOpenChange={setShowSplitView}>
         <DialogContent className="max-w-7xl h-[90vh] p-0 gap-0 overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
+          <style>{`
+            .custom-scrollbar::-webkit-scrollbar {
+              width: 12px;
+            }
+            .custom-scrollbar::-webkit-scrollbar-track {
+              background: hsl(var(--muted) / 0.3);
+              border-radius: 10px;
+              border: 2px solid transparent;
+            }
+            .custom-scrollbar::-webkit-scrollbar-thumb {
+              background: linear-gradient(180deg, hsl(var(--primary) / 0.8), hsl(var(--primary) / 0.6));
+              border-radius: 10px;
+              border: 2px solid hsl(var(--muted) / 0.3);
+              box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            }
+            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+              background: linear-gradient(180deg, hsl(var(--primary)), hsl(var(--primary) / 0.8));
+            }
+            .custom-scrollbar::-webkit-scrollbar-thumb:active {
+              background: hsl(var(--primary));
+            }
+          `}</style>
           <div className="flex h-full w-full">
             {/* Left Side - Course Content (Read-only) */}
             <div className="flex-1 border-r-2 border-primary/10 flex flex-col min-w-0 bg-card/50 backdrop-blur-sm">
@@ -267,9 +289,8 @@ const AICareerOffers = () => {
                 </Button>
               </div>
 
-              <div className="flex-1 overflow-hidden relative">
-                <ScrollArea className="h-full w-full">
-                  <div className="p-4 sm:p-6 space-y-6 pb-12 pr-5">
+              <div className="flex-1 overflow-y-auto custom-scrollbar">
+                <div className="p-4 sm:p-6 space-y-6 pb-12">
                   {contentLoading ? (
                     <div className="space-y-4">
                       {[1, 2, 3].map(i => (
@@ -318,8 +339,7 @@ const AICareerOffers = () => {
                       <p className="text-muted-foreground">No content available for this course yet.</p>
                     </div>
                   )}
-                  </div>
-                </ScrollArea>
+                </div>
               </div>
             </div>
 
@@ -336,9 +356,8 @@ const AICareerOffers = () => {
                 <p className="text-sm text-muted-foreground">Get lifetime access to all courses and premium features</p>
               </div>
 
-              <div className="flex-1 overflow-hidden relative">
-                <ScrollArea className="h-full w-full">
-                  <div className="p-4 space-y-4 pb-12 pr-5">
+              <div className="flex-1 overflow-y-auto custom-scrollbar">
+                <div className="p-4 space-y-4 pb-12">
                   {plansLoading ? (
                     <div className="space-y-4">
                       {[1, 2, 3].map(i => (
@@ -398,8 +417,7 @@ const AICareerOffers = () => {
                       <p className="text-sm text-muted-foreground">No pricing plans available</p>
                     </div>
                   )}
-                  </div>
-                </ScrollArea>
+                </div>
               </div>
             </div>
           </div>
