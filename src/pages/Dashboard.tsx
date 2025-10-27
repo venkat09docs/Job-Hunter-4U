@@ -834,7 +834,7 @@ const Dashboard = () => {
                   variant="default"
                 >
                   <Lock className="h-5 w-5 mr-2" />
-                  Unlock Offers
+                  Limited Offer
                 </Button>
               </div>
             </div>
