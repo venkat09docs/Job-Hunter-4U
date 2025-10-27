@@ -247,7 +247,7 @@ const AICareerOffers = () => {
           <div className="flex h-full">
             {/* Left Side - Course Content (Read-only) */}
             <div className="flex-1 border-r border-border overflow-hidden flex flex-col">
-              <div className="p-4 sm:p-6 border-b border-border flex items-center justify-between bg-muted/50">
+              <div className="p-4 sm:p-6 border-b border-border flex items-center justify-between bg-muted/50 flex-shrink-0">
                 <div>
                   <h2 className="text-xl sm:text-2xl font-bold text-foreground">
                     {selectedCourse?.title}
@@ -264,8 +264,8 @@ const AICareerOffers = () => {
                 </Button>
               </div>
 
-              <ScrollArea className="flex-1">
-                <div className="p-4 sm:p-6 space-y-6">
+              <ScrollArea className="flex-1 h-full">
+                <div className="p-4 sm:p-6 space-y-6 pb-12">
                   {contentLoading ? (
                     <div className="space-y-4">
                       {[1, 2, 3].map(i => (
@@ -320,7 +320,7 @@ const AICareerOffers = () => {
 
             {/* Right Side - Pricing Plans */}
             <div className="w-[400px] bg-gradient-to-b from-primary/5 to-purple-600/5 overflow-hidden flex flex-col">
-              <div className="p-4 sm:p-6 border-b border-border">
+              <div className="p-4 sm:p-6 border-b border-border flex-shrink-0">
                 <Badge className="mb-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-black border-0 font-bold">
                   <Trophy className="w-3 h-3 mr-1" />
                   Special Offer
@@ -329,8 +329,8 @@ const AICareerOffers = () => {
                 <p className="text-sm text-muted-foreground">Get full access to all courses and features</p>
               </div>
 
-              <ScrollArea className="flex-1">
-                <div className="p-4 space-y-4">
+              <ScrollArea className="flex-1 h-full">
+                <div className="p-4 space-y-4 pb-12">
                   {plansLoading ? (
                     <div className="space-y-4">
                       {[1, 2, 3].map(i => (
