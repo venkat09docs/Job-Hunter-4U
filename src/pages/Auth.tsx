@@ -34,6 +34,9 @@ const Auth = () => {
 
   // Get affiliate referral code from URL
   const affiliateCode = searchParams.get('ref');
+  
+  // Get return URL from location state
+  const returnTo = (window.history.state && window.history.state.usr?.returnTo) || '/dashboard';
 
   // Redirect authenticated and verified users, but not if they're signing out or have just logged out
   useEffect(() => {
@@ -78,8 +81,8 @@ const Auth = () => {
             }
           }
           
-          // Always redirect to dashboard by default
-          navigate('/dashboard', { replace: true });
+          // Always redirect to return URL or dashboard by default
+          navigate(returnTo, { replace: true });
         }
       }
     };
@@ -280,7 +283,8 @@ const Auth = () => {
           sessionStorage.removeItem('selectedPlan');
           setShowPlanDialog(true);
         } else {
-          navigate('/dashboard');
+          // Navigate to return URL or dashboard
+          navigate(returnTo);
         }
       }
     } catch (error: any) {

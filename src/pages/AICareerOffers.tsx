@@ -18,11 +18,15 @@ import { cn } from "@/lib/utils";
 import type { Course } from "@/types/clp";
 import { useNavigate } from "react-router-dom";
 import PaymentGatewaySelector from "@/components/PaymentGatewaySelector";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 const AICareerOffers = () => {
   const { getCourses, loading } = useCareerLevelProgram();
   const { getSectionsByCourse, getChaptersBySection } = useCourseContent();
   const { plansWithPrices, loading: plansLoading } = useSubscriptionPlans();
+  const { user, loading: authLoading } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   
   // Filter to show only AI Career Offers specific plans
@@ -88,6 +92,18 @@ const AICareerOffers = () => {
   };
 
   const handlePlanSelect = (plan: any) => {
+    // Check if user is authenticated
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to subscribe to a plan",
+        variant: "default"
+      });
+      // Redirect to auth page with return URL
+      navigate('/auth', { state: { returnTo: '/ai-career-offers' } });
+      return;
+    }
+
     // Convert subscription plan to payment plan format
     const paymentPlan = {
       name: plan.name,
