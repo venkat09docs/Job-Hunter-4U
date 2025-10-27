@@ -816,15 +816,27 @@ const Dashboard = () => {
                 </p>
               </div>
               
-              {/* Resume Analyzer Button */}
-              <Button
-                onClick={() => navigate('/resume-analyzer')}
-                size="lg"
-                className="whitespace-nowrap"
-              >
-                <FileText className="h-5 w-5 mr-2" />
-                Resume Analyzer
-              </Button>
+              {/* Action Buttons */}
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => navigate('/resume-analyzer')}
+                  size="lg"
+                  className="whitespace-nowrap"
+                >
+                  <FileText className="h-5 w-5 mr-2" />
+                  Resume Analyzer
+                </Button>
+                
+                <Button
+                  onClick={() => navigate('/ai-career-offers')}
+                  size="lg"
+                  className="whitespace-nowrap"
+                  variant="default"
+                >
+                  <Lock className="h-5 w-5 mr-2" />
+                  Unlock Offers
+                </Button>
+              </div>
             </div>
 
             {/* Latest Internal Job Opportunities */}
