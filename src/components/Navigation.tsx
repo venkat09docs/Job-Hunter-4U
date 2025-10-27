@@ -90,7 +90,7 @@ const Navigation = () => {
                 className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
                 onClick={() => handleNavigate('/')}
               >
-                AI-based Job Hunting
+                Land your dream job
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
@@ -147,7 +147,7 @@ const Navigation = () => {
                   className="justify-start"
                   onClick={() => handleNavigate('/')}
                 >
-                  AI-based Job Hunting
+                  Land your dream job
                 </Button>
                 <Button
                   variant="ghost"
