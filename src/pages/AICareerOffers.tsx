@@ -13,7 +13,7 @@ import {
 import { useCareerLevelProgram } from "@/hooks/useCareerLevelProgram";
 import { useCourseContent } from "@/hooks/useCourseContent";
 import { useSubscriptionPlans } from "@/hooks/useSubscriptionPlans";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import type { Course } from "@/types/clp";
 import { useNavigate } from "react-router-dom";
@@ -244,26 +244,33 @@ const AICareerOffers = () => {
       {/* Split View Dialog - Course Content + Pricing */}
       <Dialog open={showSplitView} onOpenChange={setShowSplitView}>
         <DialogContent className="max-w-7xl h-[90vh] p-0 gap-0 overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
+          <DialogTitle className="sr-only">Course Details and Pricing</DialogTitle>
           <style>{`
-            .custom-scrollbar::-webkit-scrollbar {
-              width: 12px;
+            .dialog-scroll::-webkit-scrollbar {
+              width: 14px;
+              background: transparent;
             }
-            .custom-scrollbar::-webkit-scrollbar-track {
-              background: hsl(var(--muted) / 0.3);
-              border-radius: 10px;
-              border: 2px solid transparent;
+            .dialog-scroll::-webkit-scrollbar-track {
+              background: hsl(var(--muted) / 0.2);
+              border-radius: 8px;
+              margin: 8px 0;
             }
-            .custom-scrollbar::-webkit-scrollbar-thumb {
-              background: linear-gradient(180deg, hsl(var(--primary) / 0.8), hsl(var(--primary) / 0.6));
-              border-radius: 10px;
-              border: 2px solid hsl(var(--muted) / 0.3);
-              box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            .dialog-scroll::-webkit-scrollbar-thumb {
+              background: linear-gradient(180deg, hsl(var(--primary) / 0.9), hsl(var(--primary) / 0.7));
+              border-radius: 8px;
+              border: 3px solid hsl(var(--muted) / 0.2);
+              box-shadow: 0 0 10px rgba(0,0,0,0.3);
             }
-            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-              background: linear-gradient(180deg, hsl(var(--primary)), hsl(var(--primary) / 0.8));
+            .dialog-scroll::-webkit-scrollbar-thumb:hover {
+              background: linear-gradient(180deg, hsl(var(--primary)), hsl(var(--primary) / 0.9));
+              box-shadow: 0 0 15px rgba(0,0,0,0.4);
             }
-            .custom-scrollbar::-webkit-scrollbar-thumb:active {
+            .dialog-scroll::-webkit-scrollbar-thumb:active {
               background: hsl(var(--primary));
+            }
+            .dialog-scroll {
+              scrollbar-width: thin;
+              scrollbar-color: hsl(var(--primary) / 0.8) hsl(var(--muted) / 0.2);
             }
           `}</style>
           <div className="flex h-full w-full">
@@ -289,8 +296,8 @@ const AICareerOffers = () => {
                 </Button>
               </div>
 
-              <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0">
-                <div className="p-4 sm:p-6 space-y-6 pb-12">
+              <div className="flex-1 overflow-y-scroll dialog-scroll min-h-0" style={{ maxHeight: 'calc(90vh - 120px)' }}>
+                <div className="p-4 sm:p-6 space-y-6 pb-12 pr-6">
                   {contentLoading ? (
                     <div className="space-y-4">
                       {[1, 2, 3].map(i => (
@@ -356,8 +363,8 @@ const AICareerOffers = () => {
                 <p className="text-sm text-muted-foreground">Get lifetime access to all courses and premium features</p>
               </div>
 
-              <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0">
-                <div className="p-4 space-y-4 pb-12">
+              <div className="flex-1 overflow-y-scroll dialog-scroll min-h-0" style={{ maxHeight: 'calc(90vh - 140px)' }}>
+                <div className="p-4 space-y-4 pb-12 pr-6">
                   {plansLoading ? (
                     <div className="space-y-4">
                       {[1, 2, 3].map(i => (
