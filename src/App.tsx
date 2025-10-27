@@ -176,10 +176,9 @@ const AppContent = () => {
     <>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<GenAICareerAccelerator />} />
+          <Route path="/" element={<Index />} />
+          <Route path="/gen-ai-career-accelerator" element={<GenAICareerAccelerator />} />
           <Route path="/ai-career-offers" element={<AICareerOffers />} />
-          <Route path="/ai-job-hunting" element={<Index />} />
-          <Route path="/home" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/jobs/:id" element={<PublicJobDetails />} />
           <Route 
