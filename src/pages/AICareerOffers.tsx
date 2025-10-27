@@ -296,8 +296,8 @@ const AICareerOffers = () => {
                       </CarouselItem>
                     ))}
                   </CarouselContent>
-                  <CarouselPrevious className="hidden md:flex -left-8 lg:-left-12 h-10 w-10 sm:h-12 sm:w-12 bg-card/90 hover:bg-card border-0 shadow-xl" />
-                  <CarouselNext className="hidden md:flex -right-8 lg:-right-12 h-10 w-10 sm:h-12 sm:w-12 bg-card/90 hover:bg-card border-0 shadow-xl" />
+                  <CarouselPrevious className="left-2 sm:left-4 md:-left-8 lg:-left-12 h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 bg-card/90 hover:bg-card border-0 shadow-xl" />
+                  <CarouselNext className="right-2 sm:right-4 md:-right-8 lg:-right-12 h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 bg-card/90 hover:bg-card border-0 shadow-xl" />
                 </Carousel>
               )}
             </TabsContent>
@@ -387,8 +387,8 @@ const AICareerOffers = () => {
                       </CarouselItem>
                     ))}
                   </CarouselContent>
-                  <CarouselPrevious className="hidden md:flex -left-8 lg:-left-12 h-10 w-10 sm:h-12 sm:w-12 bg-card/90 hover:bg-card border-0 shadow-xl" />
-                  <CarouselNext className="hidden md:flex -right-8 lg:-right-12 h-10 w-10 sm:h-12 sm:w-12 bg-card/90 hover:bg-card border-0 shadow-xl" />
+                  <CarouselPrevious className="left-2 sm:left-4 md:-left-8 lg:-left-12 h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 bg-card/90 hover:bg-card border-0 shadow-xl" />
+                  <CarouselNext className="right-2 sm:right-4 md:-right-8 lg:-right-12 h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 bg-card/90 hover:bg-card border-0 shadow-xl" />
                 </Carousel>
               ) : (
                 <div className="text-center py-8 sm:py-12 px-4">
