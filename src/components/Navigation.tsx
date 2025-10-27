@@ -88,19 +88,17 @@ const Navigation = () => {
             <NavigationMenuItem>
               <NavigationMenuLink
                 className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
-                asChild
+                onClick={() => handleNavigate('/')}
               >
-                <button onClick={handleHomeClick}>
-                  Gen AI Career
-                </button>
+                AI-based Job Hunting
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuLink
                 className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
-                onClick={() => handleNavigate('/ai-job-hunting')}
+                onClick={() => handleNavigate('/gen-ai-career-accelerator')}
               >
-                AI-based Job Hunting
+                Gen AI Career
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
@@ -147,16 +145,16 @@ const Navigation = () => {
                 <Button
                   variant="ghost"
                   className="justify-start"
-                  onClick={handleHomeClick}
+                  onClick={() => handleNavigate('/')}
                 >
-                  Gen AI Career
+                  AI-based Job Hunting
                 </Button>
                 <Button
                   variant="ghost"
                   className="justify-start"
-                  onClick={() => handleNavigate('/ai-job-hunting')}
+                  onClick={() => handleNavigate('/gen-ai-career-accelerator')}
                 >
-                  AI-based Job Hunting
+                  Gen AI Career
                 </Button>
                 <Button
                   variant="ghost"
