@@ -827,15 +827,18 @@ const Dashboard = () => {
                   Resume Analyzer
                 </Button>
                 
-                <Button
-                  onClick={() => navigate('/ai-career-offers')}
-                  size="lg"
-                  className="whitespace-nowrap"
-                  variant="default"
-                >
-                  <Lock className="h-5 w-5 mr-2" />
-                  Limited Offer
-                </Button>
+                {/* Show Limited Offer button only for users without active subscription */}
+                {!hasActiveSubscription() && !isAdmin && !isRecruiter && (
+                  <Button
+                    onClick={() => navigate('/ai-career-offers')}
+                    size="lg"
+                    className="whitespace-nowrap"
+                    variant="default"
+                  >
+                    <Lock className="h-5 w-5 mr-2" />
+                    Limited Offer
+                  </Button>
+                )}
               </div>
             </div>
 
