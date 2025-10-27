@@ -25,6 +25,13 @@ const AICareerOffers = () => {
   const { plansWithPrices, loading: plansLoading } = useSubscriptionPlans();
   const navigate = useNavigate();
   
+  // Filter to show only AI Career Offers specific plans
+  const aiCareerPlans = plansWithPrices.filter(plan => 
+    plan.name === 'Quick 10 Days Access' || 
+    plan.name === 'One Year Plan without Digital Profile' || 
+    plan.name === 'One Year Plan with Digital Profile'
+  );
+  
   const [courses, setCourses] = useState<Course[]>([]);
   const [courseSections, setCourseSections] = useState<Record<string, any[]>>({});
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -377,8 +384,8 @@ const AICareerOffers = () => {
                         </Card>
                       ))}
                     </div>
-                  ) : plansWithPrices.length > 0 ? (
-                    plansWithPrices.map((plan) => (
+                  ) : aiCareerPlans.length > 0 ? (
+                    aiCareerPlans.map((plan) => (
                       <Card 
                         key={plan.id} 
                         className={`overflow-hidden border-2 transition-all hover:shadow-lg cursor-pointer ${
