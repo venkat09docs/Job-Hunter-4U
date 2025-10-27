@@ -44,8 +44,6 @@ export const useInternalJobs = () => {
   });
 
   const fetchJobs = async () => {
-    if (!user) return;
-
     setLoading(true);
     try {
       let query = supabase
@@ -111,7 +109,7 @@ export const useInternalJobs = () => {
 
   useEffect(() => {
     fetchJobs();
-  }, [user, filters]);
+  }, [filters]);
 
   return {
     jobs,

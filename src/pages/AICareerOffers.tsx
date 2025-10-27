@@ -602,7 +602,7 @@ const AICareerOffers = () => {
                       )}
 
                       {selectedJob.job_url && (
-                        hasActiveSubscription() ? (
+                        user && hasActiveSubscription() ? (
                           <Button 
                             onClick={() => window.open(selectedJob.job_url, '_blank')}
                             className="w-full bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-700"
@@ -619,10 +619,13 @@ const AICareerOffers = () => {
                               size="lg"
                               variant="outline"
                             >
-                              Visit Job Page (Requires Subscription)
+                              Visit Job Page {!user ? "(Login Required)" : "(Requires Subscription)"}
                             </Button>
                             <p className="text-sm text-center text-muted-foreground">
-                              Upgrade to a premium plan to access job application links
+                              {!user 
+                                ? "Please sign in to access job application links"
+                                : "Upgrade to a premium plan to access job application links"
+                              }
                             </p>
                           </div>
                         )
