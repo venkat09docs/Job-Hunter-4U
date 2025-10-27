@@ -16,6 +16,7 @@ import { useCareerLevelProgram } from "@/hooks/useCareerLevelProgram";
 import { useCourseContent } from "@/hooks/useCourseContent";
 import { useSubscriptionPlans } from "@/hooks/useSubscriptionPlans";
 import { useInternalJobs } from "@/hooks/useInternalJobs";
+import { useProfile } from "@/hooks/useProfile";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import type { Course } from "@/types/clp";
@@ -30,6 +31,7 @@ const AICareerOffers = () => {
   const { getSectionsByCourse, getChaptersBySection } = useCourseContent();
   const { plansWithPrices, loading: plansLoading } = useSubscriptionPlans();
   const { jobs, loading: jobsLoading } = useInternalJobs();
+  const { hasActiveSubscription } = useProfile();
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -600,14 +602,30 @@ const AICareerOffers = () => {
                       )}
 
                       {selectedJob.job_url && (
-                        <Button 
-                          onClick={() => window.open(selectedJob.job_url, '_blank')}
-                          className="w-full bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-700"
-                          size="lg"
-                        >
-                          Visit Job Page
-                          <ArrowRight className="ml-2 h-5 w-5" />
-                        </Button>
+                        hasActiveSubscription() ? (
+                          <Button 
+                            onClick={() => window.open(selectedJob.job_url, '_blank')}
+                            className="w-full bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-700"
+                            size="lg"
+                          >
+                            Visit Job Page
+                            <ArrowRight className="ml-2 h-5 w-5" />
+                          </Button>
+                        ) : (
+                          <div className="space-y-2">
+                            <Button 
+                              disabled
+                              className="w-full"
+                              size="lg"
+                              variant="outline"
+                            >
+                              Visit Job Page (Requires Subscription)
+                            </Button>
+                            <p className="text-sm text-center text-muted-foreground">
+                              Upgrade to a premium plan to access job application links
+                            </p>
+                          </div>
+                        )
                       )}
                     </>
                   ) : null}
