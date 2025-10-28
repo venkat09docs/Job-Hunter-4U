@@ -30,21 +30,7 @@ serve(async (req) => {
     }
 
     // Construct the analysis prompt
-    const systemPrompt = `You are an expert assignment evaluator. Analyze the student's answer and provide constructive feedback.
-
-Your task:
-1. Check if the answer is relevant to the question
-2. Identify strengths in the answer
-3. Point out areas that need improvement
-4. Provide specific suggestions for enhancement
-5. Rate the answer quality (Poor, Fair, Good, Excellent)
-
-Format your response as:
-**Relevance:** [Yes/Partially/No]
-**Quality Rating:** [Poor/Fair/Good/Excellent]
-**Strengths:** [List key strengths]
-**Areas for Improvement:** [List specific areas]
-**Suggestions:** [Provide actionable suggestions]`;
+    const systemPrompt = `You are an expert assignment evaluator. Analyze the student's answer and provide constructive feedback.`;
 
     const userPrompt = `Question Type: ${questionType || 'Unknown'}
 
@@ -52,7 +38,7 @@ Question: ${question}
 
 Student's Answer: ${answer}
 
-Please analyze this answer and provide detailed feedback.`;
+Analyze this answer and provide detailed feedback including relevance, quality rating, strengths, areas for improvement, and suggestions. Also assign a score of 1 if the answer is Good or Excellent, and 0 if it's Poor or Fair.`;
 
     console.log('Calling AI for answer analysis...');
 
@@ -68,6 +54,50 @@ Please analyze this answer and provide detailed feedback.`;
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
+        tools: [
+          {
+            type: 'function',
+            function: {
+              name: 'analyze_answer',
+              description: 'Analyze student answer and provide feedback with scoring',
+              parameters: {
+                type: 'object',
+                properties: {
+                  score: {
+                    type: 'number',
+                    enum: [0, 1],
+                    description: '1 if answer is Good/Excellent, 0 if Poor/Fair'
+                  },
+                  relevance: {
+                    type: 'string',
+                    enum: ['Yes', 'Partially', 'No'],
+                    description: 'Is the answer relevant to the question?'
+                  },
+                  quality_rating: {
+                    type: 'string',
+                    enum: ['Poor', 'Fair', 'Good', 'Excellent'],
+                    description: 'Overall quality of the answer'
+                  },
+                  strengths: {
+                    type: 'string',
+                    description: 'Key strengths in the answer'
+                  },
+                  areas_for_improvement: {
+                    type: 'string',
+                    description: 'Specific areas that need improvement'
+                  },
+                  suggestions: {
+                    type: 'string',
+                    description: 'Actionable suggestions for enhancement'
+                  }
+                },
+                required: ['score', 'relevance', 'quality_rating', 'strengths', 'areas_for_improvement', 'suggestions'],
+                additionalProperties: false
+              }
+            }
+          }
+        ],
+        tool_choice: { type: 'function', function: { name: 'analyze_answer' } }
       }),
     });
 
@@ -96,12 +126,38 @@ Please analyze this answer and provide detailed feedback.`;
     }
 
     const data = await response.json();
-    const analysis = data.choices[0].message.content;
+    const toolCall = data.choices[0].message.tool_calls?.[0];
+    
+    if (!toolCall || !toolCall.function.arguments) {
+      console.error('No tool call found in response');
+      return new Response(
+        JSON.stringify({ error: 'Failed to parse analysis results' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
-    console.log('Answer analysis completed successfully');
+    const analysisData = JSON.parse(toolCall.function.arguments);
+    
+    // Format the analysis text for display
+    const analysisText = `**Relevance:** ${analysisData.relevance}
+**Quality Rating:** ${analysisData.quality_rating}
+**Score:** ${analysisData.score}/1
+
+**Strengths:** ${analysisData.strengths}
+
+**Areas for Improvement:** ${analysisData.areas_for_improvement}
+
+**Suggestions:** ${analysisData.suggestions}`;
+
+    console.log('Answer analysis completed successfully', { score: analysisData.score });
 
     return new Response(
-      JSON.stringify({ analysis }),
+      JSON.stringify({ 
+        analysis: analysisText,
+        score: analysisData.score,
+        quality_rating: analysisData.quality_rating,
+        relevance: analysisData.relevance
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 

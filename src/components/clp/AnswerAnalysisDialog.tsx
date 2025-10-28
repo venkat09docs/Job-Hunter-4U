@@ -19,6 +19,8 @@ interface AnswerAnalysisDialogProps {
   error: string | null;
   questionText: string;
   answerText: string;
+  score?: number;
+  qualityRating?: string;
 }
 
 export const AnswerAnalysisDialog: React.FC<AnswerAnalysisDialogProps> = ({
@@ -29,6 +31,8 @@ export const AnswerAnalysisDialog: React.FC<AnswerAnalysisDialogProps> = ({
   error,
   questionText,
   answerText,
+  score,
+  qualityRating,
 }) => {
   const formatAnalysis = (text: string) => {
     // Split by lines and format with proper styling
@@ -93,7 +97,18 @@ export const AnswerAnalysisDialog: React.FC<AnswerAnalysisDialogProps> = ({
 
             {/* Analysis */}
             <div className="border-t pt-4">
-              <h3 className="font-semibold text-lg mb-4">Feedback & Suggestions</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-lg">Feedback & Suggestions</h3>
+                {score !== undefined && (
+                  <div className={`px-4 py-2 rounded-lg font-bold text-lg ${
+                    score === 1 
+                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+                      : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                  }`}>
+                    Score: {score}/1
+                  </div>
+                )}
+              </div>
               
               {loading && (
                 <div className="flex items-center justify-center py-8">

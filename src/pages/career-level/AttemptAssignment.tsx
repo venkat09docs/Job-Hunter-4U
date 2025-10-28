@@ -47,6 +47,8 @@ const AttemptAssignment = () => {
     error: string | null;
     questionText: string;
     answerText: string;
+    score?: number;
+    qualityRating?: string;
   }>({
     analysis: null,
     loading: false,
@@ -428,6 +430,8 @@ const AttemptAssignment = () => {
         ...prev,
         analysis: data.analysis,
         loading: false,
+        score: data.score,
+        qualityRating: data.quality_rating,
       }));
     } catch (error) {
       console.error('Error analyzing answer:', error);
@@ -578,6 +582,8 @@ const AttemptAssignment = () => {
           error={analysisData.error}
           questionText={analysisData.questionText}
           answerText={analysisData.answerText}
+          score={analysisData.score}
+          qualityRating={analysisData.qualityRating}
         />
 
         {/* Navigation Warning Dialog */}
