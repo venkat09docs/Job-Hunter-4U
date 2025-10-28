@@ -10,7 +10,7 @@ import { Clock, CheckCircle, AlertCircle, ArrowLeft, ArrowRight, Send, Home } fr
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import { useToast } from '@/hooks/use-toast';
 import { AttemptTimer } from '@/components/clp/AttemptTimer';
-import { QuestionRenderer } from '@/components/clp/QuestionRenderer';
+import { QuestionRenderer, QuestionRendererRef } from '@/components/clp/QuestionRenderer';
 import type { Assignment, Question, Attempt, Answer } from '@/types/clp';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -39,6 +39,9 @@ const AttemptAssignment = () => {
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
   const [timeExpired, setTimeExpired] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Ref to access QuestionRenderer's current answer
+  const questionRendererRef = useRef<QuestionRendererRef>(null);
 
   // Handle page refresh/close
   useEffect(() => {
@@ -292,12 +295,24 @@ const AttemptAssignment = () => {
   };
 
   const nextQuestion = () => {
+    // Save current answer before moving to next question
+    const currentAnswerData = questionRendererRef.current?.getCurrentAnswer();
+    if (currentAnswerData) {
+      handleAnswerChange(currentAnswerData.questionId, currentAnswerData.response);
+    }
+    
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     }
   };
 
   const previousQuestion = () => {
+    // Save current answer before moving to previous question
+    const currentAnswerData = questionRendererRef.current?.getCurrentAnswer();
+    if (currentAnswerData) {
+      handleAnswerChange(currentAnswerData.questionId, currentAnswerData.response);
+    }
+    
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(prev => prev - 1);
     }
@@ -403,6 +418,7 @@ const AttemptAssignment = () => {
         {currentQuestion && (
           <div className="space-y-6">
             <QuestionRenderer
+              ref={questionRendererRef}
               question={currentQuestion}
               questionNumber={currentQuestionIndex + 1}
               totalQuestions={questions.length}

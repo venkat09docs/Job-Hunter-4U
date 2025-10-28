@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -21,7 +21,11 @@ interface QuestionRendererProps {
   className?: string;
 }
 
-const QuestionRendererComponent: React.FC<QuestionRendererProps> = ({
+export interface QuestionRendererRef {
+  getCurrentAnswer: () => { questionId: string; response: Record<string, any> } | null;
+}
+
+const QuestionRendererComponent = forwardRef<QuestionRendererRef, QuestionRendererProps>(({
   question,
   questionNumber,
   totalQuestions,
@@ -30,7 +34,7 @@ const QuestionRendererComponent: React.FC<QuestionRendererProps> = ({
   readonly = false,
   showCorrectAnswer = false,
   className
-}) => {
+}, ref) => {
   const [response, setResponse] = useState<Record<string, any>>({});
   const [files, setFiles] = useState<File[]>([]);
 
@@ -42,48 +46,17 @@ const QuestionRendererComponent: React.FC<QuestionRendererProps> = ({
       setResponse({});
     }
     setFiles([]);
-  }, [question.id]); // Only reset when question changes
+  }, [question.id]);
 
-  // Keep refs for latest values
-  const responseRef = useRef(response);
-  const onAnswerChangeRef = useRef(onAnswerChange);
-  
-  // Update refs on every render
-  useEffect(() => {
-    responseRef.current = response;
-    onAnswerChangeRef.current = onAnswerChange;
-  });
-
-  // Track previous question ID to detect changes
-  const prevQuestionIdRef = useRef(question.id);
-  
-  // Save answer when question changes
-  useEffect(() => {
-    const currentQuestionId = question.id;
-    const previousQuestionId = prevQuestionIdRef.current;
-    
-    // Only save if question actually changed
-    if (previousQuestionId !== currentQuestionId) {
-      const prevResponse = responseRef.current;
-      // Save the answer for the PREVIOUS question before switching
-      if (Object.keys(prevResponse).length > 0) {
-        onAnswerChangeRef.current(previousQuestionId, prevResponse);
+  // Expose method to get current answer
+  useImperativeHandle(ref, () => ({
+    getCurrentAnswer: () => {
+      if (Object.keys(response).length > 0) {
+        return { questionId: question.id, response };
       }
-      // Update the ref to current question
-      prevQuestionIdRef.current = currentQuestionId;
+      return null;
     }
-  }, [question.id]); // Only depend on question.id
-
-  // Save on unmount only
-  useEffect(() => {
-    return () => {
-      const finalResponse = responseRef.current;
-      const finalQuestionId = prevQuestionIdRef.current;
-      if (Object.keys(finalResponse).length > 0) {
-        onAnswerChangeRef.current(finalQuestionId, finalResponse);
-      }
-    };
-  }, []); // No dependencies - only on unmount
+  }));
 
   const handleResponseChange = (newResponse: Record<string, any>) => {
     // Update local state immediately - no parent notification
@@ -536,7 +509,9 @@ const QuestionRendererComponent: React.FC<QuestionRendererProps> = ({
       </CardContent>
     </Card>
   );
-};
+});
+
+QuestionRendererComponent.displayName = 'QuestionRenderer';
 
 // Memoize the component to prevent re-renders when props haven't meaningfully changed
 export const QuestionRenderer = React.memo(QuestionRendererComponent, (prevProps, nextProps) => {
