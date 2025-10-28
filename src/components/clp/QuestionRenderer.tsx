@@ -31,6 +31,7 @@ const QuestionRendererComponent: React.FC<QuestionRendererProps> = ({
   showCorrectAnswer = false,
   className
 }) => {
+  console.log('🔄 QuestionRenderer render:', question.id);
   const [response, setResponse] = useState<Record<string, any>>({});
   const [files, setFiles] = useState<File[]>([]);
 
@@ -499,11 +500,20 @@ const QuestionRendererComponent: React.FC<QuestionRendererProps> = ({
 
 // Memoize the component to prevent re-renders when props haven't meaningfully changed
 export const QuestionRenderer = React.memo(QuestionRendererComponent, (prevProps, nextProps) => {
-  // Only re-render if these specific props change
-  return (
+  // Return true to SKIP re-render if props are the same
+  const shouldSkip = (
     prevProps.question.id === nextProps.question.id &&
     prevProps.readonly === nextProps.readonly &&
-    prevProps.showCorrectAnswer === nextProps.showCorrectAnswer &&
-    prevProps.existingAnswer?.response === nextProps.existingAnswer?.response
+    prevProps.showCorrectAnswer === nextProps.showCorrectAnswer
   );
+  
+  console.log('🔍 QuestionRenderer memo check:', {
+    questionId: nextProps.question.id,
+    shouldSkip,
+    prevAnswerExists: !!prevProps.existingAnswer,
+    nextAnswerExists: !!nextProps.existingAnswer,
+    sameAnswerRef: prevProps.existingAnswer === nextProps.existingAnswer
+  });
+  
+  return shouldSkip;
 });

@@ -132,18 +132,27 @@ const AttemptAssignment = () => {
   const submitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleAnswerChange = useCallback((questionId: string, response: Record<string, any>) => {
+    console.log('📝 handleAnswerChange called:', questionId);
     if (!currentAttempt) return;
 
     // Update local state immediately for better UX
     setAnswers(prev => {
       const existing = prev.find(a => a.question_id === questionId);
       if (existing) {
+        // Check if response actually changed to avoid unnecessary state updates
+        const responseChanged = JSON.stringify(existing.response) !== JSON.stringify(response);
+        if (!responseChanged) {
+          console.log('⏭️ Response unchanged, skipping update');
+          return prev;
+        }
+        console.log('✏️ Updating existing answer');
         return prev.map(a => 
           a.question_id === questionId 
             ? { ...a, response } 
             : a
         );
       } else {
+        console.log('➕ Adding new answer');
         return [...prev, {
           id: `temp-${questionId}`,
           attempt_id: currentAttempt.id,
