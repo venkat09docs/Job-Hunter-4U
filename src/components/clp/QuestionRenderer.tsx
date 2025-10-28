@@ -44,34 +44,38 @@ const QuestionRendererComponent: React.FC<QuestionRendererProps> = ({
     setFiles([]);
   }, [question.id]); // Only reset when question changes, not when existingAnswer updates
 
-  // Keep track of latest response for saving on unmount
+  // Keep track of latest response for saving
   const responseRef = useRef(response);
+  const questionIdRef = useRef(question.id);
+  
   useEffect(() => {
     responseRef.current = response;
   }, [response]);
 
-  // Save answer to parent when question changes or component unmounts
-  const previousQuestionIdRef = useRef(question.id);
-  
+  // Save answer when question changes (before switching to new question)
   useEffect(() => {
-    // When question changes, save the previous question's answer
-    if (previousQuestionIdRef.current !== question.id) {
-      // Send the response from the previous question before switching
+    const previousQuestionId = questionIdRef.current;
+    
+    // If question changed, save the previous question's answer
+    if (previousQuestionId !== question.id) {
       const prevResponse = responseRef.current;
       if (Object.keys(prevResponse).length > 0) {
-        onAnswerChange(previousQuestionIdRef.current, prevResponse);
+        onAnswerChange(previousQuestionId, prevResponse);
       }
-      previousQuestionIdRef.current = question.id;
+      questionIdRef.current = question.id;
     }
-    
-    // Cleanup: save answer when component unmounts or question changes
+  }, [question.id]);
+
+  // Save answer only on component unmount (when leaving the page entirely)
+  useEffect(() => {
     return () => {
-      const currentResponse = responseRef.current;
-      if (Object.keys(currentResponse).length > 0) {
-        onAnswerChange(question.id, currentResponse);
+      const finalResponse = responseRef.current;
+      const finalQuestionId = questionIdRef.current;
+      if (Object.keys(finalResponse).length > 0) {
+        onAnswerChange(finalQuestionId, finalResponse);
       }
     };
-  }, [question.id, onAnswerChange]);
+  }, []); // Empty deps - only runs on mount/unmount
 
   const handleResponseChange = (newResponse: Record<string, any>) => {
     // Update local state immediately - no parent notification during typing
