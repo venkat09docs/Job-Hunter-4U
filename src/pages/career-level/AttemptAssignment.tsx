@@ -529,17 +529,8 @@ const AttemptAssignment = () => {
             />
 
             {/* Navigation */}
-            <div className="flex justify-between items-center pt-6">
-              <Button
-                variant="outline"
-                onClick={previousQuestion}
-                disabled={currentQuestionIndex === 0}
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Previous
-              </Button>
-
-              <div className="flex gap-2">
+            <div className="flex flex-col gap-4 pt-6">
+              <div className="flex justify-center">
                 <Button
                   variant="outline"
                   onClick={handleAnalyzeAnswer}
@@ -547,7 +538,18 @@ const AttemptAssignment = () => {
                   className="border-primary/50 text-primary hover:bg-primary/10"
                 >
                   <Sparkles className="w-4 h-4 mr-2" />
-                  Analyze Answer
+                  View Answer
+                </Button>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <Button
+                  variant="outline"
+                  onClick={previousQuestion}
+                  disabled={currentQuestionIndex === 0}
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Previous
                 </Button>
 
                 {currentQuestionIndex === questions.length - 1 ? (

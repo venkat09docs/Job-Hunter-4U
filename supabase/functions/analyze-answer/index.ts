@@ -64,14 +64,14 @@ Analyze this answer and provide detailed feedback including relevance, quality r
                 type: 'object',
                 properties: {
                   score: {
-                    type: 'number',
+                    type: 'integer',
                     enum: [0, 1],
                     description: '1 if answer is Good/Excellent, 0 if Poor/Fair'
                   },
                   relevance: {
                     type: 'string',
                     enum: ['Yes', 'Partially', 'No'],
-                    description: 'Is the answer relevant to the question?'
+                    description: 'Is the answer relevant to the question'
                   },
                   quality_rating: {
                     type: 'string',
@@ -91,8 +91,7 @@ Analyze this answer and provide detailed feedback including relevance, quality r
                     description: 'Actionable suggestions for enhancement'
                   }
                 },
-                required: ['score', 'relevance', 'quality_rating', 'strengths', 'areas_for_improvement', 'suggestions'],
-                additionalProperties: false
+                required: ['score', 'relevance', 'quality_rating', 'strengths', 'areas_for_improvement', 'suggestions']
               }
             }
           }
