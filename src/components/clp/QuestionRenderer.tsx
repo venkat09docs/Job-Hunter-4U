@@ -44,32 +44,39 @@ const QuestionRendererComponent: React.FC<QuestionRendererProps> = ({
     setFiles([]);
   }, [question.id]); // Only reset when question changes, not when existingAnswer updates
 
-  // Debounce timer for notifying parent about changes
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // Keep track of latest response for saving on unmount
+  const responseRef = useRef(response);
+  useEffect(() => {
+    responseRef.current = response;
+  }, [response]);
 
-  const handleResponseChange = (newResponse: Record<string, any>) => {
-    // Update local state immediately for smooth UX
-    setResponse(newResponse);
-    
-    // Clear existing debounce timer
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
+  // Save answer to parent when question changes or component unmounts
+  const previousQuestionIdRef = useRef(question.id);
+  
+  useEffect(() => {
+    // When question changes, save the previous question's answer
+    if (previousQuestionIdRef.current !== question.id) {
+      // Send the response from the previous question before switching
+      const prevResponse = responseRef.current;
+      if (Object.keys(prevResponse).length > 0) {
+        onAnswerChange(previousQuestionIdRef.current, prevResponse);
+      }
+      previousQuestionIdRef.current = question.id;
     }
     
-    // Debounce the parent notification to prevent excessive re-renders
-    debounceTimerRef.current = setTimeout(() => {
-      onAnswerChange(question.id, newResponse);
-    }, 500); // Wait 500ms after user stops typing
-  };
-
-  // Cleanup debounce timer on unmount
-  useEffect(() => {
+    // Cleanup: save answer when component unmounts or question changes
     return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
+      const currentResponse = responseRef.current;
+      if (Object.keys(currentResponse).length > 0) {
+        onAnswerChange(question.id, currentResponse);
       }
     };
-  }, []);
+  }, [question.id, onAnswerChange]);
+
+  const handleResponseChange = (newResponse: Record<string, any>) => {
+    // Update local state immediately - no parent notification during typing
+    setResponse(newResponse);
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(event.target.files || []);
