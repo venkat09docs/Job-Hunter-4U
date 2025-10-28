@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -44,10 +44,32 @@ const QuestionRendererComponent: React.FC<QuestionRendererProps> = ({
     setFiles([]);
   }, [question.id]); // Only reset when question changes, not when existingAnswer updates
 
+  // Debounce timer for notifying parent about changes
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   const handleResponseChange = (newResponse: Record<string, any>) => {
+    // Update local state immediately for smooth UX
     setResponse(newResponse);
-    onAnswerChange(question.id, newResponse);
+    
+    // Clear existing debounce timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    
+    // Debounce the parent notification to prevent excessive re-renders
+    debounceTimerRef.current = setTimeout(() => {
+      onAnswerChange(question.id, newResponse);
+    }, 500); // Wait 500ms after user stops typing
   };
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(event.target.files || []);
