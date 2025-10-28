@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -132,7 +132,6 @@ const AttemptAssignment = () => {
   const submitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleAnswerChange = useCallback((questionId: string, response: Record<string, any>) => {
-    console.log('📝 handleAnswerChange called:', questionId);
     if (!currentAttempt) return;
 
     // Update local state immediately for better UX
@@ -142,17 +141,14 @@ const AttemptAssignment = () => {
         // Check if response actually changed to avoid unnecessary state updates
         const responseChanged = JSON.stringify(existing.response) !== JSON.stringify(response);
         if (!responseChanged) {
-          console.log('⏭️ Response unchanged, skipping update');
           return prev;
         }
-        console.log('✏️ Updating existing answer');
         return prev.map(a => 
           a.question_id === questionId 
             ? { ...a, response } 
             : a
         );
       } else {
-        console.log('➕ Adding new answer');
         return [...prev, {
           id: `temp-${questionId}`,
           attempt_id: currentAttempt.id,
@@ -331,6 +327,12 @@ const AttemptAssignment = () => {
     }
   };
 
+  // Calculate these values early (before any conditional returns) to avoid hook order issues
+  const currentQuestion = questions[currentQuestionIndex];
+  const currentAnswer = answers.find(a => a.question_id === currentQuestion?.id);
+  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+  const answeredCount = getAnsweredQuestionsCount();
+
   if (loading || !assignment || !currentAttempt) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -341,24 +343,6 @@ const AttemptAssignment = () => {
       </div>
     );
   }
-
-  const currentQuestion = questions[currentQuestionIndex];
-  
-  // Memoize currentAnswer to prevent unnecessary re-renders
-  const currentAnswer = useMemo(() => 
-    answers.find(a => a.question_id === currentQuestion?.id),
-    [answers, currentQuestion?.id]
-  );
-  
-  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
-  
-  // Memoize answeredCount to prevent recalculation on every render
-  const answeredCount = useMemo(() => 
-    questions.filter(q => 
-      answers.some(a => a.question_id === q.id && a.response && Object.keys(a.response).length > 0)
-    ).length,
-    [questions, answers]
-  );
 
   return (
     <div className="min-h-screen bg-background">
