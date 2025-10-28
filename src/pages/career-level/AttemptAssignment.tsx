@@ -6,11 +6,12 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { Clock, CheckCircle, AlertCircle, ArrowLeft, ArrowRight, Send, Home } from 'lucide-react';
+import { Clock, CheckCircle, AlertCircle, ArrowLeft, ArrowRight, Send, Home, Sparkles } from 'lucide-react';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import { useToast } from '@/hooks/use-toast';
 import { AttemptTimer } from '@/components/clp/AttemptTimer';
 import { QuestionRenderer, QuestionRendererRef } from '@/components/clp/QuestionRenderer';
+import { AnswerAnalysisDialog } from '@/components/clp/AnswerAnalysisDialog';
 import type { Assignment, Question, Attempt, Answer } from '@/types/clp';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -39,6 +40,20 @@ const AttemptAssignment = () => {
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
   const [timeExpired, setTimeExpired] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAnalysisDialog, setShowAnalysisDialog] = useState(false);
+  const [analysisData, setAnalysisData] = useState<{
+    analysis: string | null;
+    loading: boolean;
+    error: string | null;
+    questionText: string;
+    answerText: string;
+  }>({
+    analysis: null,
+    loading: false,
+    error: null,
+    questionText: '',
+    answerText: '',
+  });
 
   // Ref to access QuestionRenderer's current answer
   const questionRendererRef = useRef<QuestionRendererRef>(null);
@@ -342,6 +357,88 @@ const AttemptAssignment = () => {
     }
   };
 
+  const handleAnalyzeAnswer = async () => {
+    if (!currentQuestion) return;
+
+    // Get current answer
+    const currentAnswerData = questionRendererRef.current?.getCurrentAnswer();
+    if (!currentAnswerData || !currentAnswerData.response) {
+      toast({
+        title: 'No Answer',
+        description: 'Please provide an answer before requesting analysis.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Extract answer text based on question kind
+    let answerText = '';
+    if (currentQuestion.kind === 'mcq' && currentAnswerData.response.selected_option) {
+      const selectedOption = currentQuestion.options?.find(
+        opt => opt === currentAnswerData.response.selected_option
+      );
+      answerText = selectedOption || currentAnswerData.response.selected_option;
+    } else if (currentQuestion.kind === 'mcq' && currentAnswerData.response.selected_options) {
+      answerText = currentAnswerData.response.selected_options.join(', ');
+    } else if (currentQuestion.kind === 'tf' && currentAnswerData.response.answer !== undefined) {
+      answerText = currentAnswerData.response.answer ? 'True' : 'False';
+    } else if (currentQuestion.kind === 'descriptive' && currentAnswerData.response.text) {
+      answerText = currentAnswerData.response.text;
+    } else {
+      answerText = JSON.stringify(currentAnswerData.response);
+    }
+
+    if (!answerText || answerText.trim().length === 0) {
+      toast({
+        title: 'No Answer',
+        description: 'Please provide an answer before requesting analysis.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Set dialog data and open it
+    setAnalysisData({
+      analysis: null,
+      loading: true,
+      error: null,
+      questionText: currentQuestion.prompt,
+      answerText: answerText,
+    });
+    setShowAnalysisDialog(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-answer', {
+        body: {
+          question: currentQuestion.prompt,
+          answer: answerText,
+          questionType: currentQuestion.kind,
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setAnalysisData(prev => ({
+        ...prev,
+        analysis: data.analysis,
+        loading: false,
+      }));
+    } catch (error) {
+      console.error('Error analyzing answer:', error);
+      setAnalysisData(prev => ({
+        ...prev,
+        loading: false,
+        error: error instanceof Error ? error.message : 'Failed to analyze answer. Please try again.',
+      }));
+    }
+  };
+
   // Calculate these values early (before any conditional returns) to avoid hook order issues
   const currentQuestion = questions[currentQuestionIndex];
   const currentAnswer = answers.find(a => a.question_id === currentQuestion?.id);
@@ -439,6 +536,16 @@ const AttemptAssignment = () => {
               </Button>
 
               <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleAnalyzeAnswer}
+                  disabled={timeExpired}
+                  className="border-primary/50 text-primary hover:bg-primary/10"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Analyze Answer
+                </Button>
+
                 {currentQuestionIndex === questions.length - 1 ? (
                   <Button
                     onClick={() => setShowSubmitConfirm(true)}
@@ -461,6 +568,17 @@ const AttemptAssignment = () => {
             </div>
           </div>
         )}
+
+        {/* Answer Analysis Dialog */}
+        <AnswerAnalysisDialog
+          open={showAnalysisDialog}
+          onOpenChange={setShowAnalysisDialog}
+          analysis={analysisData.analysis}
+          loading={analysisData.loading}
+          error={analysisData.error}
+          questionText={analysisData.questionText}
+          answerText={analysisData.answerText}
+        />
 
         {/* Navigation Warning Dialog */}
         {showNavigationWarning && (
