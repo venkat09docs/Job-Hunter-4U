@@ -34,17 +34,15 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   const [response, setResponse] = useState<Record<string, any>>({});
   const [files, setFiles] = useState<File[]>([]);
 
-  // Reset response when question changes or when existingAnswer changes
+  // Initialize response from existing answer only when question changes
   useEffect(() => {
     if (existingAnswer?.response) {
       setResponse(existingAnswer.response);
     } else {
-      // Clear response when no existing answer or question changes
       setResponse({});
     }
-    // Reset files when question changes
     setFiles([]);
-  }, [question.id, existingAnswer]);
+  }, [question.id]); // Only reset when question changes, not when existingAnswer updates
 
   const handleResponseChange = (newResponse: Record<string, any>) => {
     setResponse(newResponse);
