@@ -42,43 +42,51 @@ const QuestionRendererComponent: React.FC<QuestionRendererProps> = ({
       setResponse({});
     }
     setFiles([]);
-  }, [question.id]); // Only reset when question changes, not when existingAnswer updates
+  }, [question.id]); // Only reset when question changes
 
-  // Keep track of latest response for saving
+  // Keep refs for latest values
   const responseRef = useRef(response);
-  const questionIdRef = useRef(question.id);
+  const onAnswerChangeRef = useRef(onAnswerChange);
   
+  // Update refs on every render
   useEffect(() => {
     responseRef.current = response;
-  }, [response]);
+    onAnswerChangeRef.current = onAnswerChange;
+  });
 
-  // Save answer when question changes (before switching to new question)
+  // Track previous question ID to detect changes
+  const prevQuestionIdRef = useRef(question.id);
+  
+  // Save answer when question changes
   useEffect(() => {
-    const previousQuestionId = questionIdRef.current;
+    const currentQuestionId = question.id;
+    const previousQuestionId = prevQuestionIdRef.current;
     
-    // If question changed, save the previous question's answer
-    if (previousQuestionId !== question.id) {
+    // Only save if question actually changed
+    if (previousQuestionId !== currentQuestionId) {
       const prevResponse = responseRef.current;
+      // Save the answer for the PREVIOUS question before switching
       if (Object.keys(prevResponse).length > 0) {
-        onAnswerChange(previousQuestionId, prevResponse);
+        onAnswerChangeRef.current(previousQuestionId, prevResponse);
       }
-      questionIdRef.current = question.id;
+      // Update the ref to current question
+      prevQuestionIdRef.current = currentQuestionId;
     }
-  }, [question.id]);
+  }, [question.id]); // Only depend on question.id
 
-  // Save answer only on component unmount (when leaving the page entirely)
+  // Save on unmount only
   useEffect(() => {
     return () => {
       const finalResponse = responseRef.current;
-      const finalQuestionId = questionIdRef.current;
+      const finalQuestionId = prevQuestionIdRef.current;
       if (Object.keys(finalResponse).length > 0) {
-        onAnswerChange(finalQuestionId, finalResponse);
+        onAnswerChangeRef.current(finalQuestionId, finalResponse);
       }
     };
-  }, []); // Empty deps - only runs on mount/unmount
+  }, []); // No dependencies - only on unmount
 
   const handleResponseChange = (newResponse: Record<string, any>) => {
-    // Update local state immediately - no parent notification during typing
+    // Update local state immediately - no parent notification
     setResponse(newResponse);
   };
 
