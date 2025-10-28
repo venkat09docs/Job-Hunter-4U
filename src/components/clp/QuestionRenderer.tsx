@@ -6,9 +6,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Upload, File, X, Download, Eye } from 'lucide-react';
+import { Upload, File, X, Download, Eye, Mic, StopCircle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Question, Answer } from '@/types/clp';
+import { useVoiceToText } from '@/hooks/useVoiceToText';
 
 interface QuestionRendererProps {
   question: Question;
@@ -37,6 +38,7 @@ const QuestionRendererComponent = forwardRef<QuestionRendererRef, QuestionRender
 }, ref) => {
   const [response, setResponse] = useState<Record<string, any>>({});
   const [files, setFiles] = useState<File[]>([]);
+  const { isRecording, isProcessing, startRecording, stopRecording, cancelRecording } = useVoiceToText();
 
   // Initialize response from existing answer only when question changes
   useEffect(() => {
@@ -268,26 +270,81 @@ const QuestionRendererComponent = forwardRef<QuestionRendererRef, QuestionRender
     );
   };
 
+  const handleVoiceInput = async () => {
+    if (isRecording) {
+      const transcribedText = await stopRecording();
+      if (transcribedText) {
+        const currentText = response.text || '';
+        const newText = currentText ? `${currentText} ${transcribedText}` : transcribedText;
+        handleResponseChange({
+          ...response,
+          text: newText,
+          value: newText
+        });
+      }
+    } else {
+      await startRecording();
+    }
+  };
+
   const renderDescriptiveQuestion = () => {
     return (
       <div className="space-y-4">
-        <Textarea
-          placeholder="Enter your answer here..."
-          value={response.text || ''}
-          onChange={(e) => {
-            if (readonly) return;
-            handleResponseChange({
-              ...response,
-              text: e.target.value,
-              value: e.target.value
-            });
-          }}
-          disabled={readonly}
-          className="min-h-[150px] resize-none"
-          maxLength={5000}
-        />
+        <div className="relative">
+          <Textarea
+            placeholder="Enter your answer here or use the microphone..."
+            value={response.text || ''}
+            onChange={(e) => {
+              if (readonly) return;
+              handleResponseChange({
+                ...response,
+                text: e.target.value,
+                value: e.target.value
+              });
+            }}
+            disabled={readonly || isProcessing}
+            className="min-h-[150px] resize-none pr-14"
+            maxLength={5000}
+          />
+          {!readonly && (
+            <div className="absolute bottom-3 right-3 flex gap-2">
+              {isProcessing && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Processing...</span>
+                </div>
+              )}
+              <Button
+                type="button"
+                size="sm"
+                variant={isRecording ? "destructive" : "outline"}
+                onClick={handleVoiceInput}
+                disabled={isProcessing}
+                className={cn(
+                  "h-8 w-8 p-0",
+                  isRecording && "animate-pulse"
+                )}
+              >
+                {isRecording ? (
+                  <StopCircle className="w-4 h-4" />
+                ) : (
+                  <Mic className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+          )}
+        </div>
         <div className="flex justify-between text-sm text-muted-foreground">
-          <span>Minimum 50 words recommended</span>
+          <span>
+            {isRecording ? (
+              <span className="text-destructive font-medium flex items-center gap-1">
+                <span className="w-2 h-2 bg-destructive rounded-full animate-pulse" />
+                Recording... Click stop when done
+              </span>
+            ) : (
+              "Minimum 50 words recommended"
+            )}
+          </span>
           <span>{(response.text || '').length}/5000 characters</span>
         </div>
       </div>
