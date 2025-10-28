@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -334,9 +334,22 @@ const AttemptAssignment = () => {
   }
 
   const currentQuestion = questions[currentQuestionIndex];
-  const currentAnswer = answers.find(a => a.question_id === currentQuestion?.id);
+  
+  // Memoize currentAnswer to prevent unnecessary re-renders
+  const currentAnswer = useMemo(() => 
+    answers.find(a => a.question_id === currentQuestion?.id),
+    [answers, currentQuestion?.id]
+  );
+  
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
-  const answeredCount = getAnsweredQuestionsCount();
+  
+  // Memoize answeredCount to prevent recalculation on every render
+  const answeredCount = useMemo(() => 
+    questions.filter(q => 
+      answers.some(a => a.question_id === q.id && a.response && Object.keys(a.response).length > 0)
+    ).length,
+    [questions, answers]
+  );
 
   return (
     <div className="min-h-screen bg-background">

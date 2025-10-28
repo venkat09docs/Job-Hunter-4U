@@ -21,7 +21,7 @@ interface QuestionRendererProps {
   className?: string;
 }
 
-export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
+const QuestionRendererComponent: React.FC<QuestionRendererProps> = ({
   question,
   questionNumber,
   totalQuestions,
@@ -497,4 +497,13 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   );
 };
 
-export default QuestionRenderer;
+// Memoize the component to prevent re-renders when props haven't meaningfully changed
+export const QuestionRenderer = React.memo(QuestionRendererComponent, (prevProps, nextProps) => {
+  // Only re-render if these specific props change
+  return (
+    prevProps.question.id === nextProps.question.id &&
+    prevProps.readonly === nextProps.readonly &&
+    prevProps.showCorrectAnswer === nextProps.showCorrectAnswer &&
+    prevProps.existingAnswer?.response === nextProps.existingAnswer?.response
+  );
+});
