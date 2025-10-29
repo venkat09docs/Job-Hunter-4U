@@ -154,50 +154,6 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [courseCounts, setCourseCounts] = useState<Record<string, { sections: number; lectures: number }>>({});
 
-  // Subscription plan hierarchy mapping
-  const subscriptionHierarchy = {
-    'free': 0,
-    'one_month': 1,
-    'three_months': 2, 
-    'six_months': 3,
-    'one_year': 4
-  };
-
-  // Get user's subscription tier level
-  const getUserSubscriptionTier = () => {
-    if (!hasActiveSubscription()) return 0; // No active subscription = free tier
-    
-    // Map subscription plan names to tiers
-    const planNameMapping: Record<string, number> = {
-      'One Week Plan': 1,
-      'One Month Plan': 1,
-      '1 Month Plan': 1,
-      'Monthly Plan': 1,
-      'Three Months Plan': 2,
-      '3 Months Plan': 2,  
-      'Six Months Plan': 3,
-      '6 Months Plan': 3,
-      'One Year Plan': 4,
-      '1 Year Plan': 4,
-      'Annual Plan': 4
-    };
-    
-    return planNameMapping[subscriptionPlan || ''] || 1; // Default to one month if unknown
-  };
-
-  // Check if user can access a specific course
-  const canAccessCourse = (course: Course) => {
-    // Free courses are always accessible
-    if (course.is_free) return true;
-    
-    const userTier = getUserSubscriptionTier();
-    const coursePlan = getCourseSubscriptionPlan(course);
-    const courseTier = subscriptionHierarchy[coursePlan as keyof typeof subscriptionHierarchy] || 1;
-    
-    // User can access course if their tier is equal or higher than course requirement
-    return userTier >= courseTier;
-  };
-
 
   useEffect(() => {
     loadCourses();
@@ -277,39 +233,14 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
     return goals.some(goal => goal.course_id === courseId);
   };
 
-  const formatDuration = (hours: number) => {
-    if (hours < 1) {
-      return `${Math.round(hours * 60)} mins`;
-    }
-    return `${hours}${hours === 1 ? ' hour' : ' hours'}`;
-  };
-
-  // Helper function to determine course subscription plan
-  const getCourseSubscriptionPlan = (course: Course) => {
-    if (course.is_free) return 'free';
+  // Check if user can access a specific course
+  // Simple logic: Free courses OR user has active subscription
+  const canAccessCourse = (course: Course) => {
+    // Free courses are always accessible
+    if (course.is_free) return true;
     
-    // If no subscription_plan_id is set, assume it's a one-month plan
-    if (!course.subscription_plan_id) return 'one_month';
-    
-    // Map actual subscription plan UUIDs from database to our filter values
-    const planMapping: Record<string, string> = {
-      // Exact UUID mappings from database
-      '4f72fb43-6e55-407e-969e-c83acfa5b05f': 'one_month',    // One Month Plan (30 days)
-      'f077e30e-bdb9-4b09-9fa2-9c33a355189d': 'three_months', // 3 Months Plan (90 days)
-      '726be3fc-fdd5-4a59-883a-6b60cd2f68c5': 'six_months',   // 6 Months Plan (180 days)
-      'c0aff632-80b0-4832-827a-ece42aa37ead': 'one_year',     // 1 Year Plan (365 days)
-    };
-    
-    // Map the subscription_plan_id to filter value
-    const mappedPlan = planMapping[course.subscription_plan_id];
-    
-    if (mappedPlan) {
-      return mappedPlan;
-    }
-    
-    // Default fallback to one_month for unmapped plans
-    console.warn('Unknown subscription plan ID:', course.subscription_plan_id, 'defaulting to one_month');
-    return 'one_month';
+    // Paid courses require active subscription
+    return hasActiveSubscription();
   };
 
   // Helper function to check if course belongs to a category
