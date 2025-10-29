@@ -33,7 +33,7 @@ const CourseCard: React.FC<{
             <img 
               src={course.image} 
               alt={course.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-primary via-purple to-teal" />
@@ -47,15 +47,6 @@ const CourseCard: React.FC<{
             <Badge className="bg-white/90 text-primary text-xs">
               {course.category}
             </Badge>
-          </div>
-          <div className="absolute bottom-4 right-4">
-            <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
-              {isLocked ? (
-                <Lock className="h-5 w-5 text-white" />
-              ) : (
-                <BookOpen className="h-5 w-5 text-white" />
-              )}
-            </div>
           </div>
           {isLocked && (
             <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center">
@@ -73,9 +64,6 @@ const CourseCard: React.FC<{
             <h3 className="font-semibold text-lg text-foreground line-clamp-2 group-hover:text-primary transition-colors">
               {course.title}
             </h3>
-            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-              {course.description || "Comprehensive course covering fundamental concepts and practical applications"}
-            </p>
           </div>
           
           {/* Course Stats */}
