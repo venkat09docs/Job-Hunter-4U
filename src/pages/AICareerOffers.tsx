@@ -204,13 +204,6 @@ const AICareerOffers = () => {
 
           {/* Tabs for Courses and Jobs */}
           <Tabs defaultValue="courses" className="w-full">
-            <div className="flex justify-center mb-6">
-              <TabsList className="grid w-full max-w-xs sm:max-w-md grid-cols-2">
-                <TabsTrigger value="courses" className="text-xs sm:text-sm">Courses</TabsTrigger>
-                <TabsTrigger value="jobs" className="text-xs sm:text-sm">Internal Jobs</TabsTrigger>
-              </TabsList>
-            </div>
-
             {/* Courses Tab */}
             <TabsContent value="courses" className="mt-0">
               <SidebarProvider>
@@ -242,166 +235,215 @@ const AICareerOffers = () => {
                     </SidebarContent>
                   </Sidebar>
 
-                  {/* Right Content - Courses Grid */}
-                  <div className="flex-1 overflow-y-auto">
-                    {loading ? (
-                      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 p-6">
-                        {[1, 2, 3, 4, 5, 6].map(i => (
-                          <Card key={i} className="h-full animate-pulse">
-                            <CardContent className="p-0">
-                              <div className="h-48 bg-muted"></div>
-                              <div className="p-6 space-y-3">
-                                <div className="h-6 bg-muted rounded"></div>
-                                <div className="h-4 bg-muted rounded w-3/4"></div>
-                                <div className="h-10 bg-muted rounded"></div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 p-6">
-                        {filteredCourses.map((course) => (
-                          <Card 
-                            key={course.id}
-                            className="transition-all duration-300 border-0 shadow-xl cursor-pointer rounded-2xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] hover:scale-[1.02] overflow-hidden bg-gradient-to-br from-card via-card to-primary/5"
-                            onClick={() => handleCourseClick(course)}
-                          >
-                            <CardContent className="p-0">
-                              {course.image && (
-                                <div className="w-full h-48 bg-muted/30 flex items-center justify-center overflow-hidden rounded-t-2xl">
-                                  <img 
-                                    src={course.image} 
-                                    alt={course.title}
-                                    className="w-full h-full object-contain"
-                                  />
+                  {/* Right Content Area */}
+                  <div className="flex-1 flex flex-col">
+                    {/* Tabs positioned under the courses section */}
+                    <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                      <TabsList className="w-full h-12 grid grid-cols-2 rounded-none bg-transparent">
+                        <TabsTrigger value="courses" className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
+                          Courses
+                        </TabsTrigger>
+                        <TabsTrigger value="jobs" className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
+                          Internal Jobs
+                        </TabsTrigger>
+                      </TabsList>
+                    </div>
+
+                    {/* Courses Grid */}
+                    <div className="flex-1 overflow-y-auto">
+                      {loading ? (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 p-6">
+                          {[1, 2, 3, 4, 5, 6].map(i => (
+                            <Card key={i} className="h-full animate-pulse">
+                              <CardContent className="p-0">
+                                <div className="h-48 bg-muted"></div>
+                                <div className="p-6 space-y-3">
+                                  <div className="h-6 bg-muted rounded"></div>
+                                  <div className="h-4 bg-muted rounded w-3/4"></div>
+                                  <div className="h-10 bg-muted rounded"></div>
                                 </div>
-                              )}
-                              
-                              <div className="p-6">
-                                <h3 className="text-xl font-bold text-foreground mb-3 leading-tight line-clamp-2">
-                                  {course.title}
-                                </h3>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 p-6">
+                          {filteredCourses.map((course) => (
+                            <Card 
+                              key={course.id}
+                              className="transition-all duration-300 border-0 shadow-xl cursor-pointer rounded-2xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] hover:scale-[1.02] overflow-hidden bg-gradient-to-br from-card via-card to-primary/5"
+                              onClick={() => handleCourseClick(course)}
+                            >
+                              <CardContent className="p-0">
+                                {course.image && (
+                                  <div className="w-full h-48 bg-muted/30 flex items-center justify-center overflow-hidden rounded-t-2xl">
+                                    <img 
+                                      src={course.image} 
+                                      alt={course.title}
+                                      className="w-full h-full object-contain"
+                                    />
+                                  </div>
+                                )}
+                                
+                                <div className="p-6">
+                                  <h3 className="text-xl font-bold text-foreground mb-3 leading-tight line-clamp-2">
+                                    {course.title}
+                                  </h3>
 
-                                <p className="text-muted-foreground mb-4 leading-relaxed text-sm line-clamp-3">
-                                  {course.description || "Comprehensive course covering fundamental concepts and practical applications"}
-                                </p>
+                                  <p className="text-muted-foreground mb-4 leading-relaxed text-sm line-clamp-3">
+                                    {course.description || "Comprehensive course covering fundamental concepts and practical applications"}
+                                  </p>
 
-                                <Button 
-                                  className="w-full bg-gradient-to-r from-primary via-purple-600 to-pink-600 hover:from-primary/90 hover:via-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg rounded-xl h-11 text-sm transform hover:scale-[1.02] transition-all duration-200"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleCourseClick(course);
-                                  }}
-                                >
-                                  View Course & Pricing
-                                  <ArrowRight className="ml-2 h-4 w-4" />
-                                </Button>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    )}
+                                  <Button 
+                                    className="w-full bg-gradient-to-r from-primary via-purple-600 to-pink-600 hover:from-primary/90 hover:via-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg rounded-xl h-11 text-sm transform hover:scale-[1.02] transition-all duration-200"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleCourseClick(course);
+                                    }}
+                                  >
+                                    View Course & Pricing
+                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </SidebarProvider>
             </TabsContent>
 
             {/* Internal Jobs Tab */}
-            <TabsContent value="jobs">
-              {jobsLoading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 px-4">
-                  {[1, 2, 3].map(i => (
-                    <Card key={i} className="h-full animate-pulse">
-                      <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
-                        <div className="h-5 sm:h-6 bg-muted rounded"></div>
-                        <div className="h-3 sm:h-4 bg-muted rounded w-3/4"></div>
-                        <div className="h-3 sm:h-4 bg-muted rounded w-1/2"></div>
-                        <div className="h-8 sm:h-10 bg-muted rounded"></div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : jobs.length > 0 ? (
-                <Carousel className="w-full px-4 sm:px-0" opts={{ align: "start", loop: true }}>
-                  <CarouselContent className="-ml-2 sm:-ml-3 md:-ml-4">
-                    {jobs.map((job) => (
-                      <CarouselItem key={job.id} className="pl-2 sm:pl-3 md:pl-4 basis-full sm:basis-[85%] md:basis-1/2 lg:basis-1/3">
-                        <Card 
-                          className="h-full transition-all duration-300 border-0 shadow-xl sm:shadow-2xl cursor-pointer rounded-2xl sm:rounded-3xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] hover:scale-[1.02] overflow-hidden bg-gradient-to-br from-card via-card to-primary/5"
-                          onClick={() => handleJobClick(job)}
-                        >
-                          <CardContent className="p-4 sm:p-5 md:p-6 flex flex-col h-full">
-                            <div className="flex items-start justify-between mb-3 sm:mb-4">
-                              <div className="flex-1 min-w-0">
-                                <h3 className="text-base sm:text-lg md:text-xl font-bold text-foreground mb-1.5 sm:mb-2 leading-tight">
-                                  {job.title}
-                                </h3>
-                                <p className="text-sm sm:text-base md:text-lg text-primary font-semibold truncate">
-                                  {job.company}
-                                </p>
-                              </div>
-                              <Briefcase className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary flex-shrink-0 ml-2" />
-                            </div>
+            <TabsContent value="jobs" className="mt-0">
+              <SidebarProvider>
+                <div className="flex w-full min-h-[600px]">
+                  {/* Empty sidebar for consistency */}
+                  <Sidebar className="w-64 border-r">
+                    <SidebarContent>
+                      <SidebarGroup>
+                        <SidebarGroupLabel className="text-lg font-bold flex items-center gap-2 px-4 py-3">
+                          <Briefcase className="h-5 w-5" />
+                          Jobs
+                        </SidebarGroupLabel>
+                      </SidebarGroup>
+                    </SidebarContent>
+                  </Sidebar>
 
-                            <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4 flex-1">
-                              {job.location && (
-                                <div className="flex items-center gap-2 text-muted-foreground text-xs sm:text-sm">
-                                  <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                                  <span className="truncate">{job.location}</span>
-                                </div>
-                              )}
-                              {job.job_type && (
-                                <div className="flex items-center gap-2 text-muted-foreground text-xs sm:text-sm">
-                                  <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                                  <span className="truncate">{job.job_type}</span>
-                                </div>
-                              )}
-                              {(job.salary_min || job.salary_max) && (
-                                <div className="flex items-center gap-2 text-muted-foreground text-xs sm:text-sm">
-                                  <DollarSign className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                                  <span className="truncate">
-                                    {job.salary_min && job.salary_max 
-                                      ? `₹${job.salary_min.toLocaleString()} - ₹${job.salary_max.toLocaleString()}`
-                                      : job.salary_min 
-                                      ? `₹${job.salary_min.toLocaleString()}+`
-                                      : `Up to ₹${job.salary_max?.toLocaleString()}`
-                                    }
-                                  </span>
-                                </div>
-                              )}
-                              {job.experience_level && (
-                                <Badge variant="secondary" className="mt-1 sm:mt-2 text-xs">
-                                  {job.experience_level}
-                                </Badge>
-                              )}
-                            </div>
+                  {/* Right Content Area */}
+                  <div className="flex-1 flex flex-col">
+                    {/* Tabs */}
+                    <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                      <TabsList className="w-full h-12 grid grid-cols-2 rounded-none bg-transparent">
+                        <TabsTrigger value="courses" className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
+                          Courses
+                        </TabsTrigger>
+                        <TabsTrigger value="jobs" className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
+                          Internal Jobs
+                        </TabsTrigger>
+                      </TabsList>
+                    </div>
 
-                            <Button 
-                              className="w-full bg-gradient-to-r from-primary via-purple-600 to-pink-600 hover:from-primary/90 hover:via-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg rounded-xl h-10 sm:h-12 text-xs sm:text-sm transform hover:scale-[1.02] transition-all duration-200"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleJobClick(job);
-                              }}
-                            >
-                              View Details & Apply
-                              <ArrowRight className="ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                            </Button>
-                          </CardContent>
-                        </Card>
-                      </CarouselItem>
-                    ))}
-                  </CarouselContent>
-                  <CarouselPrevious className="left-2 sm:left-4 md:-left-8 lg:-left-12 h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 bg-card/90 hover:bg-card border-0 shadow-xl" />
-                  <CarouselNext className="right-2 sm:right-4 md:-right-8 lg:-right-12 h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 bg-card/90 hover:bg-card border-0 shadow-xl" />
-                </Carousel>
-              ) : (
-                <div className="text-center py-8 sm:py-12 px-4">
-                  <Briefcase className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mx-auto mb-3 sm:mb-4" />
-                  <p className="text-base sm:text-lg text-muted-foreground">No internal jobs available at the moment</p>
+                    {/* Jobs Content */}
+                    <div className="flex-1 overflow-y-auto p-6">
+                      {jobsLoading ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                          {[1, 2, 3].map(i => (
+                            <Card key={i} className="h-full animate-pulse">
+                              <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+                                <div className="h-5 sm:h-6 bg-muted rounded"></div>
+                                <div className="h-3 sm:h-4 bg-muted rounded w-3/4"></div>
+                                <div className="h-3 sm:h-4 bg-muted rounded w-1/2"></div>
+                                <div className="h-8 sm:h-10 bg-muted rounded"></div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      ) : jobs.length > 0 ? (
+                        <Carousel className="w-full" opts={{ align: "start", loop: true }}>
+                          <CarouselContent className="-ml-2 sm:-ml-3 md:-ml-4">
+                            {jobs.map((job) => (
+                              <CarouselItem key={job.id} className="pl-2 sm:pl-3 md:pl-4 basis-full sm:basis-[85%] md:basis-1/2 lg:basis-1/3">
+                                <Card 
+                                  className="h-full transition-all duration-300 border-0 shadow-xl sm:shadow-2xl cursor-pointer rounded-2xl sm:rounded-3xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] hover:scale-[1.02] overflow-hidden bg-gradient-to-br from-card via-card to-primary/5"
+                                  onClick={() => handleJobClick(job)}
+                                >
+                                  <CardContent className="p-4 sm:p-5 md:p-6 flex flex-col h-full">
+                                    <div className="flex items-start justify-between mb-3 sm:mb-4">
+                                      <div className="flex-1 min-w-0">
+                                        <h3 className="text-base sm:text-lg md:text-xl font-bold text-foreground mb-1.5 sm:mb-2 leading-tight">
+                                          {job.title}
+                                        </h3>
+                                        <p className="text-sm sm:text-base md:text-lg text-primary font-semibold truncate">
+                                          {job.company}
+                                        </p>
+                                      </div>
+                                      <Briefcase className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary flex-shrink-0 ml-2" />
+                                    </div>
+
+                                    <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4 flex-1">
+                                      {job.location && (
+                                        <div className="flex items-center gap-2 text-muted-foreground text-xs sm:text-sm">
+                                          <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                                          <span className="truncate">{job.location}</span>
+                                        </div>
+                                      )}
+                                      {job.job_type && (
+                                        <div className="flex items-center gap-2 text-muted-foreground text-xs sm:text-sm">
+                                          <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                                          <span className="truncate">{job.job_type}</span>
+                                        </div>
+                                      )}
+                                      {(job.salary_min || job.salary_max) && (
+                                        <div className="flex items-center gap-2 text-muted-foreground text-xs sm:text-sm">
+                                          <DollarSign className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                                          <span className="truncate">
+                                            {job.salary_min && job.salary_max 
+                                              ? `₹${job.salary_min.toLocaleString()} - ₹${job.salary_max.toLocaleString()}`
+                                              : job.salary_min 
+                                              ? `₹${job.salary_min.toLocaleString()}+`
+                                              : `Up to ₹${job.salary_max?.toLocaleString()}`
+                                            }
+                                          </span>
+                                        </div>
+                                      )}
+                                      {job.experience_level && (
+                                        <Badge variant="secondary" className="mt-1 sm:mt-2 text-xs">
+                                          {job.experience_level}
+                                        </Badge>
+                                      )}
+                                    </div>
+
+                                    <Button 
+                                      className="w-full bg-gradient-to-r from-primary via-purple-600 to-pink-600 hover:from-primary/90 hover:via-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg rounded-xl h-10 sm:h-12 text-xs sm:text-sm transform hover:scale-[1.02] transition-all duration-200"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleJobClick(job);
+                                      }}
+                                    >
+                                      View Details & Apply
+                                      <ArrowRight className="ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                    </Button>
+                                  </CardContent>
+                                </Card>
+                              </CarouselItem>
+                            ))}
+                          </CarouselContent>
+                          <CarouselPrevious className="left-2 sm:left-4 md:-left-8 lg:-left-12 h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 bg-card/90 hover:bg-card border-0 shadow-xl" />
+                          <CarouselNext className="right-2 sm:right-4 md:-right-8 lg:-right-12 h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 bg-card/90 hover:bg-card border-0 shadow-xl" />
+                        </Carousel>
+                      ) : (
+                        <div className="text-center py-8 sm:py-12 px-4">
+                          <Briefcase className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+                          <p className="text-base sm:text-lg text-muted-foreground">No internal jobs available at the moment</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              )}
+              </SidebarProvider>
             </TabsContent>
           </Tabs>
         </div>
