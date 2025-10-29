@@ -100,57 +100,70 @@ export const LatestInternalJobs = () => {
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {jobs.map((job) => (
-          <Card key={job.id} className="hover:shadow-lg transition-shadow duration-200">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3 mb-3">
-                <div className="bg-primary/10 p-2 rounded-lg">
-                  <Briefcase className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-sm truncate">{job.title}</h3>
-                  <p className="text-xs text-muted-foreground truncate">{job.company}</p>
-                </div>
-              </div>
+        {jobs.map((job, index) => {
+          // Cycle through different accent colors for variety
+          const accentColors = [
+            { bg: 'bg-primary/10', icon: 'text-primary', border: 'border-l-primary' },
+            { bg: 'bg-purple/10', icon: 'text-purple', border: 'border-l-purple' },
+            { bg: 'bg-info/10', icon: 'text-info', border: 'border-l-info' },
+          ];
+          const colorScheme = accentColors[index % accentColors.length];
 
-              <div className="space-y-2 mb-3">
-                {job.location && (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <MapPin className="h-3 w-3" />
-                    <span className="truncate">{job.location}</span>
+          return (
+            <Card 
+              key={job.id} 
+              className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-l-4 ${colorScheme.border} bg-gradient-to-br from-card to-muted/20`}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className={`${colorScheme.bg} p-2 rounded-lg`}>
+                    <Briefcase className={`h-5 w-5 ${colorScheme.icon}`} />
                   </div>
-                )}
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Clock className="h-3 w-3" />
-                  <span>Posted {formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}</span>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm truncate">{job.title}</h3>
+                    <p className="text-xs text-muted-foreground truncate">{job.company}</p>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-2 mb-3 flex-wrap">
-                {job.job_type && (
-                  <Badge variant="secondary" className="text-xs">
-                    {job.job_type}
-                  </Badge>
-                )}
-                {job.experience_level && (
-                  <Badge variant="outline" className="text-xs">
-                    {job.experience_level}
-                  </Badge>
-                )}
-              </div>
+                <div className="space-y-2 mb-3">
+                  {job.location && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <MapPin className={`h-3 w-3 ${colorScheme.icon}`} />
+                      <span className="truncate">{job.location}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Clock className={`h-3 w-3 ${colorScheme.icon}`} />
+                    <span>Posted {formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}</span>
+                  </div>
+                </div>
 
-              <Button
-                onClick={() => handleViewDetails(job)}
-                variant="outline"
-                size="sm"
-                className="w-full"
-              >
-                <Eye className="h-3 w-3 mr-2" />
-                View Details
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+                <div className="flex items-center gap-2 mb-3 flex-wrap">
+                  {job.job_type && (
+                    <Badge variant="secondary" className="text-xs bg-emerald/15 text-emerald border-emerald/20">
+                      {job.job_type}
+                    </Badge>
+                  )}
+                  {job.experience_level && (
+                    <Badge variant="outline" className="text-xs border-amber text-amber">
+                      {job.experience_level}
+                    </Badge>
+                  )}
+                </div>
+
+                <Button
+                  onClick={() => handleViewDetails(job)}
+                  variant="outline"
+                  size="sm"
+                  className={`w-full ${colorScheme.border} hover:${colorScheme.bg} hover:${colorScheme.icon} transition-colors`}
+                >
+                  <Eye className="h-3 w-3 mr-2" />
+                  View Details
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {selectedJob && (
