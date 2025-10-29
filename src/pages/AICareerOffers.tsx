@@ -179,10 +179,10 @@ const AICareerOffers = () => {
               Limited Time Offers
             </Badge>
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 sm:mb-3 md:mb-4 bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent px-2">
-              AI Career Level Up Roadmap and Jobs
+              AI Career Level Up Roadmaps and Jobs
             </h1>
             <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-3xl mx-auto px-4">
-              Transform your career with our comprehensive courses. Get lifetime access with our special pricing offers!
+              Explore our comprehensive career roadmaps and discover exciting job opportunities to accelerate your professional growth!
             </p>
             <div className="mt-4 sm:mt-6 flex justify-center gap-3">
               <Button onClick={() => navigate('/')} variant="outline" size="default" className="text-sm sm:text-base">
