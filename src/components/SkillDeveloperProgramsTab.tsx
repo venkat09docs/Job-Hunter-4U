@@ -83,9 +83,6 @@ const CourseCard: React.FC<{
               <Badge variant="secondary" className="text-xs">
                 Beginner
               </Badge>
-              <Badge variant="outline" className="text-xs">
-                Certificate
-              </Badge>
               {course.is_free && (
                 <Badge variant="outline" className="text-xs text-success">
                   Free
