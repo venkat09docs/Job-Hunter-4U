@@ -234,11 +234,11 @@ const AICareerOffers = () => {
                     </SidebarContent>
                   </Sidebar>
 
-                  {/* Right Content - Courses */}
-                  <div className="flex-1 overflow-hidden">
+                  {/* Right Content - Courses Grid */}
+                  <div className="flex-1 overflow-y-auto">
                     {loading ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 px-4 py-4">
-                        {[1, 2, 3].map(i => (
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 p-6">
+                        {[1, 2, 3, 4, 5, 6].map(i => (
                           <Card key={i} className="h-full animate-pulse">
                             <CardContent className="p-0">
                               <div className="h-40 sm:h-48 bg-muted"></div>
@@ -252,80 +252,73 @@ const AICareerOffers = () => {
                         ))}
                       </div>
                     ) : (
-                      <div className="py-4">
-                        <Carousel className="w-full px-4" opts={{ align: "start", loop: true }}>
-                          <CarouselContent className="-ml-2 sm:-ml-3 md:-ml-4">
-                            {filteredCourses.map((course) => (
-                              <CarouselItem key={course.id} className="pl-2 sm:pl-3 md:pl-4 basis-full sm:basis-[85%] md:basis-1/2 lg:basis-1/3">
-                                <Card 
-                                  className="h-full transition-all duration-300 border-0 shadow-xl sm:shadow-2xl cursor-pointer rounded-2xl sm:rounded-3xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] hover:scale-[1.02] overflow-hidden bg-gradient-to-br from-card via-card to-primary/5"
-                                  onClick={() => handleCourseClick(course)}
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 p-6">
+                        {filteredCourses.map((course) => (
+                          <Card 
+                            key={course.id}
+                            className="h-full transition-all duration-300 border-0 shadow-xl sm:shadow-2xl cursor-pointer rounded-2xl sm:rounded-3xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] hover:scale-[1.02] overflow-hidden bg-gradient-to-br from-card via-card to-primary/5"
+                            onClick={() => handleCourseClick(course)}
+                          >
+                            <CardContent className="p-0 flex flex-col h-full">
+                              {course.image && (
+                                <div className="w-full h-40 sm:h-48 md:h-56 bg-white/10 flex-shrink-0 overflow-hidden">
+                                  <img 
+                                    src={course.image} 
+                                    alt={course.title}
+                                    className="w-full h-full object-cover rounded-t-2xl sm:rounded-t-3xl"
+                                  />
+                                </div>
+                              )}
+                              
+                              <div className={`p-4 sm:p-5 md:p-6 flex flex-col flex-1 ${!course.image ? 'pt-8 sm:pt-12' : ''}`}>
+                                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-3 sm:mb-4 leading-tight">
+                                  {course.title}
+                                </h3>
+
+                                <p className="text-muted-foreground mb-3 sm:mb-4 leading-relaxed text-xs sm:text-sm line-clamp-2">
+                                  {course.description || "Comprehensive course covering fundamental concepts and practical applications"}
+                                </p>
+
+                                <h4 className="text-foreground font-semibold text-sm sm:text-base mb-2 sm:mb-3">
+                                  Key Course Sections
+                                </h4>
+
+                                <div className="space-y-1.5 sm:space-y-2 flex-1 mb-3 sm:mb-4">
+                                  {courseSections[course.id] && courseSections[course.id].length > 0 ? (
+                                    courseSections[course.id].slice(0, 3).map((section, idx) => (
+                                      <div key={idx} className="flex items-start gap-2">
+                                        <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary mt-0.5 flex-shrink-0" />
+                                        <span className="text-muted-foreground text-xs sm:text-sm leading-relaxed line-clamp-1">{section.title}</span>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <>
+                                      <div className="flex items-start gap-2">
+                                        <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary mt-0.5 flex-shrink-0" />
+                                        <span className="text-muted-foreground text-xs sm:text-sm">Interactive Learning Content</span>
+                                      </div>
+                                      <div className="flex items-start gap-2">
+                                        <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary mt-0.5 flex-shrink-0" />
+                                        <span className="text-muted-foreground text-xs sm:text-sm">Practical Projects</span>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+
+                                <Button 
+                                  className="w-full bg-gradient-to-r from-primary via-purple-600 to-pink-600 hover:from-primary/90 hover:via-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg rounded-xl h-10 sm:h-12 text-xs sm:text-sm transform hover:scale-[1.02] transition-all duration-200"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCourseClick(course);
+                                  }}
                                 >
-                                  <CardContent className="p-0 flex flex-col h-full">
-                                    {course.image && (
-                                      <div className="w-full h-40 sm:h-48 md:h-56 bg-white/10 flex-shrink-0 overflow-hidden">
-                                        <img 
-                                          src={course.image} 
-                                          alt={course.title}
-                                          className="w-full h-full object-cover rounded-t-2xl sm:rounded-t-3xl"
-                                        />
-                                      </div>
-                                    )}
-                                    
-                                    <div className={`p-4 sm:p-5 md:p-6 flex flex-col flex-1 ${!course.image ? 'pt-8 sm:pt-12' : ''}`}>
-                                      <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-3 sm:mb-4 leading-tight">
-                                        {course.title}
-                                      </h3>
-
-                                      <p className="text-muted-foreground mb-3 sm:mb-4 leading-relaxed text-xs sm:text-sm line-clamp-2">
-                                        {course.description || "Comprehensive course covering fundamental concepts and practical applications"}
-                                      </p>
-
-                                      <h4 className="text-foreground font-semibold text-sm sm:text-base mb-2 sm:mb-3">
-                                        Key Course Sections
-                                      </h4>
-
-                                      <div className="space-y-1.5 sm:space-y-2 flex-1 mb-3 sm:mb-4">
-                                        {courseSections[course.id] && courseSections[course.id].length > 0 ? (
-                                          courseSections[course.id].slice(0, 3).map((section, idx) => (
-                                            <div key={idx} className="flex items-start gap-2">
-                                              <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary mt-0.5 flex-shrink-0" />
-                                              <span className="text-muted-foreground text-xs sm:text-sm leading-relaxed line-clamp-1">{section.title}</span>
-                                            </div>
-                                          ))
-                                        ) : (
-                                          <>
-                                            <div className="flex items-start gap-2">
-                                              <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary mt-0.5 flex-shrink-0" />
-                                              <span className="text-muted-foreground text-xs sm:text-sm">Interactive Learning Content</span>
-                                            </div>
-                                            <div className="flex items-start gap-2">
-                                              <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary mt-0.5 flex-shrink-0" />
-                                              <span className="text-muted-foreground text-xs sm:text-sm">Practical Projects</span>
-                                            </div>
-                                          </>
-                                        )}
-                                      </div>
-
-                                      <Button 
-                                        className="w-full bg-gradient-to-r from-primary via-purple-600 to-pink-600 hover:from-primary/90 hover:via-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg rounded-xl h-10 sm:h-12 text-xs sm:text-sm transform hover:scale-[1.02] transition-all duration-200"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleCourseClick(course);
-                                        }}
-                                      >
-                                        View Course & Pricing
-                                        <ArrowRight className="ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                                      </Button>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              </CarouselItem>
-                            ))}
-                          </CarouselContent>
-                          <CarouselPrevious className="left-2 sm:left-4 md:-left-8 lg:-left-12 h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 bg-card/90 hover:bg-card border-0 shadow-xl" />
-                          <CarouselNext className="right-2 sm:right-4 md:-right-8 lg:-right-12 h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 bg-card/90 hover:bg-card border-0 shadow-xl" />
-                        </Carousel>
+                                  View Course & Pricing
+                                  <ArrowRight className="ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
                       </div>
                     )}
                   </div>
