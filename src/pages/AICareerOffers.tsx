@@ -281,7 +281,7 @@ const AICareerOffers = () => {
                                   handleCourseClick(course);
                                 }}
                               >
-                                View Course & Pricing
+                                View Course Content
                                 <ArrowRight className="ml-2 h-4 w-4" />
                               </Button>
                             </div>
