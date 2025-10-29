@@ -18,13 +18,15 @@ interface CategoryManagerProps {
   selectedCategories: string[];
   onCategoriesChange: (categories: string[]) => void;
   onCreateCategory: (category: string) => void;
+  onDeleteCategory: (category: string) => void;
 }
 
 export function CategoryManager({
   availableCategories,
   selectedCategories,
   onCategoriesChange,
-  onCreateCategory
+  onCreateCategory,
+  onDeleteCategory
 }: CategoryManagerProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
@@ -58,7 +60,7 @@ export function CategoryManager({
       <div>
         <Label>Categories</Label>
         <p className="text-sm text-muted-foreground mb-2">
-          Add this course to multiple categories
+          Add this course to multiple categories. Click X on category pills to remove from course or delete from system.
         </p>
         
         {/* Selected Categories Display */}
@@ -92,9 +94,24 @@ export function CategoryManager({
             <SelectContent className="z-50 bg-background border shadow-lg pointer-events-auto">
               {unselectedCategories.length > 0 ? (
                 unselectedCategories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
+                  <div key={category} className="flex items-center justify-between px-2 py-1.5 hover:bg-accent cursor-pointer group">
+                    <SelectItem value={category} className="flex-1 cursor-pointer">
+                      {category}
+                    </SelectItem>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm(`Delete category "${category}" from the system? This will remove it from all courses.`)) {
+                          onDeleteCategory(category);
+                        }
+                      }}
+                      className="opacity-0 group-hover:opacity-100 ml-2 p-1 hover:bg-destructive/20 rounded transition-all"
+                      aria-label={`Delete ${category}`}
+                      type="button"
+                    >
+                      <X className="h-3 w-3 text-destructive" />
+                    </button>
+                  </div>
                 ))
               ) : (
                 <div className="px-2 py-1.5 text-sm text-muted-foreground">

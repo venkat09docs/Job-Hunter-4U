@@ -303,6 +303,42 @@ const CLPDashboard = () => {
     }
   };
 
+  const handleDeleteCategory = async (categoryToDelete: string) => {
+    try {
+      // Remove from all courses
+      const { data: coursesWithCategory } = await supabase
+        .from('clp_courses')
+        .select('id, categories')
+        .contains('categories', [categoryToDelete]);
+
+      if (coursesWithCategory && coursesWithCategory.length > 0) {
+        for (const course of coursesWithCategory) {
+          const updatedCategories = (course.categories || []).filter(
+            (cat: string) => cat !== categoryToDelete
+          );
+          await supabase
+            .from('clp_courses')
+            .update({ categories: updatedCategories })
+            .eq('id', course.id);
+        }
+      }
+
+      // Remove from categories state
+      setCategories(prev => prev.filter(cat => cat !== categoryToDelete));
+      
+      // Remove from current course form if present
+      setCourseForm(prev => ({
+        ...prev,
+        categories: prev.categories.filter(cat => cat !== categoryToDelete)
+      }));
+
+      toast.success(`Category "${categoryToDelete}" deleted from system`);
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      toast.error('Failed to delete category');
+    }
+  };
+
   const handleCreateCourse = async () => {
     try {
       let imageUrl = '';
@@ -932,6 +968,7 @@ const CLPDashboard = () => {
                       setCourseForm(prev => ({ ...prev, categories: newCategories }))
                     }
                     onCreateCategory={handleCreateCategory}
+                    onDeleteCategory={handleDeleteCategory}
                   />
                      <div>
                        <Label htmlFor="course-order">Order</Label>
@@ -1275,6 +1312,7 @@ const CLPDashboard = () => {
                       setCourseForm(prev => ({ ...prev, categories: newCategories }))
                     }
                     onCreateCategory={handleCreateCategory}
+                    onDeleteCategory={handleDeleteCategory}
                   />
                   <div>
                     <Label htmlFor="edit-course-order">Order</Label>
