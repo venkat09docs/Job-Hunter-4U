@@ -157,24 +157,26 @@ const AICareerOffers = () => {
   });
   const categories = ['all', ...Array.from(allCategories).sort()];
 
-  // Filter courses based on selected category
+  // Filter courses based on selected category and sort by order_index
   const filteredCourses = selectedCategory === 'all' 
-    ? courses 
-    : courses.filter(course => {
-        // Check if course belongs to selected category
-        if (course.categories && course.categories.length > 0) {
-          return course.categories.includes(selectedCategory);
-        }
-        // Fallback to old category field
-        return course.category === selectedCategory;
-      });
+    ? courses.sort((a, b) => (a.order_index || 0) - (b.order_index || 0))
+    : courses
+        .filter(course => {
+          // Check if course belongs to selected category
+          if (course.categories && course.categories.length > 0) {
+            return course.categories.includes(selectedCategory);
+          }
+          // Fallback to old category field
+          return course.category === selectedCategory;
+        })
+        .sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-primary/5">
       <Navigation />
       
       {/* Hero Section */}
-      <section className="py-12 md:py-16 lg:py-20 px-4 sm:px-6">
+      <section className="py-8 md:py-12 px-4 sm:px-6">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-8 md:mb-12 animate-fade-in">
             <Badge className="mb-4 md:mb-6 bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 text-white border-0 font-bold text-xs sm:text-sm px-3 py-1">
