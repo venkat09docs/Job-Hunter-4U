@@ -179,7 +179,7 @@ const AICareerOffers = () => {
               Limited Time Offers
             </Badge>
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 sm:mb-3 md:mb-4 bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent px-2">
-              AI Career Level Up Courses
+              AI Career Level Up Roadmap and Jobs
             </h1>
             <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-3xl mx-auto px-4">
               Transform your career with our comprehensive courses. Get lifetime access with our special pricing offers!
@@ -191,13 +191,13 @@ const AICareerOffers = () => {
             </div>
           </div>
 
-          {/* Tabs for Courses and Jobs */}
-          <Tabs defaultValue="courses" className="w-full">
+          {/* Tabs for Roadmaps and Jobs */}
+          <Tabs defaultValue="roadmaps" className="w-full">
             {/* Tabs Header */}
             <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 mb-6">
               <TabsList className="w-full h-12 grid grid-cols-2 rounded-none bg-transparent max-w-md mx-auto">
-                <TabsTrigger value="courses" className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
-                  Courses
+                <TabsTrigger value="roadmaps" className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
+                  Roadmaps
                 </TabsTrigger>
                 <TabsTrigger value="jobs" className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
                   Internal Jobs
@@ -205,84 +205,92 @@ const AICareerOffers = () => {
               </TabsList>
             </div>
 
-            {/* Courses Tab */}
-            <TabsContent value="courses" className="mt-0">
-              <div className="w-full">
-                {/* Category Filter Buttons */}
-                <div className="mb-6 flex flex-wrap gap-2 justify-center">
-                  {categories.map((category) => (
-                    <Button
-                      key={category}
-                      variant={selectedCategory === category ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setSelectedCategory(category)}
-                      className="rounded-full"
-                    >
-                      {category === 'all' ? 'All Categories' : category}
-                    </Button>
-                  ))}
+            {/* Roadmaps Tab */}
+            <TabsContent value="roadmaps" className="mt-0">
+              <div className="flex w-full gap-6">
+                {/* Left Sidebar - Categories */}
+                <div className="w-64 flex-shrink-0">
+                  <div className="sticky top-4">
+                    <h3 className="text-lg font-bold mb-4 px-4 py-2 bg-muted/50 rounded-lg">
+                      Roadmaps
+                    </h3>
+                    <div className="space-y-2">
+                      {categories.map((category) => (
+                        <Button
+                          key={category}
+                          variant={selectedCategory === category ? "default" : "ghost"}
+                          className="w-full justify-start"
+                          onClick={() => setSelectedCategory(category)}
+                        >
+                          {category === 'all' ? 'All Categories' : category}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
-                {/* Courses Grid */}
-                {loading ? (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {[1, 2, 3, 4, 5, 6].map(i => (
-                      <Card key={i} className="h-full animate-pulse">
-                        <CardContent className="p-0">
-                          <div className="h-48 bg-muted"></div>
-                          <div className="p-6 space-y-3">
-                            <div className="h-6 bg-muted rounded"></div>
-                            <div className="h-4 bg-muted rounded w-3/4"></div>
-                            <div className="h-10 bg-muted rounded"></div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {filteredCourses.map((course) => (
-                      <Card 
-                        key={course.id}
-                        className="transition-all duration-300 border-0 shadow-xl cursor-pointer rounded-2xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] hover:scale-[1.02] overflow-hidden bg-gradient-to-br from-card via-card to-primary/5"
-                        onClick={() => handleCourseClick(course)}
-                      >
-                        <CardContent className="p-0">
-                          {course.image && (
-                            <div className="w-full h-48 bg-muted/30 flex items-center justify-center overflow-hidden rounded-t-2xl">
-                              <img 
-                                src={course.image} 
-                                alt={course.title}
-                                className="w-full h-full object-contain"
-                              />
+                {/* Right Content - Courses Grid */}
+                <div className="flex-1">
+                  {loading ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                      {[1, 2, 3, 4, 5, 6].map(i => (
+                        <Card key={i} className="h-full animate-pulse">
+                          <CardContent className="p-0">
+                            <div className="h-48 bg-muted"></div>
+                            <div className="p-6 space-y-3">
+                              <div className="h-6 bg-muted rounded"></div>
+                              <div className="h-4 bg-muted rounded w-3/4"></div>
+                              <div className="h-10 bg-muted rounded"></div>
                             </div>
-                          )}
-                          
-                          <div className="p-6">
-                            <h3 className="text-xl font-bold text-foreground mb-3 leading-tight line-clamp-2">
-                              {course.title}
-                            </h3>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                      {filteredCourses.map((course) => (
+                        <Card 
+                          key={course.id}
+                          className="transition-all duration-300 border-0 shadow-xl cursor-pointer rounded-2xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] hover:scale-[1.02] overflow-hidden bg-gradient-to-br from-card via-card to-primary/5"
+                          onClick={() => handleCourseClick(course)}
+                        >
+                          <CardContent className="p-0">
+                            {course.image && (
+                              <div className="w-full h-48 bg-muted/30 flex items-center justify-center overflow-hidden rounded-t-2xl">
+                                <img 
+                                  src={course.image} 
+                                  alt={course.title}
+                                  className="w-full h-full object-contain"
+                                />
+                              </div>
+                            )}
+                            
+                            <div className="p-6">
+                              <h3 className="text-xl font-bold text-foreground mb-3 leading-tight line-clamp-2">
+                                {course.title}
+                              </h3>
 
-                            <p className="text-muted-foreground mb-4 leading-relaxed text-sm line-clamp-3">
-                              {course.description || "Comprehensive course covering fundamental concepts and practical applications"}
-                            </p>
+                              <p className="text-muted-foreground mb-4 leading-relaxed text-sm line-clamp-3">
+                                {course.description || "Comprehensive course covering fundamental concepts and practical applications"}
+                              </p>
 
-                            <Button 
-                              className="w-full bg-gradient-to-r from-primary via-purple-600 to-pink-600 hover:from-primary/90 hover:via-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg rounded-xl h-11 text-sm transform hover:scale-[1.02] transition-all duration-200"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleCourseClick(course);
-                              }}
-                            >
-                              View Course & Pricing
-                              <ArrowRight className="ml-2 h-4 w-4" />
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
+                              <Button 
+                                className="w-full bg-gradient-to-r from-primary via-purple-600 to-pink-600 hover:from-primary/90 hover:via-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg rounded-xl h-11 text-sm transform hover:scale-[1.02] transition-all duration-200"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCourseClick(course);
+                                }}
+                              >
+                                View Course & Pricing
+                                <ArrowRight className="ml-2 h-4 w-4" />
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </TabsContent>
 
