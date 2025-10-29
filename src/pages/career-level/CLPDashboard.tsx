@@ -266,14 +266,22 @@ const CLPDashboard = () => {
     try {
       const { data, error } = await supabase
         .from('clp_courses')
-        .select('category')
+        .select('category, categories')
         .not('category', 'is', null)
         .neq('category', '');
 
       if (error) throw error;
 
-      const uniqueCategories = [...new Set(data?.map(item => item.category).filter(Boolean))] as string[];
-      setCategories(uniqueCategories);
+      // Collect categories from both old category field and new categories array
+      const allCategories = new Set<string>();
+      data?.forEach(item => {
+        if (item.category) allCategories.add(item.category);
+        if (item.categories && Array.isArray(item.categories)) {
+          item.categories.forEach(cat => allCategories.add(cat));
+        }
+      });
+
+      setCategories([...allCategories].sort());
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
@@ -562,8 +570,11 @@ const CLPDashboard = () => {
     const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       course.code.toLowerCase().includes(searchTerm.toLowerCase());
     
+    // Check if course belongs to the selected category
+    // Handle both old single category field and new categories array
+    const courseCategories = (course as any).categories || (course.category ? [course.category] : []);
     const matchesCategory = selectedCategoryFilter === 'all' || 
-      course.category === selectedCategoryFilter;
+      courseCategories.includes(selectedCategoryFilter);
     
     return matchesSearch && matchesCategory;
   });
@@ -1102,6 +1113,19 @@ const CLPDashboard = () => {
                       <h3 className="text-xl font-bold mb-3 line-clamp-2 min-h-[3.5rem]">
                         {course.title}
                       </h3>
+                      
+                      {/* Categories and Code */}
+                      <div className="flex flex-wrap items-center gap-2 mb-3">
+                        {(() => {
+                          const courseCategories = (course as any).categories || (course.category ? [course.category] : []);
+                          return courseCategories.map((cat: string, idx: number) => (
+                            <Badge key={`${cat}-${idx}`} variant="secondary" className="text-xs">
+                              {cat}
+                            </Badge>
+                          ));
+                        })()}
+                        <Badge variant="outline" className="text-xs">{course.code}</Badge>
+                      </div>
                       
                       {/* Course Info */}
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
