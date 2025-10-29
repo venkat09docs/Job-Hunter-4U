@@ -155,23 +155,29 @@ const AICareerOffers = () => {
     setSelectedPlan(null);
   };
 
-  // Group courses by category
-  const coursesByCategory = courses.reduce((acc, course) => {
-    const category = course.category || 'Other';
-    if (!acc[category]) {
-      acc[category] = [];
+  // Get all unique categories from courses
+  const allCategories = new Set<string>();
+  courses.forEach(course => {
+    if (course.categories && course.categories.length > 0) {
+      course.categories.forEach(cat => allCategories.add(cat));
+    } else if (course.category) {
+      // Fallback to old category field
+      allCategories.add(course.category);
     }
-    acc[category].push(course);
-    return acc;
-  }, {} as Record<string, Course[]>);
-
-  // Get all categories
-  const categories = ['all', ...Object.keys(coursesByCategory)];
+  });
+  const categories = ['all', ...Array.from(allCategories).sort()];
 
   // Filter courses based on selected category
   const filteredCourses = selectedCategory === 'all' 
     ? courses 
-    : coursesByCategory[selectedCategory] || [];
+    : courses.filter(course => {
+        // Check if course belongs to selected category
+        if (course.categories && course.categories.length > 0) {
+          return course.categories.includes(selectedCategory);
+        }
+        // Fallback to old category field
+        return course.category === selectedCategory;
+      });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-primary/5">

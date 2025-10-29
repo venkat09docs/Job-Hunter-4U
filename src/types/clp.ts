@@ -13,6 +13,7 @@ export interface Course {
   code: string;
   description?: string;
   category: string;
+  categories?: string[]; // New multi-category support
   image?: string;
   is_active: boolean;
   is_free: boolean;
