@@ -269,11 +269,11 @@ const AICareerOffers = () => {
                           >
                             <CardContent className="p-0">
                               {course.image && (
-                                <div className="w-full h-48 overflow-hidden">
+                                <div className="w-full h-48 bg-muted/30 flex items-center justify-center overflow-hidden rounded-t-2xl">
                                   <img 
                                     src={course.image} 
                                     alt={course.title}
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-full object-contain"
                                   />
                                 </div>
                               )}
