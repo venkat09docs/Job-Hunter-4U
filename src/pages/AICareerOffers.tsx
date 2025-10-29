@@ -24,6 +24,7 @@ import { useNavigate } from "react-router-dom";
 import PaymentGatewaySelector from "@/components/PaymentGatewaySelector";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import Navigation from "@/components/Navigation";
 
 const AICareerOffers = () => {
   const { getCourses, loading } = useCareerLevelProgram();
@@ -170,11 +171,13 @@ const AICareerOffers = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-primary/5">
+      <Navigation />
+      
       {/* Hero Section */}
-      <section className="py-8 sm:py-12 md:py-16 lg:py-20 px-4 sm:px-6">
+      <section className="py-12 md:py-16 lg:py-20 px-4 sm:px-6">
         <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-6 sm:mb-8 md:mb-12 animate-fade-in">
-            <Badge className="mb-3 sm:mb-4 md:mb-6 bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 text-white border-0 font-bold text-xs sm:text-sm px-3 py-1">
+          <div className="text-center mb-8 md:mb-12 animate-fade-in">
+            <Badge className="mb-4 md:mb-6 bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 text-white border-0 font-bold text-xs sm:text-sm px-3 py-1">
               <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               Limited Time Offers
             </Badge>
@@ -184,11 +187,6 @@ const AICareerOffers = () => {
             <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-3xl mx-auto px-4">
               Explore our comprehensive career roadmaps and discover exciting job opportunities to accelerate your professional growth!
             </p>
-            <div className="mt-4 sm:mt-6 flex justify-center gap-3">
-              <Button onClick={() => navigate('/')} variant="outline" size="default" className="text-sm sm:text-base">
-                Back to Home
-              </Button>
-            </div>
           </div>
 
           {/* Tabs for Roadmaps and Jobs */}
