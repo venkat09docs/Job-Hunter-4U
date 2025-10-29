@@ -22,6 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import CLPAssignmentManagementTab from '@/components/admin/CLPAssignmentManagementTab';
 import CLPReviewManagement from '@/components/admin/CLPReviewManagement';
+import { CategoryManager } from '@/components/admin/CategoryManager';
 import type { Course, Attempt, LeaderboardEntry, Module } from '@/types/clp';
 import { cn } from '@/lib/utils';
 
@@ -109,6 +110,7 @@ const CLPDashboard = () => {
     description: '',
     code: '',
     category: '',
+    categories: [] as string[], // New field for multiple categories
     order_index: 0,
     industry_type: 'both' as 'IT' | 'non-IT' | 'both',
     image: null as File | null,
@@ -277,12 +279,13 @@ const CLPDashboard = () => {
     }
   };
 
-  const handleCreateCategory = async () => {
-    if (!newCategory.trim()) return;
+  const handleCreateCategory = async (categoryName: string) => {
+    if (!categoryName.trim()) return;
 
     try {
-      setCategories(prev => [...prev, newCategory.trim()]);
-      setCourseForm(prev => ({ ...prev, category: newCategory.trim() }));
+      if (!categories.includes(categoryName.trim())) {
+        setCategories(prev => [...prev, categoryName.trim()]);
+      }
       setNewCategory('');
       setIsCreateCategoryOpen(false);
       toast.success('Category created successfully');
@@ -319,13 +322,17 @@ const CLPDashboard = () => {
         imageUrl = publicUrl;
       }
 
+      // Store first category in category field for backward compatibility, all in categories array
+      const primaryCategory = courseForm.categories.length > 0 ? courseForm.categories[0] : courseForm.category;
+      
       const { data, error } = await supabase
         .from('clp_courses')
         .insert([{
           title: courseForm.title,
           description: courseForm.description,
           code: courseForm.code,
-          category: courseForm.category,
+          category: primaryCategory, // Keep backward compatibility
+          categories: courseForm.categories.length > 0 ? courseForm.categories : [courseForm.category].filter(Boolean),
           order_index: courseForm.order_index,
           industry_type: courseForm.industry_type,
           image: imageUrl,
@@ -344,7 +351,8 @@ const CLPDashboard = () => {
         title: '', 
         description: '', 
         code: '', 
-        category: '', 
+        category: '',
+        categories: [],
         order_index: 0, 
         industry_type: 'both', 
         image: null,
@@ -390,13 +398,17 @@ const CLPDashboard = () => {
         imageUrl = publicUrl;
       }
 
+      // Store first category in category field for backward compatibility, all in categories array
+      const primaryCategory = courseForm.categories.length > 0 ? courseForm.categories[0] : courseForm.category;
+      
       const { data, error } = await supabase
         .from('clp_courses')
         .update({
           title: courseForm.title,
           description: courseForm.description,
           code: courseForm.code,
-          category: courseForm.category,
+          category: primaryCategory, // Keep backward compatibility
+          categories: courseForm.categories.length > 0 ? courseForm.categories : [courseForm.category].filter(Boolean),
           order_index: courseForm.order_index,
           industry_type: courseForm.industry_type,
           image: imageUrl,
@@ -415,7 +427,8 @@ const CLPDashboard = () => {
         title: '', 
         description: '', 
         code: '', 
-        category: '', 
+        category: '',
+        categories: [],
         order_index: 0, 
         industry_type: 'both', 
         image: null,
@@ -506,11 +519,14 @@ const CLPDashboard = () => {
 
   const openEditCourse = (course: Course) => {
     setEditingCourse(course);
+    // Get categories from the new categories array, or fall back to old category field
+    const courseCategories = (course as any).categories || (course.category ? [course.category] : []);
     setCourseForm({
       title: course.title,
       description: course.description || '',
       code: course.code,
       category: course.category || '',
+      categories: courseCategories,
       order_index: (course as any).order_index || 0,
       industry_type: (course as any).industry_type || 'both',
       image: null,
@@ -526,6 +542,7 @@ const CLPDashboard = () => {
       description: '',
       code: '',
       category: '',
+      categories: [],
       order_index: 0,
       industry_type: 'both',
       image: null,
@@ -897,63 +914,14 @@ const CLPDashboard = () => {
                         onChange={(e) => setCourseForm(prev => ({ ...prev, code: e.target.value }))}
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="course-category">Category</Label>
-                      <div className="flex gap-2">
-                        <Select 
-                          value={courseForm.category} 
-                          onValueChange={(value) => setCourseForm(prev => ({ ...prev, category: value }))}
-                        >
-                          <SelectTrigger className="flex-1">
-                            <SelectValue placeholder="Select or create category" />
-                          </SelectTrigger>
-                          <SelectContent className="z-50 bg-background border shadow-lg pointer-events-auto">
-                            {categories.map((category) => (
-                              <SelectItem key={category} value={category}>
-                                {category}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Dialog open={isCreateCategoryOpen} onOpenChange={setIsCreateCategoryOpen}>
-                          <DialogTrigger asChild>
-                            <Button variant="outline" size="icon">
-                              <Plus className="h-4 w-4" />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="sm:max-w-md pointer-events-auto">
-                            <DialogHeader>
-                              <DialogTitle>Create New Category</DialogTitle>
-                              <DialogDescription>
-                                Add a new category for courses
-                              </DialogDescription>
-                            </DialogHeader>
-                            <div className="space-y-4">
-                              <div>
-                                <Label htmlFor="category-name">Category Name</Label>
-                                <Input
-                                  id="category-name"
-                                  placeholder="Enter category name"
-                                  value={newCategory}
-                                  onChange={(e) => setNewCategory(e.target.value)}
-                                />
-                              </div>
-                            </div>
-                            <DialogFooter>
-                              <Button variant="outline" onClick={() => {
-                                setIsCreateCategoryOpen(false);
-                                setNewCategory('');
-                              }}>
-                                Cancel
-                              </Button>
-                              <Button onClick={handleCreateCategory} disabled={!newCategory.trim()}>
-                                Create Category
-                              </Button>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
-                       </div>
-                     </div>
+                  <CategoryManager
+                    availableCategories={categories}
+                    selectedCategories={courseForm.categories}
+                    onCategoriesChange={(newCategories) => 
+                      setCourseForm(prev => ({ ...prev, categories: newCategories }))
+                    }
+                    onCreateCategory={handleCreateCategory}
+                  />
                      <div>
                        <Label htmlFor="course-order">Order</Label>
                        <Input
@@ -1276,63 +1244,14 @@ const CLPDashboard = () => {
                       onChange={(e) => setCourseForm(prev => ({ ...prev, code: e.target.value }))}
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="edit-course-category">Category</Label>
-                    <div className="flex gap-2">
-                      <Select 
-                        value={courseForm.category} 
-                        onValueChange={(value) => setCourseForm(prev => ({ ...prev, category: value }))}
-                      >
-                        <SelectTrigger className="flex-1">
-                          <SelectValue placeholder="Select or create category" />
-                        </SelectTrigger>
-                        <SelectContent className="z-50 bg-background border shadow-lg pointer-events-auto">
-                          {categories.map((category) => (
-                            <SelectItem key={category} value={category}>
-                              {category}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Dialog open={isCreateCategoryOpen} onOpenChange={setIsCreateCategoryOpen}>
-                        <DialogTrigger asChild>
-                          <Button variant="outline" size="icon">
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-md pointer-events-auto">
-                          <DialogHeader>
-                            <DialogTitle>Create New Category</DialogTitle>
-                            <DialogDescription>
-                              Add a new category for courses
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="space-y-4">
-                            <div>
-                              <Label htmlFor="edit-category-name">Category Name</Label>
-                              <Input
-                                id="edit-category-name"
-                                placeholder="Enter category name"
-                                value={newCategory}
-                                onChange={(e) => setNewCategory(e.target.value)}
-                              />
-                            </div>
-                          </div>
-                          <DialogFooter>
-                            <Button variant="outline" onClick={() => {
-                              setIsCreateCategoryOpen(false);
-                              setNewCategory('');
-                            }}>
-                              Cancel
-                            </Button>
-                            <Button onClick={handleCreateCategory} disabled={!newCategory.trim()}>
-                              Create Category
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-                  </div>
+                  <CategoryManager
+                    availableCategories={categories}
+                    selectedCategories={courseForm.categories}
+                    onCategoriesChange={(newCategories) => 
+                      setCourseForm(prev => ({ ...prev, categories: newCategories }))
+                    }
+                    onCreateCategory={handleCreateCategory}
+                  />
                   <div>
                     <Label htmlFor="edit-course-order">Order</Label>
                     <Input
