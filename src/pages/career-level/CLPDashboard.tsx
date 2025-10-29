@@ -4,7 +4,6 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
-import { useSubscriptionPlans } from '@/hooks/useSubscriptionPlans';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -73,7 +72,6 @@ const CLPDashboard = () => {
   }, []);
   
   const { loading, getCourses, getLeaderboard, getModulesByCourse } = useCareerLevelProgram();
-  const { plansWithPrices, loading: plansLoading } = useSubscriptionPlans();
   const [activeTab, setActiveTab] = useState('overview');
   
   const [dashboardStats, setDashboardStats] = useState({
@@ -115,7 +113,6 @@ const CLPDashboard = () => {
     industry_type: 'both' as 'IT' | 'non-IT' | 'both',
     image: null as File | null,
     is_free: false,
-    subscription_plan_id: '',
     is_published: false
   });
   const [categories, setCategories] = useState<string[]>([]);
@@ -381,7 +378,7 @@ const CLPDashboard = () => {
           industry_type: courseForm.industry_type,
           image: imageUrl,
           is_free: courseForm.is_free,
-          subscription_plan_id: courseForm.is_free ? null : courseForm.subscription_plan_id || null,
+          subscription_plan_id: null, // Always null - simple free or subscription-required logic
           is_published: courseForm.is_published,
           created_by: user?.id
         }])
@@ -401,7 +398,6 @@ const CLPDashboard = () => {
         industry_type: 'both', 
         image: null,
         is_free: false,
-        subscription_plan_id: '',
         is_published: false
       });
       setIsCreateCourseOpen(false);
@@ -457,7 +453,7 @@ const CLPDashboard = () => {
           industry_type: courseForm.industry_type,
           image: imageUrl,
           is_free: courseForm.is_free,
-          subscription_plan_id: courseForm.is_free ? null : courseForm.subscription_plan_id || null,
+          subscription_plan_id: null, // Always null - simple free or subscription-required logic
           is_published: courseForm.is_published
         })
         .eq('id', editingCourse.id)
@@ -477,7 +473,6 @@ const CLPDashboard = () => {
         industry_type: 'both', 
         image: null,
         is_free: false,
-        subscription_plan_id: '',
         is_published: false
       });
       setEditingCourse(null);
@@ -575,7 +570,6 @@ const CLPDashboard = () => {
       industry_type: (course as any).industry_type || 'both',
       image: null,
       is_free: (course as any).is_free || false,
-      subscription_plan_id: (course as any).subscription_plan_id || '',
       is_published: (course as any).is_published || false
     });
   };
@@ -591,7 +585,6 @@ const CLPDashboard = () => {
       industry_type: 'both',
       image: null,
       is_free: false,
-      subscription_plan_id: '',
       is_published: false
     });
     setIsCreateCourseOpen(true);
@@ -1028,33 +1021,14 @@ const CLPDashboard = () => {
                         checked={courseForm.is_free}
                         onCheckedChange={(checked) => setCourseForm(prev => ({ 
                           ...prev, 
-                          is_free: checked,
-                          subscription_plan_id: checked ? '' : prev.subscription_plan_id
+                          is_free: checked
                         }))}
                       />
                       <Label htmlFor="is-free">Is it Free?</Label>
+                      <p className="text-xs text-muted-foreground ml-2">
+                        (Free courses are accessible to all users, paid courses require any active subscription)
+                      </p>
                     </div>
-                    
-                    {!courseForm.is_free && (
-                      <div>
-                        <Label htmlFor="subscription-plan">Subscription Plan *</Label>
-                        <Select 
-                          value={courseForm.subscription_plan_id} 
-                          onValueChange={(value) => setCourseForm(prev => ({ ...prev, subscription_plan_id: value }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select subscription plan" />
-                          </SelectTrigger>
-                          <SelectContent className="z-50 bg-background border shadow-lg pointer-events-auto">
-                            {(plansWithPrices || []).map((plan) => (
-                              <SelectItem key={plan.id} value={plan.id}>
-                                {plan.name} - ₹{plan.price} ({plan.duration})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
                     
                     <div className="flex items-center space-x-2">
                       <Switch
@@ -1077,7 +1051,7 @@ const CLPDashboard = () => {
                     </Button>
                     <Button 
                       onClick={handleCreateCourse} 
-                      disabled={!courseForm.title || !courseForm.code || (!courseForm.is_free && !courseForm.subscription_plan_id)}
+                      disabled={!courseForm.title || !courseForm.code}
                     >
                       Create Course
                     </Button>
@@ -1372,34 +1346,15 @@ const CLPDashboard = () => {
                       checked={courseForm.is_free}
                       onCheckedChange={(checked) => setCourseForm(prev => ({ 
                         ...prev, 
-                        is_free: checked,
-                        subscription_plan_id: checked ? '' : prev.subscription_plan_id
+                        is_free: checked
                       }))}
                     />
                     <Label htmlFor="edit-is-free">Is it Free?</Label>
+                    <p className="text-xs text-muted-foreground ml-2">
+                      (Free courses are accessible to all users, paid courses require any active subscription)
+                    </p>
                   </div>
                   
-                    {!courseForm.is_free && (
-                      <div>
-                        <Label htmlFor="edit-subscription-plan">Subscription Plan *</Label>
-                        <Select 
-                          value={courseForm.subscription_plan_id} 
-                          onValueChange={(value) => setCourseForm(prev => ({ ...prev, subscription_plan_id: value }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select subscription plan" />
-                          </SelectTrigger>
-                          <SelectContent className="z-50 bg-background border shadow-lg pointer-events-auto">
-                            {(plansWithPrices || []).map((plan) => (
-                              <SelectItem key={plan.id} value={plan.id}>
-                                {plan.name} - ₹{plan.price} ({plan.duration})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-                    
                     <div className="flex items-center space-x-2">
                       <Switch
                         id="edit-is-published"
@@ -1421,7 +1376,7 @@ const CLPDashboard = () => {
                   </Button>
                   <Button 
                     onClick={handleUpdateCourse} 
-                    disabled={!courseForm.title || !courseForm.code || (!courseForm.is_free && !courseForm.subscription_plan_id)}
+                    disabled={!courseForm.title || !courseForm.code}
                   >
                     Update Course
                   </Button>
