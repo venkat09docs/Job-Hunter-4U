@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, CheckCircle, ArrowRight, X, Sparkles, Briefcase, MapPin, Clock, DollarSign, Map } from "lucide-react";
+import { Trophy, CheckCircle, ArrowRight, X, Sparkles, Briefcase, MapPin, Clock, DollarSign } from "lucide-react";
 import { 
   Carousel,
   CarouselContent,
@@ -24,17 +24,6 @@ import { useNavigate } from "react-router-dom";
 import PaymentGatewaySelector from "@/components/PaymentGatewaySelector";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
 
 const AICareerOffers = () => {
   const { getCourses, loading } = useCareerLevelProgram();
@@ -204,150 +193,102 @@ const AICareerOffers = () => {
 
           {/* Tabs for Courses and Jobs */}
           <Tabs defaultValue="courses" className="w-full">
+            {/* Tabs Header */}
+            <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 mb-6">
+              <TabsList className="w-full h-12 grid grid-cols-2 rounded-none bg-transparent max-w-md mx-auto">
+                <TabsTrigger value="courses" className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
+                  Courses
+                </TabsTrigger>
+                <TabsTrigger value="jobs" className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
+                  Internal Jobs
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
             {/* Courses Tab */}
             <TabsContent value="courses" className="mt-0">
-              <SidebarProvider>
-                <div className="flex w-full min-h-[600px]">
-                  {/* Left Sidebar - Roadmap */}
-                  <Sidebar className="w-64 border-r">
-                    <SidebarContent>
-                      <SidebarGroup>
-                        <SidebarGroupLabel className="text-lg font-bold flex items-center gap-2 px-4 py-3">
-                          <Map className="h-5 w-5" />
-                          Roadmaps
-                        </SidebarGroupLabel>
-                        <SidebarGroupContent>
-                          <SidebarMenu>
-                            {categories.map((category) => (
-                              <SidebarMenuItem key={category}>
-                                <SidebarMenuButton
-                                  onClick={() => setSelectedCategory(category)}
-                                  isActive={selectedCategory === category}
-                                  className="w-full justify-start"
-                                >
-                                  {category === 'all' ? 'All Categories' : category}
-                                </SidebarMenuButton>
-                              </SidebarMenuItem>
-                            ))}
-                          </SidebarMenu>
-                        </SidebarGroupContent>
-                      </SidebarGroup>
-                    </SidebarContent>
-                  </Sidebar>
-
-                  {/* Right Content Area */}
-                  <div className="flex-1 flex flex-col">
-                    {/* Tabs positioned under the courses section */}
-                    <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                      <TabsList className="w-full h-12 grid grid-cols-2 rounded-none bg-transparent">
-                        <TabsTrigger value="courses" className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
-                          Courses
-                        </TabsTrigger>
-                        <TabsTrigger value="jobs" className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
-                          Internal Jobs
-                        </TabsTrigger>
-                      </TabsList>
-                    </div>
-
-                    {/* Courses Grid */}
-                    <div className="flex-1 overflow-y-auto">
-                      {loading ? (
-                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 p-6">
-                          {[1, 2, 3, 4, 5, 6].map(i => (
-                            <Card key={i} className="h-full animate-pulse">
-                              <CardContent className="p-0">
-                                <div className="h-48 bg-muted"></div>
-                                <div className="p-6 space-y-3">
-                                  <div className="h-6 bg-muted rounded"></div>
-                                  <div className="h-4 bg-muted rounded w-3/4"></div>
-                                  <div className="h-10 bg-muted rounded"></div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 p-6">
-                          {filteredCourses.map((course) => (
-                            <Card 
-                              key={course.id}
-                              className="transition-all duration-300 border-0 shadow-xl cursor-pointer rounded-2xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] hover:scale-[1.02] overflow-hidden bg-gradient-to-br from-card via-card to-primary/5"
-                              onClick={() => handleCourseClick(course)}
-                            >
-                              <CardContent className="p-0">
-                                {course.image && (
-                                  <div className="w-full h-48 bg-muted/30 flex items-center justify-center overflow-hidden rounded-t-2xl">
-                                    <img 
-                                      src={course.image} 
-                                      alt={course.title}
-                                      className="w-full h-full object-contain"
-                                    />
-                                  </div>
-                                )}
-                                
-                                <div className="p-6">
-                                  <h3 className="text-xl font-bold text-foreground mb-3 leading-tight line-clamp-2">
-                                    {course.title}
-                                  </h3>
-
-                                  <p className="text-muted-foreground mb-4 leading-relaxed text-sm line-clamp-3">
-                                    {course.description || "Comprehensive course covering fundamental concepts and practical applications"}
-                                  </p>
-
-                                  <Button 
-                                    className="w-full bg-gradient-to-r from-primary via-purple-600 to-pink-600 hover:from-primary/90 hover:via-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg rounded-xl h-11 text-sm transform hover:scale-[1.02] transition-all duration-200"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleCourseClick(course);
-                                    }}
-                                  >
-                                    View Course & Pricing
-                                    <ArrowRight className="ml-2 h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
+              <div className="w-full">
+                {/* Category Filter Buttons */}
+                <div className="mb-6 flex flex-wrap gap-2 justify-center">
+                  {categories.map((category) => (
+                    <Button
+                      key={category}
+                      variant={selectedCategory === category ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedCategory(category)}
+                      className="rounded-full"
+                    >
+                      {category === 'all' ? 'All Categories' : category}
+                    </Button>
+                  ))}
                 </div>
-              </SidebarProvider>
+
+                {/* Courses Grid */}
+                {loading ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {[1, 2, 3, 4, 5, 6].map(i => (
+                      <Card key={i} className="h-full animate-pulse">
+                        <CardContent className="p-0">
+                          <div className="h-48 bg-muted"></div>
+                          <div className="p-6 space-y-3">
+                            <div className="h-6 bg-muted rounded"></div>
+                            <div className="h-4 bg-muted rounded w-3/4"></div>
+                            <div className="h-10 bg-muted rounded"></div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {filteredCourses.map((course) => (
+                      <Card 
+                        key={course.id}
+                        className="transition-all duration-300 border-0 shadow-xl cursor-pointer rounded-2xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] hover:scale-[1.02] overflow-hidden bg-gradient-to-br from-card via-card to-primary/5"
+                        onClick={() => handleCourseClick(course)}
+                      >
+                        <CardContent className="p-0">
+                          {course.image && (
+                            <div className="w-full h-48 bg-muted/30 flex items-center justify-center overflow-hidden rounded-t-2xl">
+                              <img 
+                                src={course.image} 
+                                alt={course.title}
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                          )}
+                          
+                          <div className="p-6">
+                            <h3 className="text-xl font-bold text-foreground mb-3 leading-tight line-clamp-2">
+                              {course.title}
+                            </h3>
+
+                            <p className="text-muted-foreground mb-4 leading-relaxed text-sm line-clamp-3">
+                              {course.description || "Comprehensive course covering fundamental concepts and practical applications"}
+                            </p>
+
+                            <Button 
+                              className="w-full bg-gradient-to-r from-primary via-purple-600 to-pink-600 hover:from-primary/90 hover:via-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg rounded-xl h-11 text-sm transform hover:scale-[1.02] transition-all duration-200"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCourseClick(course);
+                              }}
+                            >
+                              View Course & Pricing
+                              <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
             </TabsContent>
 
             {/* Internal Jobs Tab */}
             <TabsContent value="jobs" className="mt-0">
-              <SidebarProvider>
-                <div className="flex w-full min-h-[600px]">
-                  {/* Empty sidebar for consistency */}
-                  <Sidebar className="w-64 border-r">
-                    <SidebarContent>
-                      <SidebarGroup>
-                        <SidebarGroupLabel className="text-lg font-bold flex items-center gap-2 px-4 py-3">
-                          <Briefcase className="h-5 w-5" />
-                          Jobs
-                        </SidebarGroupLabel>
-                      </SidebarGroup>
-                    </SidebarContent>
-                  </Sidebar>
-
-                  {/* Right Content Area */}
-                  <div className="flex-1 flex flex-col">
-                    {/* Tabs */}
-                    <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                      <TabsList className="w-full h-12 grid grid-cols-2 rounded-none bg-transparent">
-                        <TabsTrigger value="courses" className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
-                          Courses
-                        </TabsTrigger>
-                        <TabsTrigger value="jobs" className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
-                          Internal Jobs
-                        </TabsTrigger>
-                      </TabsList>
-                    </div>
-
-                    {/* Jobs Content */}
-                    <div className="flex-1 overflow-y-auto p-6">
+              <div className="w-full">
                       {jobsLoading ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                           {[1, 2, 3].map(i => (
@@ -440,12 +381,9 @@ const AICareerOffers = () => {
                           <p className="text-base sm:text-lg text-muted-foreground">No internal jobs available at the moment</p>
                         </div>
                       )}
-                    </div>
-                  </div>
                 </div>
-              </SidebarProvider>
-            </TabsContent>
-          </Tabs>
+              </TabsContent>
+            </Tabs>
         </div>
       </section>
 
