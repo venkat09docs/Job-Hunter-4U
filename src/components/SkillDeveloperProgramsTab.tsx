@@ -208,8 +208,24 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
       const coursesData = await getCourses();
       setCourses(coursesData);
       
-      // Extract unique categories
-      const uniqueCategories = ['all', ...new Set(coursesData.map(course => course.category || 'General'))];
+      // Extract unique categories from both single category and categories array
+      const allCategories = new Set<string>();
+      coursesData.forEach(course => {
+        // Add single category
+        if (course.category) {
+          allCategories.add(course.category);
+        }
+        // Add multiple categories if they exist
+        if (course.categories && Array.isArray(course.categories)) {
+          course.categories.forEach(cat => allCategories.add(cat));
+        }
+        // Fallback to General if no category
+        if (!course.category && (!course.categories || course.categories.length === 0)) {
+          allCategories.add('General');
+        }
+      });
+      
+      const uniqueCategories = ['all', ...Array.from(allCategories).sort()];
       setCategories(uniqueCategories);
       
       // Load sections and lectures count for each course
@@ -296,15 +312,29 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
     return 'one_month';
   };
 
+  // Helper function to check if course belongs to a category
+  const courseMatchesCategory = (course: Course, category: string) => {
+    if (category === 'all') return true;
+    
+    // Check single category field
+    if (course.category === category) return true;
+    
+    // Check categories array
+    if (course.categories && Array.isArray(course.categories)) {
+      return course.categories.includes(category);
+    }
+    
+    // Check for General fallback
+    if (category === 'General' && !course.category && (!course.categories || course.categories.length === 0)) {
+      return true;
+    }
+    
+    return false;
+  };
+
   // Filter courses by selected category and sort by order_index
   const filteredCourses = courses
-    .filter(course => {
-      // Category filter
-      const categoryMatch = selectedCategory === 'all' || 
-        (course.category || 'General') === selectedCategory;
-      
-      return categoryMatch;
-    })
+    .filter(course => courseMatchesCategory(course, selectedCategory))
     .sort((a, b) => {
       const orderA = (a as any).order_index || 999;
       const orderB = (b as any).order_index || 999;
