@@ -397,7 +397,7 @@ const AICareerOffers = () => {
 
       {/* Split View Dialog - Course/Job Content + Pricing */}
       <Dialog open={showSplitView} onOpenChange={setShowSplitView}>
-        <DialogContent className="max-w-7xl w-[95vw] sm:w-full h-[90vh] sm:h-[85vh] p-0 gap-0 overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
+        <DialogContent className="max-w-7xl w-[95vw] sm:w-full h-[95vh] p-0 gap-0 overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
           <DialogTitle className="sr-only">{itemType === 'course' ? 'Course' : 'Job'} Details and Pricing</DialogTitle>
           <style>{`
             .dialog-scroll::-webkit-scrollbar {
@@ -459,7 +459,7 @@ const AICareerOffers = () => {
                 </Button>
               </div>
 
-              <div className="flex-1 overflow-y-scroll dialog-scroll min-h-0" style={{ maxHeight: 'calc(50vh - 60px)' }}>
+              <div className="flex-1 overflow-y-scroll dialog-scroll min-h-0" style={{ maxHeight: 'calc(95vh - 120px)' }}>
                 <div className="p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4 md:space-y-6 pb-8 sm:pb-12 pr-3 sm:pr-4 md:pr-6">
                   {itemType === 'course' ? (
                     // Course Content
@@ -643,7 +643,7 @@ const AICareerOffers = () => {
                 <p className="text-xs sm:text-sm text-muted-foreground">Get lifetime access to all courses and premium features</p>
               </div>
 
-              <div className="flex-1 overflow-y-scroll dialog-scroll min-h-0" style={{ maxHeight: 'calc(40vh - 80px)' }}>
+              <div className="flex-1 overflow-y-scroll dialog-scroll min-h-0" style={{ maxHeight: 'calc(95vh - 140px)' }}>
                 <div className="p-3 sm:p-4 space-y-3 sm:space-y-4 pb-8 sm:pb-12 pr-3 sm:pr-4 md:pr-6">
                   {plansLoading ? (
                     <div className="space-y-4">
