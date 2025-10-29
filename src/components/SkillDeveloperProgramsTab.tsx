@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, BookOpen, Users, Star, ArrowRight, Filter, Plus, Lock, FileText } from 'lucide-react';
+import { Clock, BookOpen, Users, Star, ArrowRight, Plus, Lock, FileText } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import { useLearningGoals } from '@/hooks/useLearningGoals';
@@ -151,7 +150,6 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
   const { getSectionsByCourse, getChaptersBySection } = useCourseContent();
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedSubscriptionPlan, setSelectedSubscriptionPlan] = useState<string>('all');
   const [categories, setCategories] = useState<string[]>([]);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [courseCounts, setCourseCounts] = useState<Record<string, { sections: number; lectures: number }>>({});
@@ -200,15 +198,6 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
     return userTier >= courseTier;
   };
 
-  // Subscription plan options
-  const subscriptionPlans = [
-    { value: 'all', label: 'All Plans' },
-    { value: 'free', label: 'Free Courses' },
-    { value: 'one_month', label: 'One Month Plan' },
-    { value: 'three_months', label: 'Three Months Plan' },
-    { value: 'six_months', label: 'Six Months Plan' },
-    { value: 'one_year', label: 'One Year Plan' }
-  ];
 
   useEffect(() => {
     loadCourses();
@@ -220,7 +209,7 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
       setCourses(coursesData);
       
       // Extract unique categories
-      const uniqueCategories = [...new Set(coursesData.map(course => course.category || 'General'))];
+      const uniqueCategories = ['all', ...new Set(coursesData.map(course => course.category || 'General'))];
       setCategories(uniqueCategories);
       
       // Load sections and lectures count for each course
@@ -307,29 +296,14 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
     return 'one_month';
   };
 
-  // Helper function to check if course matches selected plan (cumulative/hierarchical)
-  const courseMatchesSelectedPlan = (course: Course) => {
-    if (selectedSubscriptionPlan === 'all') return true;
-    
-    const coursePlan = getCourseSubscriptionPlan(course);
-    const courseTier = subscriptionHierarchy[coursePlan as keyof typeof subscriptionHierarchy] || 0;
-    const selectedTier = subscriptionHierarchy[selectedSubscriptionPlan as keyof typeof subscriptionHierarchy] || 0;
-    
-    // Show courses from selected tier and all lower tiers (cumulative)
-    return courseTier <= selectedTier;
-  };
-
-  // Filter courses by selected category and subscription plan, then sort by order_index
+  // Filter courses by selected category and sort by order_index
   const filteredCourses = courses
     .filter(course => {
       // Category filter
       const categoryMatch = selectedCategory === 'all' || 
         (course.category || 'General') === selectedCategory;
       
-      // Subscription plan filter (cumulative/hierarchical)
-      const planMatch = courseMatchesSelectedPlan(course);
-      
-      return categoryMatch && planMatch;
+      return categoryMatch;
     })
     .sort((a, b) => {
       const orderA = (a as any).order_index || 999;
@@ -337,272 +311,112 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
       return orderA - orderB;
     });
 
-  // Group courses by category for display and sort each category by order_index
-  const coursesByCategory = courses
-    .filter(course => {
-      // Apply subscription plan filter to grouped courses too (cumulative/hierarchical)
-      return courseMatchesSelectedPlan(course);
-    })
-    .reduce((acc, course) => {
-      const category = course.category || 'General';
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(course);
-      return acc;
-    }, {} as Record<string, Course[]>);
-
-  // Sort courses within each category by order_index
-  Object.keys(coursesByCategory).forEach(category => {
-    coursesByCategory[category].sort((a, b) => {
-      const orderA = (a as any).order_index || 999;
-      const orderB = (b as any).order_index || 999;
-      return orderA - orderB;
-    });
-  });
-
   if (loading || goalsLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="bg-muted rounded-2xl p-6 flex-1 animate-pulse">
-            <div className="h-8 bg-muted-foreground/20 rounded mb-3 w-3/4" />
-            <div className="h-5 bg-muted-foreground/20 rounded w-full" />
-          </div>
-          <div className="flex gap-3 flex-shrink-0">
-            <div className="h-10 w-32 bg-muted rounded animate-pulse" />
-            <div className="h-10 w-36 bg-muted rounded animate-pulse" />
+      <div className="flex w-full gap-6">
+        {/* Left Sidebar Skeleton - Hidden on mobile */}
+        <div className="hidden md:block w-64 flex-shrink-0">
+          <div className="sticky top-4">
+            <div className="h-12 bg-muted rounded-lg mb-4 animate-pulse" />
+            <div className="space-y-2">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="h-10 bg-muted rounded animate-pulse" />
+              ))}
+            </div>
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Card key={i} className="h-80 animate-pulse">
-              <div className="h-48 bg-muted rounded-t-lg" />
-              <CardContent className="p-4">
-                <div className="h-4 bg-muted rounded mb-2" />
-                <div className="h-3 bg-muted rounded mb-4 w-3/4" />
-                <div className="flex gap-2">
-                  <div className="h-6 bg-muted rounded w-16" />
-                  <div className="h-6 bg-muted rounded w-20" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        {/* Right Content Skeleton */}
+        <div className="flex-1 w-full px-4 md:px-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Card key={i} className="h-full animate-pulse">
+                <div className="h-56 bg-muted rounded-t-lg" />
+                <CardContent className="p-6 space-y-3">
+                  <div className="h-6 bg-muted rounded" />
+                  <div className="h-4 bg-muted rounded w-3/4" />
+                  <div className="h-10 bg-muted rounded" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     );
   }
 
-  // Check if no courses match the current filters
-  if (courses.length > 0 && filteredCourses.length === 0 && selectedCategory !== 'all') {
-    return (
-      <div className="space-y-6">
-        {/* Show filters even when no results */}
-        {(categories.length > 0 || subscriptionPlans.length > 0) && (
-          <div className="flex flex-wrap items-center gap-4 mb-6">
-            <div className="flex items-center gap-2">
-              <Filter className="h-5 w-5 text-muted-foreground" />
-              <span className="text-sm font-medium">Filters:</span>
-            </div>
-            
-            {/* Category Filter */}
-            {categories.length > 0 && (
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="All Categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-            
-            {/* Subscription Plan Filter */}
-            <Select value={selectedSubscriptionPlan} onValueChange={setSelectedSubscriptionPlan}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="All Plans" />
-              </SelectTrigger>
-              <SelectContent>
-                {subscriptionPlans.map((plan) => (
-                  <SelectItem key={plan.value} value={plan.value}>
-                    {plan.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-
-        <div className="text-center py-16">
-          <div className="bg-gradient-to-br from-primary/10 to-purple/10 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
-            <BookOpen className="h-12 w-12 text-primary" />
-          </div>
-          <h3 className="text-2xl font-bold text-foreground mb-3">
-            No Courses Found
-          </h3>
-          <p className="text-muted-foreground text-lg">
-            No courses match your current filter criteria. Try adjusting your filters or check back later for new courses.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Check if no courses match filters when viewing grouped by category (all categories)
-  if (courses.length > 0 && selectedCategory === 'all' && Object.keys(coursesByCategory).length === 0) {
-    return (
-      <div className="space-y-6">
-        {/* Show filters even when no results */}
-        {(categories.length > 0 || subscriptionPlans.length > 0) && (
-          <div className="flex flex-wrap items-center gap-4 mb-6">
-            <div className="flex items-center gap-2">
-              <Filter className="h-5 w-5 text-muted-foreground" />
-              <span className="text-sm font-medium">Filters:</span>
-            </div>
-            
-            {/* Category Filter */}
-            {categories.length > 0 && (
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="All Categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-            
-            {/* Subscription Plan Filter */}
-            <Select value={selectedSubscriptionPlan} onValueChange={setSelectedSubscriptionPlan}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="All Plans" />
-              </SelectTrigger>
-              <SelectContent>
-                {subscriptionPlans.map((plan) => (
-                  <SelectItem key={plan.value} value={plan.value}>
-                    {plan.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-
-        <div className="text-center py-16">
-          <div className="bg-gradient-to-br from-primary/10 to-purple/10 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
-            <BookOpen className="h-12 w-12 text-primary" />
-          </div>
-          <h3 className="text-2xl font-bold text-foreground mb-3">
-            No Courses Found
-          </h3>
-          <p className="text-muted-foreground text-lg">
-            No courses match your current filter criteria. Try adjusting your filters or check back later for new courses.
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="space-y-6">
-      {/* Filters */}
-      {(categories.length > 0 || subscriptionPlans.length > 0) && (
-        <div className="flex flex-wrap items-center gap-4 mb-6">
-          <div className="flex items-center gap-2">
-            <Filter className="h-5 w-5 text-muted-foreground" />
-            <span className="text-sm font-medium">Filters:</span>
-          </div>
-          
-          {/* Category Filter */}
-          {categories.length > 0 && (
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="All Categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          
-          {/* Subscription Plan Filter */}
-          <Select value={selectedSubscriptionPlan} onValueChange={setSelectedSubscriptionPlan}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="All Plans" />
-            </SelectTrigger>
-            <SelectContent>
-              {subscriptionPlans.map((plan) => (
-                <SelectItem key={plan.value} value={plan.value}>
-                  {plan.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-
-      {/* Courses Display */}
-      {courses.length === 0 ? (
-        <div className="text-center py-16">
-          <div className="bg-gradient-to-br from-primary/10 to-purple/10 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
-            <BookOpen className="h-12 w-12 text-primary" />
-          </div>
-          <h3 className="text-2xl font-bold text-foreground mb-3">
-            No Courses Available Yet
-          </h3>
-          <p className="text-muted-foreground text-lg">
-            Skill Developer courses will be available soon. Stay tuned for exciting learning opportunities!
-          </p>
-        </div>
-      ) : selectedCategory === 'all' ? (
-        // Display courses grouped by category when "All" is selected
-        <div className="space-y-8">
-          {Object.entries(coursesByCategory).map(([category, categoryCourses]) => (
-            <div key={category}>
-              <div className="flex items-center gap-2 mb-4">
-                <h3 className="text-xl font-semibold text-foreground">{category}</h3>
-                <Badge variant="secondary" className="text-xs">
-                  {categoryCourses.length} course{categoryCourses.length !== 1 ? 's' : ''}
-                </Badge>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {categoryCourses.map((course) => (
-                    <CourseCard
-                      key={course.id}
-                      course={course}
-                      isEnrolled={isUserEnrolled(course.id)}
-                      canAccess={canAccessCourse(course)}
-                      sectionsCount={courseCounts[course.id]?.sections || 0}
-                      lecturesCount={courseCounts[course.id]?.lectures || 0}
-                      onEnrollCourse={handleEnrollCourse}
-                      onViewCourse={handleViewCourse}
-                      onShowUpgrade={() => setShowUpgradeDialog(true)}
-                    />
-                ))}
-              </div>
-            </div>
+    <div>
+      {/* Mobile Category Buttons - Horizontal Scroll */}
+      <div className="md:hidden mb-6 overflow-x-auto pb-2">
+        <div className="flex gap-2 min-w-max px-4">
+          {categories.map((category) => (
+            <Button
+              key={category}
+              variant={selectedCategory === category ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedCategory(category)}
+              className="rounded-full whitespace-nowrap"
+            >
+              {category === 'all' ? 'All Categories' : category}
+            </Button>
           ))}
         </div>
-      ) : (
-        // Display filtered courses when specific category is selected
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {filteredCourses.map((course) => (
+      </div>
+
+      {/* Desktop Layout with Sidebar */}
+      <div className="flex w-full gap-6">
+        {/* Left Sidebar - Categories (Hidden on mobile) */}
+        <div className="hidden md:block w-64 flex-shrink-0">
+          <div className="sticky top-4">
+            <h3 className="text-lg font-bold mb-4 px-4 py-2 bg-muted/50 rounded-lg">
+              Roadmaps
+            </h3>
+            <div className="space-y-2">
+              {categories.map((category) => (
+                <Button
+                  key={category}
+                  variant={selectedCategory === category ? "default" : "ghost"}
+                  className="w-full justify-start"
+                  onClick={() => setSelectedCategory(category)}
+                >
+                  {category === 'all' ? 'All Categories' : category}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Content - Courses Grid */}
+        <div className="flex-1 w-full px-4 md:px-0">
+          {courses.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="bg-gradient-to-br from-primary/10 to-purple/10 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                <BookOpen className="h-12 w-12 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold text-foreground mb-3">
+                No Courses Available Yet
+              </h3>
+              <p className="text-muted-foreground text-lg">
+                Skill Developer courses will be available soon. Stay tuned for exciting learning opportunities!
+              </p>
+            </div>
+          ) : filteredCourses.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="bg-gradient-to-br from-primary/10 to-purple/10 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                <BookOpen className="h-12 w-12 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold text-foreground mb-3">
+                No Courses Found
+              </h3>
+              <p className="text-muted-foreground text-lg">
+                No courses in this category. Try selecting a different category.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+              {filteredCourses.map((course) => (
                 <CourseCard
                   key={course.id}
                   course={course}
@@ -614,9 +428,11 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
                   onViewCourse={handleViewCourse}
                   onShowUpgrade={() => setShowUpgradeDialog(true)}
                 />
-          ))}
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Subscription Upgrade Dialog */}
       <Dialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
