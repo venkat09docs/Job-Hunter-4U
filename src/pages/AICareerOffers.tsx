@@ -198,13 +198,13 @@ const AICareerOffers = () => {
 
           {/* Tabs for Courses and Jobs */}
           <Tabs defaultValue="courses" className="w-full px-2 sm:px-0">
-            <TabsList className="grid w-full max-w-xs sm:max-w-md mx-auto grid-cols-2 mb-6 sm:mb-8">
+            <TabsList className="grid w-full max-w-xs sm:max-w-md mx-auto grid-cols-2">
               <TabsTrigger value="courses" className="text-xs sm:text-sm">Courses</TabsTrigger>
               <TabsTrigger value="jobs" className="text-xs sm:text-sm">Internal Jobs</TabsTrigger>
             </TabsList>
 
             {/* Courses Tab */}
-            <TabsContent value="courses">
+            <TabsContent value="courses" className="mt-0">
               <SidebarProvider>
                 <div className="flex w-full min-h-[600px]">
                   {/* Left Sidebar - Roadmap */}
