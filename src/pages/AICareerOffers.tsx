@@ -445,9 +445,9 @@ const AICareerOffers = () => {
               scrollbar-color: hsl(var(--primary) / 0.8) hsl(var(--muted) / 0.2);
             }
           `}</style>
-          <div className="flex flex-col sm:flex-row h-full w-full">
+          <div className="flex flex-col sm:flex-row h-full w-full overflow-y-auto sm:overflow-hidden">
             {/* Left Side - Course/Job Content */}
-            <div className="flex-1 sm:border-r-2 border-primary/10 flex flex-col bg-card/50 backdrop-blur-sm overflow-hidden">
+            <div className="flex-1 sm:border-r-2 border-primary/10 flex flex-col bg-card/50 backdrop-blur-sm sm:overflow-hidden">
               <div className="p-3 sm:p-4 md:p-6 border-b-2 border-primary/10 flex items-center justify-between bg-gradient-to-r from-primary/10 via-purple-500/10 to-pink-500/10 flex-shrink-0 backdrop-blur-sm">
                 <div className="flex-1 min-w-0 pr-2">
                   <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent truncate">
@@ -477,7 +477,7 @@ const AICareerOffers = () => {
                 </Button>
               </div>
 
-              <div className="flex-1 overflow-y-scroll dialog-scroll min-h-0" style={{ maxHeight: 'calc(95vh - 120px)' }}>
+              <div className="flex-1 overflow-y-scroll dialog-scroll sm:min-h-0 max-h-none sm:max-h-[calc(95vh-120px)]">
                 <div className="p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4 md:space-y-6 pb-8 sm:pb-12 pr-3 sm:pr-4 md:pr-6">
                   {itemType === 'course' ? (
                     // Course Content
@@ -649,7 +649,7 @@ const AICareerOffers = () => {
             </div>
 
             {/* Right Side - Pricing Plans */}
-            <div className="w-full sm:w-80 md:w-96 lg:w-[420px] bg-gradient-to-b from-yellow-500/5 via-orange-500/5 to-pink-500/5 flex flex-col flex-shrink-0 backdrop-blur-sm overflow-hidden border-t-2 sm:border-t-0 sm:border-l-2 border-primary/10">
+            <div className="w-full sm:w-80 md:w-96 lg:w-[420px] bg-gradient-to-b from-yellow-500/5 via-orange-500/5 to-pink-500/5 flex flex-col flex-shrink-0 backdrop-blur-sm sm:overflow-hidden border-t-2 sm:border-t-0 sm:border-l-2 border-primary/10">
               <div className="p-3 sm:p-4 md:p-6 border-b-2 border-primary/10 flex-shrink-0 bg-gradient-to-r from-yellow-500/10 via-orange-500/10 to-pink-500/10 backdrop-blur-sm">
                 <Badge className="mb-2 sm:mb-3 bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 text-white border-0 font-bold shadow-lg animate-pulse text-xs">
                   <Trophy className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
@@ -661,7 +661,7 @@ const AICareerOffers = () => {
                 <p className="text-xs sm:text-sm text-muted-foreground">Get lifetime access to all courses and premium features</p>
               </div>
 
-              <div className="flex-1 overflow-y-scroll dialog-scroll min-h-0" style={{ maxHeight: 'calc(95vh - 140px)' }}>
+              <div className="flex-1 overflow-y-scroll dialog-scroll sm:min-h-0 max-h-none sm:max-h-[calc(95vh-140px)]">
                 <div className="p-3 sm:p-4 space-y-3 sm:space-y-4 pb-8 sm:pb-12 pr-3 sm:pr-4 md:pr-6">
                   {plansLoading ? (
                     <div className="space-y-4">
