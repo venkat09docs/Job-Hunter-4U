@@ -197,6 +197,11 @@ const CLPAssignmentManagementTab = () => {
     ? courses 
     : courses.filter(course => course.category === selectedCategory);
 
+  // Get filtered sections based on selected course
+  const filteredSections = selectedCourse === 'all'
+    ? sections
+    : sections.filter(section => section.course_id === selectedCourse);
+
   // Filter assignments based on search and filters
   const filteredAssignments = assignments.filter(assignment => {
     const matchesSearch = assignment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -296,7 +301,7 @@ const CLPAssignmentManagementTab = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Sections</SelectItem>
-                  {sections.map((section) => (
+                  {filteredSections.map((section) => (
                     <SelectItem key={section.id} value={section.id}>
                       {section.title}
                     </SelectItem>
